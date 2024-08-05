@@ -1,0 +1,239 @@
+{% extends 'admin-base.html' %}
+
+{% block content %}
+
+{% load static %}
+<div class="bg-white rounded-lg shadow-md p-6">
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="flex justify-between items-center mb-4"> 
+        <form class="flex items-center w-64 max-w-2xl ml-0" id="searchForm">   
+            <label for="simple-search" class="sr-only">Search</label>
+            <div class="relative w-full">
+                <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search student name..." required />
+                <button type="submit" class="absolute top-0 end-0 h-full p-2.5 text-sm font-medium text-white bg-green-700 rounded-e-lg border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                    <span class="sr-only">Search</span>
+                </button>
+            </div>
+        </form>
+    </div>
+    
+
+<div class="relative overflow-x-auto">
+    
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3">
+                    Profile Picture
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Email Address
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Full Name
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Role
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Gender
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Phone Number
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Action
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if students %}
+            {% for student in students %}
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <td class="px-6 py-4">
+                    {% if student.profile_picture %}
+                        <img src="{{ student.profile_picture.url }}" alt="{{ student.Firstname }}'s profile" class="w-10 h-10 rounded-full">
+                    {% else %}
+                        <div class="w-10 h-10 rounded-full bg-green-700 flex items-center justify-center text-white text-3xl">
+                            {{ student.Firstname|first }}
+                        </div>
+                    {% endif %}
+                </td>
+                <td scope="row" class="px-6 py-4  font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    {{ student.email }}
+                </td>
+                <th class="px-6 py-4">
+                    {{ student.Firstname }} {{ student.Lastname }}
+                </th>
+                <td class="px-6 py-4">
+                    Student
+                </td>
+                <td class="px-6 py-4">
+                    {{ student.Gender }}
+                </td>
+                <td class="px-6 py-4">
+                    {{ student.Phone_Number }}
+                </td>
+                <td class="px-6 py-4">
+                    <a href="#" class="font-medium text-green-600 dark:text-green-500 hover:underline edit-btn"
+                    data-modal-target="edit-modal"
+                    data-modal-toggle="edit-modal"
+                    data-id="{{ student.user.id }}"
+                    data-email="{{ student.email }}">Edit
+                    </a>
+                <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline delete-btn" 
+                        data-modal-target="delete-modal" 
+                        data-modal-toggle="delete-modal"
+                        data-id="">Delete
+                </a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">No students found.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    
+</div>
+</div>
+
+
+<!-- Edit Modal -->
+<div id="edit-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Edit Student
+                </h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="edit-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5">
+                <form class="space-y-4" action="{% url 'student-list' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="edit_id" id="edit_id">
+                    <div>
+                        <label for="change_pass" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Student Email</label>
+                        <input type="text" name="email" id="change_pass" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="" required readonly />
+                    </div>
+
+                    <div>
+                        <label for="new_pass" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">New Password</label>
+                        <input type="password" name="new_password" id="new_pass" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="" required />
+                    </div>
+                    <div>
+                        <label for="confirm_pass" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm Password</label>
+                        <input type="password" name="confirm_password" id="confirm_pass" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="" required />
+                    </div>
+                    <button type="submit" name="change_pass" class="w-full text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('simple-search');
+        const table = document.querySelector('table');
+        const tableRows = table.querySelectorAll('tbody tr');
+    
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            tableRows.forEach(row => {
+                const fullName = row.querySelector('th').textContent.toLowerCase();
+                if (fullName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+    
+            // Check if there are any visible rows
+            const visibleRows = table.querySelectorAll('tbody tr:not([style*="display: none"])');
+            const noResultsRow = table.querySelector('tbody tr.no-results');
+            
+            if (visibleRows.length === 0) {
+                if (!noResultsRow) {
+                    const newRow = table.insertRow();
+                    newRow.classList.add('no-results');
+                    const cell = newRow.insertCell();
+                    cell.colSpan = 6;
+                    cell.textContent = 'No students found.';
+                    cell.style.textAlign = 'center';
+                } else {
+                    noResultsRow.style.display = '';
+                }
+            } else if (noResultsRow) {
+                noResultsRow.style.display = 'none';
+            }
+        });
+    
+        // Prevent form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    });
+    </script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editButtons = document.querySelectorAll('.edit-btn');
+        const modal = document.getElementById('edit-modal');
+        const emailInput = modal.querySelector('input[name="email"]');
+        const idInput = modal.querySelector('input[name="edit_id"]');
+
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-id');
+                const studentEmail = this.getAttribute('data-email');
+
+                // Populate modal fields
+                emailInput.value = studentEmail;
+                idInput.value = studentId;
+
+                // Show the modal
+                modal.classList.remove('hidden');
+            });
+        });
+
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+
+
+{% endblock %}

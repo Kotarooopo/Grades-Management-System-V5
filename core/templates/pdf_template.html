@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Student Grades PDF</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Helvetica, sans-serif;
+            font-size: 12px;
+        }
+        h1, h2 {
+            color: #333333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 18px;
+        }
+        h2 {
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #15803d;  /* Darker green border */
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background-color: #15803d;  /* bg-green-700 equivalent */
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ selected_class.grade_level }}, {{ selected_class.section }} </h1>
+    {% if grading_period %}
+    <h2>{{ grading_period }}</h2>
+    {% else %}
+    <h2>Not Specified</h2>
+    {% endif %}
+    <h2>{{ selected_class.subject.name }} - Grades</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Initial Grade</th>
+                <th>Quarterly Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result.student.get_full_name }}</td>
+                <td>{{ result.initial_grade|floatformat:2 }}</td>
+                <td>{{ result.transmuted_grade }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

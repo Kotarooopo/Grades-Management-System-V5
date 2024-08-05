@@ -1,0 +1,51 @@
+{% extends 'teacher-base.html' %}
+
+{% block content %}
+{% load static %}
+
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Initial Grades - {{ enrollment.student.Firstname }} {{ enrollment.student.Lastname }}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <h1>Initial Grades for {{ enrollment.student.Firstname }} {{ enrollment.student.Lastname }}</h1>
+    
+    {% if grading_period %}
+        <h2>Grading Period: {{ grading_period.name }}</h2>
+    {% else %}
+        <h2>No current grading period set</h2>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Initial Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grade in total_initial_grades %}
+                <tr>
+                    <td>{{ grade.subject.name }}</td>
+                    <td>{{ grade.total_grade|floatformat:2 }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="2">No grades available for the current grading period</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'teacher-dashboard' %}">Back to Home</a>
+</body>
+</html>
+
+
+
+{% endblock %}   

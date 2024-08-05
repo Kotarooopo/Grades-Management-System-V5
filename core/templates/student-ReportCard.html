@@ -1,0 +1,99 @@
+{% extends 'student-base.html' %}
+
+{% block content %}
+{% load static %}
+{% load custom_filters %}
+{% for report_card in report_cards %}
+    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg overflow-hidden mb-8">
+        <h1 class="text-2xl font-bold text-center p-4 bg-gray-200">REPORT ON LEARNING PROGRESS AND ACHIEVEMENT</h1>
+    
+        <div class="p-4">
+            <p><strong>Student:</strong> {{ student.get_full_name }}</p>
+            <p><strong>School Year:</strong> {{ report_card.school_year.year }}</p>
+            <p><strong>Grade & Section: </strong> {{ report_card.grade_section }}</p>
+        </div>
+
+        <table class="w-full">
+            <!-- Table header -->
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="px-4 py-2 text-left">Learning Areas</th>
+                    <th class="px-4 py-2 text-center" colspan="4">Quarter</th>
+                    <th class="px-4 py-2 text-center">Final Grade</th>
+                    <th class="px-4 py-2 text-center">Remarks</th>
+                </tr>
+                <tr class="bg-gray-100">
+                    <th></th>
+                    {% for period in report_card.grading_periods %}
+                        <th class="px-4 py-2 text-center">{{ period.period }}</th>
+                    {% endfor %}
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <!-- Table body -->
+            <tbody>
+                {% for subject, grades in report_card.grades_data.items %}
+                    <tr class="border-t">
+                        <td class="px-4 py-2">{{ subject }}</td>
+                        {% for period in report_card.grading_periods %}
+                            <td class="px-4 py-2 text-center">{{ grades|get_item:period.period|default_if_none:"-" }}</td>
+                        {% endfor %}
+                        <td class="px-4 py-2 text-center">{{ grades.final_grade|default_if_none:"-" }}</td>
+                        <td class="px-4 py-2 text-center">{{ grades.remarks|default_if_none:"-" }}</td>
+                    </tr>
+                {% endfor %}
+                <tr class="border-t font-bold">
+                    <td class="px-4 py-2" colspan="5">General Average</td>
+                    <td class="px-4 py-2 text-center">{{ report_card.general_average }}</td>
+                    <td class="px-4 py-2 text-center">{{ report_card.general_average|yesno:"Passed,Failed" }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+
+        <div class="p-4">
+            <h2 class="text-lg font-bold mb-2">Grading Scale</h2>
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="px-4 py-2 text-left">Descriptors</th>
+                        <th class="px-4 py-2 text-left">Grading Scale</th>
+                        <th class="px-4 py-2 text-left">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="px-4 py-2">Outstanding</td>
+                        <td class="px-4 py-2">90 - 100</td>
+                        <td class="px-4 py-2">Passed</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2">Very Satisfactory</td>
+                        <td class="px-4 py-2">85 - 89</td>
+                        <td class="px-4 py-2">Passed</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2">Satisfactory</td>
+                        <td class="px-4 py-2">80 - 84</td>
+                        <td class="px-4 py-2">Passed</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2">Fairly Satisfactory</td>
+                        <td class="px-4 py-2">75 - 79</td>
+                        <td class="px-4 py-2">Passed</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2">Did Not Meet Expectations</td>
+                        <td class="px-4 py-2">Below 75</td>
+                        <td class="px-4 py-2">Failed</td>
+                    </tr>
+                    <!-- Add more rows for other grade levels -->
+                    <!-- ... -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}

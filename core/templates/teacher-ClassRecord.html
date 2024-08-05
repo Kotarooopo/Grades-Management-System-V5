@@ -1,0 +1,868 @@
+{% extends 'teacher-base.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    <!-- Display messages if any -->
+     
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            {% if selected_class %}
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    My Class Record for {{ selected_class.grade_level }} {{ selected_class.section }} - {{ selected_class.subject.name }}
+                </h3>
+            {% else %}
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    No class selected
+                </h3>
+            {% endif %}
+        </div>
+
+        <div id="success-message" class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">Score updated successfully!</span>
+        </div>
+        
+        <div class="card-body">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <button data-modal-target="add-modal" data-modal-toggle="add-modal" type="button" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add Student
+                    </button>
+                    <div class="flex items-center">
+                        <form class="max-w-sm">
+                            <select id="grading_period" class="mb-1 ml-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                <option selected disabled>Select Grading Period</option>
+                                <option value="1st">1st Grading</option>
+                                <option value="2nd">2nd Grading</option>
+                                <option value="3rd">3rd Grading</option>
+                                <option value="4th">4th Grading</option>
+                            </select>
+                        </form>
+                    </div>
+                    <div class="flex items-center">
+                        <form class="max-w-sm">
+                            <select id="criteria" class="mb-1  ml-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                <option selected disabled>Select Criteria</option>
+                                <option value="WW">Written Works</option>
+                                <option value="PT">Performance Tasks</option>
+                                <option value="QE">Quarterly Exams</option>
+                            </select>
+                        </form>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-end space-y-2">
+                    <button id="activity-dropdownButton" data-dropdown-toggle="activity-dropdown" type="button" class="shadow-md items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                        Activity Action
+                    </button>
+                    
+                    <!-- Dropdown menu -->
+                    <div id="activity-dropdown" class="z-10 hidden text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+                        <ul class="py-2" aria-labelledby="dropdownButton">
+                        <li>
+                            <a href="#" data-modal-target="add-activitymodal" data-modal-toggle="add-activitymodal" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Add Activity</a>
+                        </li>
+                        <li>
+                            <a href="#" data-modal-target="edit-activitymodal" data-modal-toggle="edit-activitymodal" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Edit Activity</a>
+                        </li>
+                        <li>
+                            <a href="#" data-modal-target="delete-activitymodal" data-modal-toggle="delete-activitymodal" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete Activity</a>
+                        </li>
+                        </ul>
+                    </div>
+                    <button data-modal-target="add-scoremodal" data-modal-toggle="add-scoremodal" type="button" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Add Score
+                    </button>
+                </div>
+                
+                
+            </div>
+            
+
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Student Names</th>
+                        <th scope="col" class="px-6 py-3">Activity</th>
+                        <th scope="col" class="px-6 py-3">Date</th>
+                        <th scope="col" class="px-6 py-3">Max Score</th>
+                        <th scope="col" class="px-6 py-3">Score</th>
+                        <th scope="col" class="px-6 py-3">Action</th>
+                        <th scope="col" class="px-6 py-3">Remove</th>
+                    </tr>
+                </thead>
+                <tbody id="studentScoresBody">
+                    <!-- {% for enrollment in enrollments %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                            <td class="px-6 py-4">{{ enrollment.student.Lastname }}, {{ enrollment.student.Firstname }}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col space-y-2">
+                                    {% for score in enrollment.scores %}
+                                        <p>{{ score.activity_name }}</p>
+                                    {% empty %}
+                                        <p>No activities available</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col space-y-2">
+                                    {% for score in enrollment.scores %}
+                                        <p>{{ score.score_date }}</p>
+                                    {% empty %}
+                                        <p>No dates available</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col space-y-2">
+                                    {% for score in enrollment.scores %}
+                                        <p>{{ score.score }}</p>
+                                    {% empty %}
+                                        <p>No scores available</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col space-y-2">
+                                    {% for score in enrollment.scores %}
+                                        <p>{{ score.max_score }}</p>
+                                    {% empty %}
+                                        <p>No scores available</p>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col space-y-2">
+                                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline addscore-btn" 
+                                        data-modal-target="addscore-modal" 
+                                        data-modal-toggle="addscore-modal"
+                                        data-id="{{ enrollment.id }}">Add Score
+                                    </a>
+                                </div>                                    
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center">No students found in this class.</td>
+                        </tr>
+                    {% endfor %} -->
+                </tbody>
+            </table>
+            
+        </div>
+    </div>
+</div>
+<!-- Add Student -->
+<div id="add-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Add Student to the class</h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="add-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            
+            <div class="p-4 md:p-5">
+                <form id="addStudentForm" class="space-y-4" method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="student-email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Add Student Via Registered Email</label>
+                        <input type="email" id="student-email" name="student_email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Enter student email..." required>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Add Student</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add  Activity-->
+<div id="add-activitymodal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Add Activity</h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="add-activitymodal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            
+            <div class="p-4 md:p-5">
+                <form id="addActivityForm" class="space-y-4" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="add_activity" value="1">
+                    <div class="mb-4">
+                        <label for="grading_period" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Grading Period</label>
+                        <select id="grading_period" name="grading_period" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+                            <option value="" selected disabled>Select Grading Period</option>
+                            {% for period in grading_periods %}
+                                <option value="{{ period.id }}">{{ period }}</option>
+                            {% endfor %}
+                            
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="subject_criterion" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Subject Criterion</label>
+                        <select id="subject_criterion" name="subject_criterion" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+                            <option value="" selected disabled>Select Subject Criterion</option>
+                            {% for criterion in subject_criteria %}
+                                <option value="{{ criterion.id }}">
+                                    {{ criterion.subject.name }} - {{ criterion.grading_criterion.criteria_type }} ({{ criterion.weightage }}%)
+                                </option>
+                            {% empty %}
+                                <option value="" disabled>No criteria available</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4" >
+                        <label for="activity_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Activity Name</label>
+                        <input type="text" id="activity_name" name="activity_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Activity Name" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="max_score" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Score</label>
+                        <input type="number" id="max_score" name="max_score" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Max Score" required min="1" step="0.01">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Add Activity</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Activity -->
+<div id="edit-activitymodal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Edit Activity</h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="edit-activitymodal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <div class="p-4 md:p-5">      
+                <form id="editActivityForm" class="space-y-4" method="post" action="{% url 'edit_activity' 0 %}">
+                    <div class="mb-4">
+                        <label for="edit_activity_select" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Activity to Edit</label>
+                        <select id="edit_activity_select" class="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="" selected disabled>Select Activity</option>
+                            {% for activity in activities %}
+                                <option 
+                                    value="{{ activity.id }}" 
+                                    data-name="{{ activity.name }}"
+                                    data-subject-criterion="{{ activity.subject_criterion.id }}"
+                                    data-max-score="{{ activity.max_score }}">
+                                    {{ activity.name }} - {{ activity.subject_criterion.subject.name }} - {{ activity.subject_criterion.grading_criterion.criteria_type }} - {{ activity.max_score }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% csrf_token %}
+                    <input type="hidden" name="edit_activity" value="1">
+                    <div class="mb-4">
+                        <label for="subject_criterion" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Subject Criterion</label>
+                        <select id="subject_criterion" name="subject_criterion" class="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="" selected disabled>Select Subject Criterion</option>
+                            {% for criterion in subject_criteria %}
+                                <option value="{{ criterion.id }}">
+                                    {{ criterion.subject.name }} - {{ criterion.grading_criterion.criteria_type }} ({{ criterion.weightage }}%)
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="activity_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Edit Activity Name</label>
+                        <input type="text" id="activity_name" name="activity_name" class="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Edit Activity Name">
+                    </div>
+                    <div class="mb-4">
+                        <label for="max_score" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Score</label>
+                        <input type="number" id="max_score" name="max_score" class="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Max Score" min="1" step="0.01">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Edit Activity</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Delete Activity -->
+<div id="delete-activitymodal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Delete Activity</h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="delete-activitymodal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <div class="p-4 md:p-5">      
+                <form id="deleteActivityForm" class="space-y-4" method="post" action="{% url 'edit_activity' 0 %}">
+                    <div class="mb-4">
+                        <label for="delete_activity_select" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Activity to Delete</label>
+                        <select id="delete_activity_select" class="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                            <option value="" selected disabled>Select Activity</option>
+                            {% for activity in activities %}
+                                <option 
+                                    value="{{ activity.id }}" 
+                                    data-name="{{ activity.name }}"
+                                    data-subject-criterion="{{ activity.subject_criterion.id }}"
+                                    data-max-score="{{ activity.max_score }}">
+                                    {{ activity.name }} - {{ activity.subject_criterion.subject.name }} - {{ activity.subject_criterion.grading_criterion.criteria_type }} - {{ activity.max_score }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="confirm-delete-button" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Delete Activity</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Delete Activity -->
+<div id="delete-activity-confirmation" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-gray-900 bg-opacity-50">
+    <div class="relative p-4 w-full max-w-md">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Confirm Delete
+                </h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="delete-activity-confirmation">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>                
+            </div>
+            <div class="p-4 md:p-5">
+                <p class="mb-4 text-gray-500 dark:text-gray-300">Are you sure you want to delete this Activity?</p>
+                <form id="delete-form" method="post" action="{% url 'delete_activity' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_id" id="delete_id">
+                    <div class="flex justify-end space-x-4">
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Add  Score-->
+<div id="add-scoremodal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow">
+            <div class="flex items-center justify-between p-4 border-b rounded-t">
+                <h3 class="text-xl font-semibold text-gray-900">Add Score</h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="add-scoremodal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            
+            <div class="p-4">
+                <form id="add-score-form" class="space-y-4" method="post" action="{% url 'teacher-myClassRecord'%}">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="activity" class="block mb-2 text-sm font-medium text-gray-900">Select Activity</label>
+                        <select id="activity" name="activity" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">  
+                            {% for activity in activities %}  
+                                <option value="{{ activity.id }}">{{ activity.name }} (Max: {{ activity.max_score }})</option>  
+                            {% endfor %}  
+                        </select>  
+                    </div>
+                    <div>
+                        <label for="enrollment" class="block mb-2 text-sm font-medium text-gray-900">Select Student Enrollment</label>
+                        <select id="enrollment" name="enrollment" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">  
+                            {% for enrollment in enrollments %}  
+                                <option value="{{ enrollment.id }}">{{ enrollment.student.Firstname }} {{ enrollment.student.Lastname }} - {{ enrollment.class_obj.subject }}</option>  
+                            {% endfor %}  
+                        </select>  
+                    </div>
+                    <div>
+                        <label for="score" class="block mb-2 text-sm font-medium text-gray-900">Score</label>
+                        <input type="number" id="score" name="score" step="0.01" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" name="add_score" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Add Score</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit  Score-->
+<!-- Edit Score Modal -->
+<div id="edit-scoremodal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow">
+            <div class="flex items-center justify-between p-4 border-b rounded-t">
+                <h3 class="text-xl font-semibold text-gray-900">Edit Score</h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center" data-modal-hide="edit-scoremodal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <div class="p-4">
+                <form id="edit-score-form" class="space-y-4" method="post">
+                    {% csrf_token %}
+                    <div>
+                        <label for="activity-name" class="block mb-2 text-sm font-medium text-gray-900">Activity</label>
+                        <p id="activity-name" class="text-sm text-gray-600"></p>
+                    </div>
+                    <div>
+                        <label for="enrollment-name" class="block mb-2 text-sm font-medium text-gray-900">Student Name</label>
+                        <p id="enrollment-name" class="text-sm text-gray-600"></p>
+                    </div>
+                    <div>
+                        <label for="score" class="block mb-2 text-sm font-medium text-gray-900">Edit Score</label>
+                        <input type="hidden" id="enrollment-id" name="enrollment_id">
+                        <input type="hidden" id="activity-id" name="activity_id">
+                        <input type="number" id="score" name="score" step="0.01" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Update Score</button>
+                    </div>
+                </form>                                     
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Comfirm Student Remove -->
+<div id="remove-studentmodal" class="hidden fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-gray-900 bg-opacity-50">
+    <div class="relative p-4 w-full max-w-md">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Confirm Remove
+                </h3>
+                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="remove-studentmodal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>                
+            </div>
+            <div class="p-4 md:p-5">
+                <form id="remove-form" method="post" action="{% url 'teacher-myClassRecord' %}">
+                    {% csrf_token %}
+                    <p class="mb-4 text-gray-500 dark:text-gray-300">Are you sure you want to remove this Student from your class?</p>         
+                    <input type="hidden" name="remove_id" id="remove_id" value="{{ enrollment.id }}">
+                    <div class="flex justify-end space-x-4">
+                        <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300">Remove</button>
+                    </div>
+                </form>                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Delete Activity -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteActivityModal = document.getElementById('delete-activitymodal');
+    const deleteActivitySelect = document.getElementById('delete_activity_select');
+    const confirmDeleteButton = document.getElementById('confirm-delete-button');
+    const deleteConfirmationModal = document.getElementById('delete-activity-confirmation');
+    const deleteForm = document.getElementById('delete-form');
+    const deleteIdInput = document.getElementById('delete_id');
+
+    // Function to toggle modal visibility
+    function toggleModal(modal) {
+        modal.classList.toggle('hidden');
+    }
+
+    // Open delete confirmation modal
+    confirmDeleteButton.addEventListener('click', function() {
+        const selectedActivity = deleteActivitySelect.options[deleteActivitySelect.selectedIndex];
+        if (selectedActivity.value) {
+            deleteIdInput.value = selectedActivity.value;
+            toggleModal(deleteActivityModal);
+            toggleModal(deleteConfirmationModal);
+        } else {
+            alert('Please select an activity to delete.');
+        }
+    });
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === deleteActivityModal || event.target === deleteConfirmationModal) {
+            toggleModal(deleteActivityModal);
+            toggleModal(deleteConfirmationModal);
+        }
+    });
+
+    // Close buttons for modals
+    document.querySelectorAll('[data-modal-toggle]').forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.getAttribute('data-modal-toggle');
+            toggleModal(document.getElementById(modalId));
+        });
+    });
+
+    // Handle form submission
+    deleteForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        this.submit();
+    });
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const editActivitySelect = document.getElementById('edit_activity_select');
+        const editActivityForm = document.getElementById('editActivityForm');
+        const subjectCriterionSelect = document.getElementById('subject_criterion');
+        const activityNameInput = document.getElementById('activity_name');
+        const maxScoreInput = document.getElementById('max_score');
+    
+        editActivitySelect.addEventListener('change', function () {
+            const activityId = editActivitySelect.value;
+            if (activityId) {
+                fetch(`/api/get_activity_details/${activityId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        subjectCriterionSelect.value = data.subject_criterion_id;
+                        activityNameInput.value = data.name;
+                        maxScoreInput.value = data.max_score;
+    
+                        // Update the form action with the correct activity ID
+                        editActivityForm.action = `/edit_activity/${activityId}/`;
+                    })
+                    .catch(error => console.error('Error fetching activity details:', error));
+            }
+        });
+    });
+</script>
+
+
+
+
+
+<!-- working Script -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const criteriaSelect = document.getElementById('criteria');
+        const gradingPeriodSelect = document.getElementById('grading_period');
+        const studentScoresBody = document.getElementById('studentScoresBody');
+        const editScoreForm = document.getElementById('edit-score-form');
+        const editScoreModal = document.getElementById('edit-scoremodal');
+        const closeModalBtn = document.querySelector('[data-modal-hide="edit-scoremodal"]');
+    
+        // Function to fetch and update scores
+        function updateScores() {
+            const selectedCriteria = criteriaSelect.value;
+            const selectedGradingPeriod = gradingPeriodSelect.value;
+    
+            console.log('Selected Criteria:', selectedCriteria);
+            console.log('Selected Grading Period:', selectedGradingPeriod);
+    
+            if (!selectedCriteria || !selectedGradingPeriod) {
+                console.log('Both criteria and grading period must be selected');
+                return;
+            }
+    
+            const url = `/api/get_scores/?criteria=${selectedCriteria}&grading_period=${selectedGradingPeriod}&class_id={{ selected_class.id }}`;
+            console.log('Fetching from URL:', url);
+    
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    studentScoresBody.innerHTML = '';  // Clear current table rows
+                    console.log('Data received from server:', data);
+    
+                    if (data.scores_data.length === 0) {
+                        studentScoresBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center">No students found in this class.</td></tr>';
+                        return;
+                    }
+    
+                    data.scores_data.forEach(student => {
+                        console.log('Student data:', student);
+                        const row = document.createElement('tr');
+                        row.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700";
+
+                        let activitiesHtml = '';
+                        let datesHtml = '';
+                        let scoresHtml = '';
+                        let totalsHtml = '';
+                        let editLinkHtml = '';
+                        let enrollmentId = student.enrollment_id; // Store enrollment ID here
+
+                        if (student.scores && student.scores.length > 0) {
+                            student.scores.sort((a, b) => a.activity_name.localeCompare(b.activity_name));
+
+                            student.scores.forEach(score => {
+                                activitiesHtml += `<p>${score.activity_name}</p>`;
+                                datesHtml += `<p>${score.date_created}</p>`;
+                                scoresHtml += `<p class="text-gray-900">${score.score}</p>`;
+                                totalsHtml += `<p class="text-gray-900">${score.max_score}</p>`;
+                                editLinkHtml += `<p>
+                                                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline edit-scoremodal" 
+                                                        data-modal-target="edit-scoremodal" 
+                                                        data-modal-toggle="edit-scoremodal"
+                                                        data-activity-name="${score.activity_name}"
+                                                        data-score="${score.score}"
+                                                        data-enrollment-id="${score.enrollment_id}"
+                                                        data-activity-id="${score.activity_id}"
+                                                        data-enrollment-name="${student.student.Firstname} ${student.student.Lastname}"
+                                                        data-max-score="${score.max_score}">Edit
+                                                    </a>
+                                                </p>`;
+                                
+                                if (!enrollmentId) enrollmentId = score.enrollment_id;
+                            });
+                        } else {
+                            activitiesHtml = '<p>No activities</p>';
+                            datesHtml = '<p>-</p>';
+                            scoresHtml = '<p>-</p>';
+                            totalsHtml = '<p>-</p>';
+                            editLinkHtml = '<p>-</p>';
+                        }
+
+                        const removeLinkHtml = enrollmentId ? `<p>
+                                            <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline remove-student"
+                                                data-enrollment-id="${enrollmentId}"  
+                                                data-student-name="${student.student.Firstname} ${student.student.Lastname}">Remove
+                                            </a>
+                                        </p>` : '<p>-</p>';
+
+                        row.innerHTML = `
+                            <td class="px-6 py-4 text-gray-900"><strong>${student.student.Lastname}, ${student.student.Firstname}</strong></td>
+                            <td class="px-6 py-4"><div class="flex flex-col space-y-2">${activitiesHtml}</div></td>
+                            <td class="px-6 py-4"><div class="flex flex-col space-y-2">${datesHtml}</div></td>                       
+                            <td class="px-6 py-4"><div class="flex flex-col space-y-2">${totalsHtml}</div></td>
+                            <td class="px-6 py-4"><div class="flex flex-col space-y-2">${scoresHtml}</div></td>
+                            <td class="px-6 py-4"><div class="flex flex-col space-y-2">${editLinkHtml}</div></td>
+                            <td class="px-6 py-4"><div class="flex flex-col space-y-2">${removeLinkHtml}</div></td>
+                        `;
+
+                        studentScoresBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+    
+        // Event listeners for updating scores
+        criteriaSelect.addEventListener('change', updateScores);
+        gradingPeriodSelect.addEventListener('change', updateScores);
+    
+        // Event delegation for handling edit and remove actions
+        studentScoresBody.addEventListener('click', function (e) {
+            if (e.target.classList.contains('edit-scoremodal')) {
+                e.preventDefault();
+                const link = e.target.closest('.edit-scoremodal');  // Get the closest anchor tag with the class
+                if (!link) return;
+    
+                console.log('Clicked link:', link);  // Debugging log
+    
+                // Debugging: Log all data attributes
+                const dataAttributes = link.dataset;
+                for (let key in dataAttributes) {
+                    console.log(`data-${key}:`, dataAttributes[key]);
+                }
+    
+                const enrollmentId = link.getAttribute('data-enrollment-id');
+                const activityId = link.getAttribute('data-activity-id');
+                const activityName = link.getAttribute('data-activity-name');
+                const enrollmentName = link.getAttribute('data-enrollment-name');
+                const currentScore = link.getAttribute('data-score');
+                const maxScore = link.getAttribute('data-max-score');
+    
+                console.log("Enrollment ID:", enrollmentId);  // Log the retrieved values
+                console.log("Activity ID:", activityId);
+    
+                if (enrollmentId && activityId) {
+                    document.getElementById('enrollment-id').value = enrollmentId;
+                    document.getElementById('activity-id').value = activityId;
+                    document.getElementById('activity-name').textContent = activityName;
+                    document.getElementById('enrollment-name').textContent = enrollmentName;
+                    document.getElementById('score').value = currentScore; // Populate current score
+    
+                    console.log("Opening edit modal:");
+                    console.log("Enrollment ID:", enrollmentId);
+                    console.log("Activity ID:", activityId);
+                    console.log("Current Score:", currentScore);
+    
+                    editScoreModal.classList.remove('hidden');
+                } else {
+                    console.error('Enrollment ID or Activity ID is missing');
+                }
+            }
+    
+            if (e.target.classList.contains('remove-student')) {
+                e.preventDefault();
+                const link = e.target.closest('.remove-student');
+                if (!link) return;
+    
+                const enrollmentId = link.getAttribute('data-enrollment-id');
+                const studentName = link.getAttribute('data-student-name');
+    
+                // Debugging log to check the value of enrollmentId
+                console.log('Enrollment ID:', enrollmentId);
+    
+                if (confirm(`Are you sure you want to remove ${studentName} from this class?`)) {
+                    fetch('/remove-student/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ enrollment_id: enrollmentId })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Student removed successfully');
+                            // Show success message or refresh the list
+                            updateScores();  // Refresh the scores display
+                        } else {
+                            console.error('Failed to remove student:', data.error);
+                            alert('Failed to remove student: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error removing student:', error);
+                        alert('Error removing student. Please try again.');
+                    });
+                }
+            }
+        });
+    
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Search for CSRF token cookie
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        editScoreForm.addEventListener('submit', function (e) {
+            e.preventDefault();  // Prevent default form submission
+            const formData = new FormData(this);
+    
+            // Fetch and process form data
+            fetch('/update-score/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    console.log('Score updated successfully');
+                    // Show success message
+                    const successMessage = document.getElementById('success-message');
+                    successMessage.classList.remove('hidden');
+                    // Hide the message after 3 seconds
+                    setTimeout(() => {
+                        successMessage.classList.add('hidden');
+                    }, 3000);
+                    // Close the modal
+                    editScoreModal.classList.add('hidden');
+                    // Refresh the scores display
+                    updateScores();  // Refresh the scores display
+                } else {
+                    console.error('Failed to update score:', data.error);
+                    alert('Failed to update score: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating score:', error);
+                alert('Error updating score. Please try again.');
+            });
+        });
+    
+        closeModalBtn.addEventListener('click', function () {
+            editScoreModal.classList.add('hidden');
+        });
+    
+        // Initial fetch of scores
+        updateScores();
+    });
+    </script>
+    
+
+
+
+{% endblock %}

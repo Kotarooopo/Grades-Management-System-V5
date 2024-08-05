@@ -1,0 +1,301 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css"  rel="stylesheet" />
+  <title>Grades Management System</title>
+  <link rel="shortcut icon" href="{% static 'core/image/logo.png'%}" type="image/x-icon">
+  {% tailwind_css %}
+  {% load static %}
+  <link href="/dist/tailwind.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"></script>
+
+    
+</head>
+
+<body class="bg-gray-100">
+
+  <div class="content">
+    <div class="flex flex-col h-screen">
+      <!-- Header -->
+      <header class="bg-white shadow-md p-2 flex justify-between items-center">
+          <div class="flex items-center gap-6 w-full">
+              <button id="sidebar-toggle" class="text-green-700 hover:text-gray-700 lg:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                  <path fill-rule="evenodd" d="M3 6.75A.75.75 0 0 1 3.75 6h16.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 6.75ZM3 12a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 12Zm0 5.25a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" />
+                </svg>
+                
+              </button>
+              <img src="{% static 'core/image/logo.png' %}" alt="Logo" class="px-1 py-1 rounded-md w-12 h-12">
+              <h1 class="font-bold text-green-700 text-[15px]">Admin</h1>
+          </div>
+      
+          <div class="flex items-center">
+            <span class="mr-2 sm:inline">{{request.user.administrator.user}}</span>
+            {% if request.user.administrator.profile_picture %}
+                <div class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
+                    <img class="w-10 h-10 rounded-full cursor-pointer" src="{{ request.user.administrator.profile_picture.url }}" alt="Rounded avatar" id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
+                </div>
+            {% else %}
+                <div class="relative w-10 h-10 overflow-hidden bg-green-700 rounded-full dark:bg-gray-600 flex items-center justify-center cursor-pointer" id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
+                    <span class="text-white text-xl">{{ request.user.administrator.Firstname|first|upper }}</span>
+                </div>
+            {% endif %}
+
+            <div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+                <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                    <li>
+                        <a href="{% url 'admin-profile' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Profile</a>
+                    </li>
+                    <li>
+                        <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" onclick="showLogoutModal()">Sign out</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+                <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                  <li>
+                    <a href="{% url 'admin-profile' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Profile</a>
+                  </li>
+                  <li>
+                    <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" onclick="showLogoutModal()">Sign out</a>
+                  </li>
+                </ul>
+            </div>
+          </div>
+      </header>
+      
+      <div class="flex h-screen overflow-hidden">
+          <!-- Sidebar -->
+          <aside id="sidebar" class="bg-green-700 text-white w-64 flex-shrink-0 overflow-y-auto transition-all duration-300 ease-in-out">
+  
+              <nav>
+                  <!-- Dashboard -->
+                  <div id="dashboard-tab" data-url="{% url 'admin-dashboard' %}" class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                    <a href="{% url 'admin-dashboard' %}" class="flex items-center w-full"><!-- Moved 'a' tag here -->
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                          <path fill-rule="evenodd" d="M1.5 7.125c0-1.036.84-1.875 1.875-1.875h6c1.036 0 1.875.84 1.875 1.875v3.75c0 1.036-.84 1.875-1.875 1.875h-6A1.875 1.875 0 0 1 1.5 10.875v-3.75Zm12 1.5c0-1.036.84-1.875 1.875-1.875h5.25c1.035 0 1.875.84 1.875 1.875v8.25c0 1.035-.84 1.875-1.875 1.875h-5.25a1.875 1.875 0 0 1-1.875-1.875v-8.25ZM3 16.125c0-1.036.84-1.875 1.875-1.875h5.25c1.036 0 1.875.84 1.875 1.875v2.25c0 1.035-.84 1.875-1.875 1.875h-5.25A1.875 1.875 0 0 1 3 18.375v-2.25Z" clip-rule="evenodd" />
+                      </svg>
+                      <span class="text-[15px] ml-4 text-gray-200 font-bold">Dashboard</span>
+                    </a> <!-- Close 'a' tag here -->
+                  </div>
+  
+                  <!-- Profile -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                    <a href="{% url 'admin-profile' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-[15px] ml-4 text-gray-200 font-bold">Profile</span>
+                    </a> <!-- Close 'a' tag here -->
+                </div>
+  
+                  <!-- Grade Report -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                          <path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z" />
+                          <path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z" />
+                      </svg>
+                      <span class="text-[15px] ml-4 text-gray-200 font-bold">Grade Report</span>
+                  </div>
+  
+                  <!-- Users Dropdown -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="dropdown1()">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                          <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
+                      </svg>
+                      <div class="flex justify-between w-full items-center">
+                          <span class="text-[15px] ml-4 text-gray-200 font-bold">Users</span>
+                          <span class="text-sm rotate-180" id="arrow1">
+                              <i class="bi bi-chevron-down"></i>
+                          </span>
+                      </div>
+                  </div>
+                  <div class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden" id="submenu1">
+                        <a href="{% url 'student-list' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                            <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Students</h1>
+                        </a>
+                        <a href="{% url 'teacher-list' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                            <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Teachers</h1>
+                        </a>
+                        <a href="{% url 'administrator-list' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                            <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Admins</h1>
+                        </a>
+                      <a href="{% url 'register' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Create Account</h1>
+                      </a>
+                  </div>
+  
+                  <!-- Maintenance Dropdown -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="dropdown2()">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                          <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
+                      </svg>
+                      <div class="flex justify-between w-full items-center">
+                          <span class="text-[15px] ml-4 text-gray-200 font-bold">Maintenance</span>
+                          <span class="text-sm rotate-180" id="arrow2">
+                              <i class="bi bi-chevron-down"></i>
+                          </span>
+                      </div>
+                  </div>
+                  <div class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden" id="submenu2">
+                    <a href="{% url 'admin-SY' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                      <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">School Year</h1>
+                    </a>
+                    <a href="{% url 'admin-subject' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Subjects</h1>
+                      </a>
+
+                      <a href="{% url 'subject-criteria' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Subjects Criteria</h1>
+                      </a>
+                    <a href="{% url 'admin-class' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                      <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Classes</h1>
+                    </a>
+                    
+                    
+                  </div>
+  
+                  <!-- Logout -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="showLogoutModal()">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                          <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-4.28 9.22a.75.75 0 0 0 0 1.06l3 3a.75.75 0 1 0 1.06-1.06l-1.72-1.72h5.69a.75.75 0 0 0 0-1.5h-5.69l1.72-1.72a.75.75 0 0 0-1.06-1.06l-3 3Z" clip-rule="evenodd" />
+                      </svg>
+                      <span class="text-[15px] ml-4 text-gray-200 font-bold">Logout</span>
+                  </div>
+              </nav>
+          </aside>
+          <div class="flex-1 flex flex-col overflow-hidden">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto transition-all duration-300 ease-in-out p-4 sm:p-6 md:p-8 lg:p-10 pt-6 sm:pt-8 md:pt-10 lg:pt-12" id="main-content">
+                <!-- Content goes here -->
+                {% block content %}
+                {% endblock %}
+              </main>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Logout Modal -->
+  <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
+      <div class="bg-white rounded-lg p-4">
+          <h2 class="text-lg font-bold mb-4">Confirm Logout</h2>
+          <p class="mb-4">Are you sure you want to logout?</p>
+          <div class="flex justify-end">
+              <button class="bg-gray-500 text-white px-4 py-2 rounded-md mr-2" onclick="hideLogoutModal()">Cancel</button>
+              <button class="bg-red-500 text-white px-4 py-2 rounded-md" onclick="confirmLogout()">Logout</button>
+          </div>
+      </div>
+  </div>
+    
+  </div>
+  <script src="../path/to/flowbite/dist/flowbite.min.js"></script>
+</body>
+</html>
+
+
+
+<script>
+  function dropdown1() {
+      document.querySelector("#submenu1").classList.toggle("hidden");
+      document.querySelector("#arrow1").classList.toggle("rotate-0");
+  }
+
+  function dropdown2() {
+      document.querySelector("#submenu2").classList.toggle("hidden");
+      document.querySelector("#arrow2").classList.toggle("rotate-0");
+  }
+
+  const sidebarToggle = document.getElementById('sidebar-toggle');
+  const sidebar = document.getElementById('sidebar');
+
+  sidebarToggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (window.innerWidth < 1024) {  // Only toggle on small screens
+          sidebar.classList.toggle('-translate-x-full');
+      }
+  });
+
+  // Close sidebar when clicking outside of it on small screens
+  document.addEventListener('click', (event) => {
+      if (window.innerWidth < 1024) {  // Only close on small screens
+          const clickedOutsideSidebar = !sidebar.contains(event.target) && event.target !== sidebarToggle;
+          
+          if (clickedOutsideSidebar && !sidebar.classList.contains('-translate-x-full')) {
+              sidebar.classList.add('-translate-x-full');
+          }
+      }
+  });
+
+  // Adjust sidebar visibility on window resize
+  window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+          sidebar.classList.remove('-translate-x-full');
+      } else {
+          sidebar.classList.add('-translate-x-full');
+      }
+  });
+
+  function showLogoutModal() {
+      document.getElementById('logoutModal').classList.remove('hidden');
+  }
+
+  function hideLogoutModal() {
+      document.getElementById('logoutModal').classList.add('hidden');
+  }
+
+  function confirmLogout() {
+      // Implement logout logic here
+      console.log('Logout confirmed');
+      hideLogoutModal();
+
+      window.location.href = "{% url 'logout' %}";
+  }
+</script>
+
+<script>
+function setActiveTab() {
+    const currentPath = window.location.pathname;
+    const menuItems = document.querySelectorAll('[data-url]');
+
+    menuItems.forEach(item => {
+        const itemPath = item.getAttribute('data-url');
+        if (currentPath === itemPath) {
+            item.classList.add('bg-blue-700'); // Active state
+            item.classList.remove('hover:bg-blue-600');
+        } else {
+            item.classList.remove('bg-blue-700');
+            item.classList.add('hover:bg-blue-600');
+        }
+    });
+
+    // Handle submenu items
+    const submenuItems = document.querySelectorAll('#submenu1 a, #submenu2 a');
+    submenuItems.forEach(item => {
+        if (item.getAttribute('href') === currentPath) {
+            item.classList.add('bg-blue-700', 'rounded-md');
+            item.classList.remove('hover:bg-blue-600');
+            // Show parent submenu if it's hidden
+            const submenu = item.closest('.hidden');
+            if (submenu) {
+                submenu.classList.remove('hidden');
+            }
+        } else {
+            item.classList.remove('bg-blue-700');
+            item.classList.add('hover:bg-blue-600');
+        }
+    });
+}
+
+// Call setActiveTab when the page loads
+document.addEventListener('DOMContentLoaded', setActiveTab);
+
+// Your existing JavaScript code here...
+
+</script>

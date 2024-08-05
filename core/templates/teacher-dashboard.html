@@ -1,0 +1,284 @@
+{% extends 'teacher-base.html' %}
+
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<div class="max-w-10xl bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="p-8">
+        <h2>Welcome to School Year {{ current_school_year.year }}</h2>
+    </div>
+</div>
+
+<div class="max-w-10xl bg-white rounded-xl shadow-md overflow-hidden  mt-6">
+    <div class="p-8">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-4xl font-bold text-gray-900">{{ total_students }}</h2>
+                <p class="text-lg text-gray-500">Total Handled Students</p>
+            </div>
+        </div>
+        
+        <div class="h-96 mb-4">
+            <canvas id="user-barChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="flex justify-start space-x-4 mt-6"> 
+    <!-- Container for the first stats card -->
+    <!-- Calendar -->
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-md">
+        <div id="calendar" class="grid grid-cols-7 gap-2 text-center text-gray-700">
+            <!-- Calendar content will be inserted here -->
+        </div>
+    </div>
+
+
+
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-1xl">
+        <form method="get" action="{% url 'teacher-dashboard' %}">
+            <div class="flex justify-between items-center mb-4">
+                <h5 class="text-xl font-medium text-gray-900">Top 5 Students</h5>
+                <div class="flex space-x-2">
+                    <select name="section" onchange="this.form.submit()" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 text-center inline-flex items-center dark:hover:text-white bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-32">
+                        {% for section in section_choices %}
+                            <option value="{{ section }}" {% if section == selected_section %}selected{% endif %}>{{ section }}</option>
+                        {% endfor %}
+                    </select>
+                    <select name="grading_period" onchange="this.form.submit()" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 text-center inline-flex items-center dark:hover:text-white bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-32">
+                        <option value="">All Periods</option>
+                        {% for period in grading_periods %}
+                            <option value="{{ period.id }}" {% if period == selected_grading_period %}selected{% endif %}>{{ period }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+        <div class="space-y-2">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Rank</th>
+                        <th scope="col" class="px-6 py-3">Name</th>
+                        <th scope="col" class="px-6 py-3">Initial Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if top_students %}
+                        {% for student in top_students %}
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                <td class="px-6 py-4">{{ forloop.counter }}</td>
+                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ student.student.Lastname }}, {{ student.student.Firstname }}
+                                </th>
+                                <td class="px-6 py-4">
+                                    {{ student.grade|floatformat:2 }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                            <td colspan="3" class="px-6 py-4 text-center">
+                                No data available
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="flex justify-start space-x-4 mt-6"> 
+    <div class="bg-white rounded-lg shadow-md p-4 w-full max-w-xs">
+        <div class="flex justify-between items-center mb-2">
+            <h5 class="text-lg font-medium text-gray-900">Total Students</h5>
+        </div>
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-2xl font-bold text-gray-900">{{ total_students }}</div>
+        </div>
+        <div class="flex justify-center mb-4">
+            <div class="chart-container" style="width: 200px; height: 200px;">
+                <canvas id="studentPerformanceChart"></canvas>
+            </div>
+        </div>
+        <div class="space-y-2">
+            <div class="flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: #137547;"></div>
+                    <span class="font-medium text-gray-600">Passed</span>
+                </div>
+                <div class="font-medium text-gray-900" id="performanceTasksValue">{{ passing_students }}</div>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: #912a2a;"></div>
+                    <span class="font-medium text-gray-600">Failed</span>
+                </div>
+                <div class="font-medium text-gray-900" id="quarterlyGradesValue">{{ failing_students }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('user-barChart').getContext('2d');
+        
+        // Data fetched from Django view
+        const sections = JSON.parse('{{ sections|safe }}');
+        const studentCounts = JSON.parse('{{ student_counts|safe }}');
+
+        // Debugging output
+        console.log('Sections:', sections);
+        console.log('Student Counts:', studentCounts);
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sections,
+                datasets: [{
+                    label: 'Number of Students',
+                    data: studentCounts,
+                    backgroundColor: '#137547',
+                    borderColor: '#137547',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Sections'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Students'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Students Handled by Section'
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendar = document.getElementById('calendar');
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        function createCalendar(year, month) {
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay();
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            // Clear previous calendar
+            calendar.innerHTML = '';
+
+            // Add month and year header
+            const header = document.createElement('div');
+            header.textContent = `${monthNames[month]} ${year}`;
+            header.className = 'calendar-header font-bold text-xl mb-2';
+            calendar.appendChild(header);
+
+            // Add day labels
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            days.forEach(day => {
+                const dayLabel = document.createElement('div');
+                dayLabel.textContent = day;
+                dayLabel.className = 'calendar-day font-bold text-gray-600';
+                calendar.appendChild(dayLabel);
+            });
+
+            // Add blank spaces for days before the 1st
+            for (let i = 0; i < startingDay; i++) {
+                calendar.appendChild(document.createElement('div'));
+            }
+
+            // Add calendar days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.textContent = i;
+                dayElement.className = 'calendar-day p-2 border border-gray-200 rounded';
+
+                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayElement.className += ' bg-green-700 text-white font-bold';
+                }
+
+                calendar.appendChild(dayElement);
+            }
+        }
+
+        createCalendar(currentYear, currentMonth);
+    });
+</script>
+
+<style>
+.calendar-container {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+}
+.calendar-header {
+    grid-column: span 7;
+    text-align: center;
+}
+.calendar-day {
+    text-align: center;
+}
+</style>
+
+{{ passing_students|json_script:"passing-students-data" }}
+{{ failing_students|json_script:"failing-students-data" }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('studentPerformanceChart').getContext('2d');
+        var passingStudents = JSON.parse(document.getElementById('passing-students-data').textContent);
+        var failingStudents = JSON.parse(document.getElementById('failing-students-data').textContent);
+        
+        var chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Passed', 'Failed'],
+                datasets: [{
+                    data: [passingStudents, failingStudents],
+                    backgroundColor: ['#137547', '#912a2a']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    display: false
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

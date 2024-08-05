@@ -1,0 +1,112 @@
+{% extends 'admin-base.html' %}
+
+{% block content %}
+
+{% load static %}
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex justify-between items-center mb-4"> 
+        <form class="flex items-center w-64 max-w-2xl ml-0" id="searchForm">   
+            <label for="simple-search" class="sr-only">Search</label>
+            <div class="relative w-full">
+                <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search admin name..." required />
+                <button type="submit" class="absolute top-0 end-0 h-full p-2.5 text-sm font-medium text-white bg-green-700 rounded-e-lg border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                    <span class="sr-only">Search</span>
+                </button>
+            </div>
+        </form>
+    </div>
+<div class="relative overflow-x-auto ">
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3">
+                    Full Name
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Role
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Gender
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Phone Number
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    Profile Picture
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for administrator in administrator %}
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    {{ administrator.Firstname }} {{ administrator.Lastname }}
+                </th>
+                <td class="px-6 py-4">
+                    Administrator
+                </td>
+                <td class="px-6 py-4">
+                    {{ administrator.Gender }}
+                </td>
+                <td class="px-6 py-4">
+                    {{ administrator.Phone_Number }}
+                </td>
+                <td class="px-6 py-4">
+                    <img src="{{ administrator.profile_picture.url }}" alt="{{ administrator.Firstname }}'s profile" class="w-10 h-10 rounded-full">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('simple-search');
+        const table = document.querySelector('table');
+        const tableRows = table.querySelectorAll('tbody tr');
+    
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            tableRows.forEach(row => {
+                const fullName = row.querySelector('th').textContent.toLowerCase();
+                if (fullName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+    
+            // Check if there are any visible rows
+            const visibleRows = table.querySelectorAll('tbody tr:not([style*="display: none"])');
+            const noResultsRow = table.querySelector('tbody tr.no-results');
+            
+            if (visibleRows.length === 0) {
+                if (!noResultsRow) {
+                    const newRow = table.insertRow();
+                    newRow.classList.add('no-results');
+                    const cell = newRow.insertCell();
+                    cell.colSpan = 6;
+                    cell.textContent = 'No administrators found.';
+                    cell.style.textAlign = 'center';
+                } else {
+                    noResultsRow.style.display = '';
+                }
+            } else if (noResultsRow) {
+                noResultsRow.style.display = 'none';
+            }
+        });
+    
+        // Prevent form submission
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    });
+</script>
+{% endblock %}

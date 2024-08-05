@@ -1,0 +1,165 @@
+{% extends 'teacher-base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">My Class Advisory</h3>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="flex items-center space-x-4 mb-4" id="classFilterForm">
+                <select name="class" id="class" class="form-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" onchange="this.form.submit()">
+                    <optgroup label="Current School Year ({{ current_school_year.year }})">
+                        {% for class in current_classes %}
+                            <option value="{{ class.id }}" {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
+                                {{ class.grade_level }} {{ class.section }} - {{ class.subject.name|default:"No subject" }}
+                            </option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="Previous School Years">
+                        {% for class in previous_classes %}
+                            <option value="{{ class.id }}" {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
+                                {{ class.school_year.year }} - {{ class.grade_level }} {{ class.section }} - {{ class.subject.name|default:"No subject" }}
+                            </option>
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </form>
+
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">School Year</th>
+                        <th scope="col" class="px-6 py-3">Subject</th>
+                        <th scope="col" class="px-6 py-3">Grade Level</th>
+                        <th scope="col" class="px-6 py-3">Section</th> 
+                        <th scope="col" class="px-6 py-3">Total Students</th>
+                        <th scope="col" class="px-6 py-3">Status</th>
+                        <th scope="col" class="px-6 py-3">Action</th>
+                        <th scope="col" class="px-6 py-3">Grade Calculation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if selected_class %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                            <td class="px-6 py-4">{{ selected_class.school_year.year }}</td>
+                            <td class="px-6 py-4">{{ selected_class.subject.name }}</td>
+                            <td class="px-6 py-4">{{ selected_class.grade_level }}</td>
+                            <td class="px-6 py-4">{{ selected_class.section }}</td>                       
+                            <td class="px-6 py-4">{{ selected_class.student_count }}</td>
+                            <td class="px-6 py-4">
+                                {% if selected_class.school_year == current_school_year %}
+                                    <span class="text-green-600 font-medium">Current</span>
+                                {% else %}
+                                    <span class="text-gray-600 font-medium">Previous</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col space-y-2">
+                                    <a href="{% url 'teacher-myClassRecord' %}?class={{ selected_class.id }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn" 
+                                        data-modal-target="view-modal" 
+                                        data-modal-toggle="view-modal"
+                                        data-id="{{ selected_class.id }}">View List
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col space-y-2">
+                                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn" 
+                                        data-modal-toggle="gradingPeriodModal"
+                                        data-id="{{ selected_class.id }}">Calculate
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center">Please select a class to view details.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="gradingPeriodModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md">
+        
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Select Grading Period that want to Calculate</h3>
+        <form id="gradingPeriodForm">
+            <div class="mb-4">
+                <label for="grading_period" class="block text-sm font-medium text-gray-700">Grading Period</label>
+                <select id="grading_period" name="grading_period" class="form-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full">
+                    {% if grading_periods %}
+                        {% for period in grading_periods %}
+                            <option value="{{ period.id }}">{{ period }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">No grading periods available</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300" data-modal-hide="gradingPeriodModal">Cancel</button>
+                <button type="submit" class="px-3 py-1.5 bg-green-700 text-white rounded-lg hover:bg-green-800">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectElement = document.getElementById('class');
+        const modal = document.getElementById('gradingPeriodModal');
+        const gradingPeriodForm = document.getElementById('gradingPeriodForm');
+
+        if (selectElement) {
+            selectElement.addEventListener('change', function() {
+                this.form.submit();
+            });
+
+            const selectedClassExists = JSON.parse('{{ selected_class_exists|escapejs }}');
+            if (!selectedClassExists && selectElement.options.length > 0) {
+                selectElement.selectedIndex = 0;
+                selectElement.form.submit();
+            }
+        }
+
+        document.querySelectorAll('[data-modal-toggle="gradingPeriodModal"]').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                modal.classList.remove('hidden');
+            });
+        });
+
+        document.querySelectorAll('[data-modal-hide]').forEach(button => {
+            button.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+        });
+
+        gradingPeriodForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const gradingPeriodId = document.getElementById('grading_period').value;
+            const selectedClassId = '{{ selected_class.id }}';
+            window.location.href = "{% url 'teacher-mygradeCalculate' %}?class=" + selectedClassId + "&grading_period=" + gradingPeriodId;
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,81 @@
+<!-- student-SubjectList.html -->
+{% extends 'student-base.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="card-body">
+        <div class="card-header text-center">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                {{ grade_level }} {{ section }}
+            </h3>
+        </div>
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">Subjects</th>
+                    <th scope="col" class="px-6 py-3">Teacher</th>
+                    <th scope="col" class="px-6 py-3">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in subjects_and_teachers %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                    <td class="px-6 py-4">{{ item.subject }}</td>
+                    <td class="px-6 py-4 font-medium text-gray-400">{{ item.teacher }}</td>
+                    <td class="px-6 py-4">
+                        <button onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="px-6 py-4 text-center">No subjects found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="gradingPeriodModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Select Grading Period</h3>
+        <form id="gradingPeriodForm" method="GET" action="{% url 'student-ScoreList' %}">
+            <input type="hidden" id="subject_id" name="subject_id">
+            <input type="hidden" id="class_id" name="class_id">
+            <div class="mb-4">
+                <label for="grading_period" class="block text-sm font-medium text-gray-700">Grading Period</label>
+                <select id="grading_period" name="grading_period" class="form-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full">
+                    {% if grading_periods %}
+                        {% for period in grading_periods %}
+                            <option value="{{ period.id }}">{{ period }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">No grading periods available</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300" data-modal-hide="gradingPeriodModal">Cancel</button>
+                <button type="submit" class="px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openGradingPeriodModal(subjectId, classId) {
+    document.getElementById('subject_id').value = subjectId;
+    document.getElementById('class_id').value = classId;
+    document.getElementById('gradingPeriodModal').classList.remove('hidden');
+}
+
+document.querySelectorAll('[data-modal-hide]').forEach(button => {
+    button.addEventListener('click', () => {
+        button.closest('.fixed').classList.add('hidden');
+    });
+});
+</script>
+
+{% endblock %}
