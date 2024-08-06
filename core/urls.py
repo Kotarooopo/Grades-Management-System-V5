@@ -36,6 +36,7 @@ urlpatterns = [
     path('student-SubjectList/', views.student_subjectlist, name='student-SubjectList'),
     path('student-SubjectList/ScoreList', views.student_scorelist, name='student-ScoreList'),
     path('student-reportCard/', views.student_reportCard, name='student-reportCard'),
+    path('student-previousClasses', views.student_previousClasses, name='student-previousClasses'),
     
     
 

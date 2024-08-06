@@ -98,7 +98,10 @@
                   </div>
                   <div class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden" id="submenu1">   
                     <a href="{% url 'student-SubjectList' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Subject List</h1>
+                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Classes</h1>
+                    </a>
+                    <a href="{% url 'student-previousClasses' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Previous Classes</h1>
                     </a>
                     <a href="{% url 'student-reportCard' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
                         <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Report Card</h1>

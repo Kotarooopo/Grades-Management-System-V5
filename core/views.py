@@ -1659,15 +1659,25 @@ def teacher_gradeCalculate(request):
 
 
 # views.py
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import Enrollment, Class, GradingPeriod
-
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['student'])
 def student_subjectlist(request):
-    # Get the current student's enrollments
-    student_enrollments = Enrollment.objects.filter(student=request.user.student).select_related('class_obj', 'class_obj__teacher', 'class_obj__subject')
+    # Get the current active school year
+    try:
+        current_school_year = SchoolYear.objects.get(is_active=True)
+    except SchoolYear.DoesNotExist:
+        return render(request, 'student-SubjectList.html', {
+            'grade_level': "No active school year",
+            'section': "",
+            'subjects_and_teachers': [],
+            'grading_periods': [],
+        })
+
+    # Get the current student's enrollments for the current school year
+    student_enrollments = Enrollment.objects.filter(
+        student=request.user.student,
+        class_obj__school_year=current_school_year
+    ).select_related('class_obj', 'class_obj__teacher', 'class_obj__subject')
     
     if student_enrollments.exists():
         # Assuming a student is enrolled in only one grade level and section per school year
@@ -1690,19 +1700,32 @@ def student_subjectlist(request):
         section = "Not enrolled"
         subjects_and_teachers = []
 
-    grading_periods = GradingPeriod.objects.all()
+    grading_periods = GradingPeriod.objects.filter(school_year=current_school_year)
 
     context = {
         'grade_level': grade_level,
         'section': section,
         'subjects_and_teachers': subjects_and_teachers,
         'grading_periods': grading_periods,
+        'current_school_year': current_school_year,
     }
     return render(request, 'student-SubjectList.html', context)
 
 
 
-# views.py
+
+#student previous classes
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['student'])
+def student_previousClasses(request):
+    return render(request, 'student-PreviousClasses.html')
+
+
+
+
+
+
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
