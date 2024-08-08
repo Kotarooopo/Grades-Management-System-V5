@@ -22,7 +22,7 @@
         {% for school_year, classes in previous_classes.items %}
             <div class="mb-6">
                 <h4 class="text-lg font-medium text-gray-900">School Year: {{ school_year.year }}</h4>
-                <h4 class="text-lg font-medium text-gray-900 mb-2">Grade Level: {{ classes.0.grade_level }} - Section: {{ classes.0.section }}</h4>
+                <h4 class="text-lg font-medium text-gray-900 mb-2">Grade Level: {{ classes.0.class_obj.grade_level }} - Section: {{ classes.0.class_obj.section }}</h4>
                 <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
@@ -32,12 +32,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for class in classes %}
+                        {% for enrollment in classes %}
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td class="px-6 py-4">{{ class.subject }}</td>
-                            <td class="px-6 py-4 font-medium text-gray-400">{{ class.teacher }}</td>
+                            <td class="px-6 py-4">{{ enrollment.class_obj.subject.name }}</td>
+                            <td class="px-6 py-4 font-medium text-gray-400">{{ enrollment.class_obj.teacher.Lastname }}, {{ enrollment.class_obj.teacher.Firstname }}</td>
                             <td class="px-6 py-4">
-                                <button onclick="openGradingPeriodModal('{{ class.subject_id }}', '{{ class.class_id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                                <button onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', '{{ school_year.id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -59,13 +59,7 @@
             <div class="mb-4">
                 <label for="grading_period" class="block text-sm font-medium text-gray-700">Grading Period</label>
                 <select id="grading_period" name="grading_period" class="form-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full">
-                    {% if grading_periods %}
-                        {% for period in grading_periods %}
-                            <option value="{{ period.id }}">{{ period }}</option>
-                        {% endfor %}
-                    {% else %}
-                        <option value="">No grading periods available</option>
-                    {% endif %}
+                    <option value="">Select a grading period</option>
                 </select>
             </div>
             <div class="flex justify-end space-x-4">
@@ -77,9 +71,29 @@
 </div>
 
 <script>
-    function openGradingPeriodModal(subjectId, classId) {
+    // Parse the JSON-encoded grading periods
+    const gradingPeriods = JSON.parse('{{ grading_periods|escapejs }}');
+
+    function openGradingPeriodModal(subjectId, classId, schoolYearId) {
         document.getElementById('subject_id').value = subjectId;
         document.getElementById('class_id').value = classId;
+
+        // Get the grading period select element
+        let gradingPeriodSelect = document.getElementById('grading_period');
+        
+        // Clear previous options
+        gradingPeriodSelect.innerHTML = '<option value="">Select a grading period</option>';
+        
+        // Get grading periods for the selected school year
+        const periods = gradingPeriods[schoolYearId] || [];
+        periods.forEach(period => {
+            const option = document.createElement('option');
+            option.value = period.id;
+            option.text = period.period;
+            gradingPeriodSelect.appendChild(option);
+        });
+
+        // Show modal
         document.getElementById('gradingPeriodModal').classList.remove('hidden');
     }
 

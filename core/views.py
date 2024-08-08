@@ -1715,49 +1715,48 @@ def student_subjectlist(request):
 
 
 #student previous classes
+import json
+from django.http import JsonResponse
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['student'])
 def student_previousClasses(request):
-    # Get the current student
     student = request.user.student
 
-    # Get the previous enrollments
-    previous_enrollments = Enrollment.objects.filter(
-        student=student
-    ).select_related(
-        'class_obj__school_year',
-        'class_obj__subject',
-        'class_obj__teacher'
-    ).order_by('-class_obj__school_year__year', 'class_obj__subject__name')
+    # Get all previous school years (excluding the active one)
+    previous_school_years = SchoolYear.objects.filter(is_active=False)
 
-    # Retrieve the grading periods for the previous classes
-    grading_periods_qs = GradingPeriod.objects.filter(
-        school_year__in=[enrollment.class_obj.school_year for enrollment in previous_enrollments]
-    ).order_by('period')
-    grading_periods_map = {gp.school_year_id: list(gp.school_year.grading_periods.all().order_by('period')) for gp in grading_periods_qs}
-
-    # Group enrollments by school year
     previous_classes = {}
-    for enrollment in previous_enrollments:
-        school_year = enrollment.class_obj.school_year
-        if school_year not in previous_classes:
-            previous_classes[school_year] = []
-
-        previous_classes[school_year].append({
-            'subject': enrollment.class_obj.subject.name,
-            'teacher': f"{enrollment.class_obj.teacher.Lastname}, {enrollment.class_obj.teacher.Firstname}",
-            'grade_level': enrollment.class_obj.grade_level,
-            'section': enrollment.class_obj.section,
-            'subject_id': enrollment.class_obj.subject.id,
-            'class_id': enrollment.class_obj.id,
-            'grading_periods': grading_periods_map.get(school_year.id, [])
-        })
-
+    grading_periods = {}
+    
+    for school_year in previous_school_years:
+        enrollments = Enrollment.objects.filter(
+            student=student,
+            class_obj__school_year=school_year
+        ).select_related('class_obj', 'class_obj__teacher', 'class_obj__subject')
+        
+        if enrollments.exists():
+            previous_classes[school_year] = enrollments
+            grading_periods[school_year.id] = list(GradingPeriod.objects.filter(school_year=school_year).values('id', 'period'))
+    
+    # Convert grading_periods to JSON
+    grading_periods_json = json.dumps(grading_periods)
+    
     context = {
         'previous_classes': previous_classes,
+        'grading_periods': grading_periods_json,
     }
-
+    
     return render(request, 'student-PreviousClasses.html', context)
+
+
+
+
+
+
+
+
+
 
 
 
