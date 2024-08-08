@@ -1,4 +1,3 @@
-<!-- student-SubjectList.html -->
 {% extends 'student-base.html' %}
 
 {% block content %}
@@ -8,33 +7,46 @@
     <div class="card-body">
         <div class="card-header text-center">
             <h3 class="text-lg font-medium text-gray-900 mb-4">
-                Previous Classes {{ grade_level }} {{ section }}
+                Previous Classes
             </h3>
         </div>
-        <table class="w-full stext-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                    <th scope="col" class="px-6 py-3">Subjects</th>
-                    <th scope="col" class="px-6 py-3">Teacher</th>
-                    <th scope="col" class="px-6 py-3">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in subjects_and_teachers %}
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                    <td class="px-6 py-4">{{ item.subject }}</td>
-                    <td class="px-6 py-4 font-medium text-gray-400">{{ item.teacher }}</td>
-                    <td class="px-6 py-4">
-                        <button onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="px-6 py-4 text-center">No subjects found</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="flex flex-col items-start space-y-2 mb-4">
+            <a href="{% url 'student-SubjectList' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                    <path fill-rule="evenodd" d="M10.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L12.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M4.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L6.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                </svg>
+                Current Classes
+            </a>
+        </div>
+        {% for school_year, classes in previous_classes.items %}
+            <div class="mb-6">
+                <h4 class="text-lg font-medium text-gray-900">School Year: {{ school_year.year }}</h4>
+                <h4 class="text-lg font-medium text-gray-900 mb-2">Grade Level: {{ classes.0.grade_level }} - Section: {{ classes.0.section }}</h4>
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Subjects</th>
+                            <th scope="col" class="px-6 py-3">Teacher</th>
+                            <th scope="col" class="px-6 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class in classes %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                            <td class="px-6 py-4">{{ class.subject }}</td>
+                            <td class="px-6 py-4 font-medium text-gray-400">{{ class.teacher }}</td>
+                            <td class="px-6 py-4">
+                                <button onclick="openGradingPeriodModal('{{ class.subject_id }}', '{{ class.class_id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% empty %}
+            <p class="text-center text-gray-500">No previous classes found.</p>
+        {% endfor %}
     </div>
 </div>
 
@@ -58,24 +70,24 @@
             </div>
             <div class="flex justify-end space-x-4">
                 <button type="button" class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300" data-modal-hide="gradingPeriodModal">Cancel</button>
-                <button type="submit" class="px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Submit</button>
+                <button type="submit" class="px-3 py-1.5 bg-green-700 text-white rounded-lg hover:bg-green-800">Submit</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-function openGradingPeriodModal(subjectId, classId) {
-    document.getElementById('subject_id').value = subjectId;
-    document.getElementById('class_id').value = classId;
-    document.getElementById('gradingPeriodModal').classList.remove('hidden');
-}
+    function openGradingPeriodModal(subjectId, classId) {
+        document.getElementById('subject_id').value = subjectId;
+        document.getElementById('class_id').value = classId;
+        document.getElementById('gradingPeriodModal').classList.remove('hidden');
+    }
 
-document.querySelectorAll('[data-modal-hide]').forEach(button => {
-    button.addEventListener('click', () => {
-        button.closest('.fixed').classList.add('hidden');
+    document.querySelectorAll('[data-modal-hide]').forEach(button => {
+        button.addEventListener('click', () => {
+            button.closest('.fixed').classList.add('hidden');
+        });
     });
-});
 </script>
 
 {% endblock %}

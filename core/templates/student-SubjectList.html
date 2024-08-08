@@ -14,7 +14,17 @@
                 School Year: {{ current_school_year.year }}
             </h4>
         </div>
-        <table class="w-full stext-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <div class="flex flex-col items-end space-y-2">
+            <a href="{% url 'student-previousClasses' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                Previous Classes  
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                    <path fill-rule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M19.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06L17.69 12l-6.97-6.97a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                </svg>                                
+            </a>
+        </div>
+
+        <table class="w-full stext-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                     <th scope="col" class="px-6 py-3">Subjects</th>
@@ -61,7 +71,7 @@
             </div>
             <div class="flex justify-end space-x-4">
                 <button type="button" class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300" data-modal-hide="gradingPeriodModal">Cancel</button>
-                <button type="submit" class="px-3 py-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Submit</button>
+                <button type="submit" class="px-3 py-1.5 bg-green-700 text-white rounded-lg hover:bg-green-800">Submit</button>
             </div>
         </form>
     </div>
