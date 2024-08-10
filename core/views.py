@@ -775,13 +775,11 @@ def admin_class(request):
 
 
 #teacher-myclassAdvisory
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Class, Enrollment, SchoolYear, GradingPeriod
-from .forms import AddClassForm
+from .models import Class, SchoolYear, GradingPeriod
 from .decorators import allowed_users
 from django.db.models import Count
-import json
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
@@ -791,42 +789,86 @@ def teacher_myClassAdvisory(request):
     # Get the current school year
     current_school_year = SchoolYear.objects.filter(is_active=True).first()
 
-    # Query all classes taught by the teacher
-    classes = Class.objects.filter(teacher=teacher).select_related(
-        'subject', 'school_year'
-    ).annotate(
+    # Query all advisory classes for the teacher in the current school year
+    current_advisories = Class.objects.filter(
+        teacher=teacher,
+        school_year=current_school_year
+    ).select_related('subject', 'school_year').annotate(
         student_count=Count('enrollments')
-    ).order_by('-school_year__year', 'grade_level', 'section')
+    )
 
-    # Separate current and previous classes
-    current_classes = classes.filter(school_year=current_school_year)
-    previous_classes = classes.exclude(school_year=current_school_year)
-
-    selected_class_id = request.GET.get('class')
-    
-    if selected_class_id:
-        selected_class = classes.filter(id=selected_class_id).first()
-        if selected_class:
-            request.session['selected_class_id'] = selected_class_id
-    else:
-        selected_class_id = request.session.get('selected_class_id')
-        if selected_class_id:
-            selected_class = classes.filter(id=selected_class_id).first()
-        else:
-            selected_class = None
-    
     # Query all grading periods
     grading_periods = GradingPeriod.objects.all()
 
+    # Handle the class selection
+    selected_class_id = request.GET.get('class')
+    if selected_class_id:
+        selected_class = get_object_or_404(Class, id=selected_class_id, teacher=teacher)
+        request.session['selected_class_id'] = selected_class.id
+        return redirect('teacher-myClassRecord')
+
     context = {
-        'current_classes': current_classes,
-        'previous_classes': previous_classes,
-        'selected_class': selected_class,
-        'selected_class_exists': json.dumps(bool(selected_class)),
+        'current_advisories': current_advisories,
         'grading_periods': grading_periods,
         'current_school_year': current_school_year,
     }
     return render(request, 'teacher-ClassAdvisory.html', context)
+
+
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Class, SchoolYear, GradingPeriod
+from .decorators import allowed_users
+from django.db.models import Count
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['teacher'])
+def teacher_prevClassAdvisory(request):
+    teacher = request.user.teacher
+    
+    # Get the current school year
+    current_school_year = SchoolYear.objects.filter(is_active=True).first()
+
+    # Query all previous school years
+    previous_school_years = SchoolYear.objects.filter(is_active=False).order_by('-year')
+
+    # Query all previous classes for the teacher
+    previous_classes = Class.objects.filter(
+        teacher=teacher,
+        school_year__is_active=False
+    ).select_related('subject', 'school_year').annotate(
+        student_count=Count('enrollments')
+    ).order_by('-school_year__year', 'grade_level', 'section')
+
+    # Group classes by school year
+    classes_by_year = {}
+    for class_obj in previous_classes:
+        year = class_obj.school_year.year
+        if year not in classes_by_year:
+            classes_by_year[year] = []
+        classes_by_year[year].append(class_obj)
+
+    # Query all grading periods
+    grading_periods = GradingPeriod.objects.all()
+
+    # Handle the class selection
+    selected_class_id = request.GET.get('class')
+    if selected_class_id:
+        selected_class = get_object_or_404(Class, id=selected_class_id, teacher=teacher)
+        request.session['selected_class_id'] = selected_class.id
+        return redirect('teacher-myClassRecord')
+
+    context = {
+        'classes_by_year': classes_by_year,
+        'grading_periods': grading_periods,
+        'current_school_year': current_school_year,
+        'previous_school_years': previous_school_years,
+    }
+    return render(request, 'teacher-prevClassAdvisory.html', context)
 
 
 

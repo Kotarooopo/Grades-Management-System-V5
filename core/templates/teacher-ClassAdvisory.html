@@ -1,3 +1,4 @@
+
 {% extends 'teacher-base.html' %}
 
 {% block content %}
@@ -17,29 +18,26 @@
 
     <div class="card">
         <div class="card-header">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">My Class Advisory</h3>
+            <div class="card-header text-center">
+                <h3 class="text-lg font-medium text-gray-900">
+                    My Class Advisory
+                </h3>
+                <h4 class=" text-gray-900 mb-4">
+                    School Year: {{ current_school_year.year }}
+                </h4>
+            </div>
+        </div>
+        <div class="flex flex-col items-end space-y-2">
+            <a href="{% url 'teacher-prevClassAdvisory' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                Previous Advisory  
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                    <path fill-rule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M19.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06L17.69 12l-6.97-6.97a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                </svg>                                
+            </a>
         </div>
         <div class="card-body">
-            <form method="GET" class="flex items-center space-x-4 mb-4" id="classFilterForm">
-                <select name="class" id="class" class="form-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg" onchange="this.form.submit()">
-                    <optgroup label="Current School Year ({{ current_school_year.year }})">
-                        {% for class in current_classes %}
-                            <option value="{{ class.id }}" {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
-                                {{ class.grade_level }} {{ class.section }} - {{ class.subject.name|default:"No subject" }}
-                            </option>
-                        {% endfor %}
-                    </optgroup>
-                    <optgroup label="Previous School Years">
-                        {% for class in previous_classes %}
-                            <option value="{{ class.id }}" {% if selected_class and selected_class.id == class.id %}selected{% endif %}>
-                                {{ class.school_year.year }} - {{ class.grade_level }} {{ class.section }} - {{ class.subject.name|default:"No subject" }}
-                            </option>
-                        {% endfor %}
-                    </optgroup>
-                </select>
-            </form>
-
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">School Year</th>
@@ -53,44 +51,41 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if selected_class %}
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td class="px-6 py-4">{{ selected_class.school_year.year }}</td>
-                            <td class="px-6 py-4">{{ selected_class.subject.name }}</td>
-                            <td class="px-6 py-4">{{ selected_class.grade_level }}</td>
-                            <td class="px-6 py-4">{{ selected_class.section }}</td>                       
-                            <td class="px-6 py-4">{{ selected_class.student_count }}</td>
-                            <td class="px-6 py-4">
-                                {% if selected_class.school_year == current_school_year %}
+                    {% if current_advisories.exists %}
+                        {% for advisory in current_advisories %}
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                <td class="px-6 py-4">{{ advisory.school_year.year }}</td>
+                                <td class="px-6 py-4">{{ advisory.subject.name }}</td>
+                                <td class="px-6 py-4">{{ advisory.grade_level }}</td>
+                                <td class="px-6 py-4">{{ advisory.section }}</td>
+                                <td class="px-6 py-4">{{ advisory.student_count }}</td>
+                                <td class="px-6 py-4">
                                     <span class="text-green-600 font-medium">Current</span>
-                                {% else %}
-                                    <span class="text-red-600 font-medium">Previous</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col space-y-2">
-                                    <a href="{% url 'teacher-myClassRecord' %}?class={{ selected_class.id }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn" 
-                                        data-modal-target="view-modal" 
-                                        data-modal-toggle="view-modal"
-                                        data-id="{{ selected_class.id }}">View List
-                                    </a>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col space-y-2">
-                                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn" 
-                                        data-modal-toggle="gradingPeriodModal"
-                                        data-id="{{ selected_class.id }}">Calculate
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col space-y-2">
+                                        <a href="{% url 'teacher-myClassAdvisory' %}?class={{ advisory.id }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">
+                                            View List
+                                        </a>
+                                    </div>
+                                </td>                                
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col space-y-2">
+                                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn" 
+                                            data-modal-toggle="gradingPeriodModal"
+                                            data-id="{{ advisory.id }}">Calculate
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="8" class="px-6 py-4 text-center">Please select a class to view details.</td>
+                            <td colspan="8" class="px-6 py-4 text-center">No current advisory class assigned.</td>
                         </tr>
                     {% endif %}
                 </tbody>
+                
             </table>
         </div>
     </div>
@@ -121,45 +116,34 @@
     </div>
 </div>
 
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const selectElement = document.getElementById('class');
-        const modal = document.getElementById('gradingPeriodModal');
-        const gradingPeriodForm = document.getElementById('gradingPeriodForm');
+    const modal = document.getElementById('gradingPeriodModal');
+    const gradingPeriodForm = document.getElementById('gradingPeriodForm');
 
-        if (selectElement) {
-            selectElement.addEventListener('change', function() {
-                this.form.submit();
-            });
-
-            const selectedClassExists = JSON.parse('{{ selected_class_exists|escapejs }}');
-            if (!selectedClassExists && selectElement.options.length > 0) {
-                selectElement.selectedIndex = 0;
-                selectElement.form.submit();
-            }
-        }
-
-        document.querySelectorAll('[data-modal-toggle="gradingPeriodModal"]').forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.preventDefault();
-                modal.classList.remove('hidden');
-            });
-        });
-
-        document.querySelectorAll('[data-modal-hide]').forEach(button => {
-            button.addEventListener('click', function() {
-                modal.classList.add('hidden');
-            });
-        });
-
-        gradingPeriodForm.addEventListener('submit', function(event) {
+    document.querySelectorAll('[data-modal-toggle="gradingPeriodModal"]').forEach(button => {
+        button.addEventListener('click', function(event) {
             event.preventDefault();
-            const gradingPeriodId = document.getElementById('grading_period').value;
-            const selectedClassId = '{{ selected_class.id }}';
-            window.location.href = "{% url 'teacher-mygradeCalculate' %}?class=" + selectedClassId + "&grading_period=" + gradingPeriodId;
+            const advisoryId = this.getAttribute('data-id');
+            gradingPeriodForm.setAttribute('data-advisory-id', advisoryId);
+            modal.classList.remove('hidden');
         });
     });
+
+    document.querySelectorAll('[data-modal-hide]').forEach(button => {
+        button.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+    });
+
+    gradingPeriodForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const gradingPeriodId = document.getElementById('grading_period').value;
+        const advisoryId = this.getAttribute('data-advisory-id');
+        window.location.href = "{% url 'teacher-mygradeCalculate' %}?class=" + advisoryId + "&grading_period=" + gradingPeriodId;
+    });
+});
+
 </script>
 
 {% endblock %}

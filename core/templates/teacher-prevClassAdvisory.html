@@ -1,0 +1,138 @@
+{% extends 'teacher-base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header text-center">
+                <h3 class="text-lg font-medium text-gray-900">
+                    My Previous Classes
+                </h3>
+            </div>
+        </div>
+        <div class="flex flex-col items-start space-y-2 mb-4">
+            <a href="{% url 'teacher-myClassAdvisory' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                    <path fill-rule="evenodd" d="M10.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L12.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M4.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L6.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                </svg>
+                Current Classes
+            </a>
+        </div>
+        <div class="card-body">
+            {% for school_year, classes in classes_by_year.items %}
+                <h4 class="text-lg font-medium text-gray-900 mt-6 mb-4">School Year: {{ school_year }}</h4>
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Subject</th>
+                            <th scope="col" class="px-6 py-3">Grade Level</th>
+                            <th scope="col" class="px-6 py-3">Section</th> 
+                            <th scope="col" class="px-6 py-3">Total Students</th>
+                            <th scope="col" class="px-6 py-3">Status</th>
+                            <th scope="col" class="px-6 py-3">Action</th>
+                            <th scope="col" class="px-6 py-3">Grade Calculation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class in classes %}
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                <td class="px-6 py-4">{{ class.subject.name }}</td>
+                                <td class="px-6 py-4">{{ class.grade_level }}</td>
+                                <td class="px-6 py-4">{{ class.section }}</td>                       
+                                <td class="px-6 py-4">{{ class.student_count }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-red-600 font-medium">Previous</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col space-y-2">
+                                        <a href="{% url 'teacher-prevClassAdvisory' %}?class={{ class.id }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View List</a>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col space-y-2">
+                                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn" 
+                                            data-modal-toggle="gradingPeriodModal"
+                                            data-id="{{ class.id }}">Calculate
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% empty %}
+                <p class="text-center text-gray-500 mt-4">No previous classes found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="gradingPeriodModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md">
+        
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Select Grading Period that want to Calculate</h3>
+        <form id="gradingPeriodForm">
+            <div class="mb-4">
+                <label for="grading_period" class="block text-sm font-medium text-gray-700">Grading Period</label>
+                <select id="grading_period" name="grading_period" class="form-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full">
+                    {% if grading_periods %}
+                        {% for period in grading_periods %}
+                            <option value="{{ period.id }}">{{ period }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">No grading periods available</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300" data-modal-hide="gradingPeriodModal">Cancel</button>
+                <button type="submit" class="px-3 py-1.5 bg-green-700 text-white rounded-lg hover:bg-green-800">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('gradingPeriodModal');
+        const gradingPeriodForm = document.getElementById('gradingPeriodForm');
+
+        document.querySelectorAll('[data-modal-toggle="gradingPeriodModal"]').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                const classId = this.getAttribute('data-id');
+                gradingPeriodForm.setAttribute('data-class-id', classId);
+                modal.classList.remove('hidden');
+            });
+        });
+
+        document.querySelectorAll('[data-modal-hide]').forEach(button => {
+            button.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+        });
+
+        gradingPeriodForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const gradingPeriodId = document.getElementById('grading_period').value;
+            const classId = this.getAttribute('data-class-id');
+            window.location.href = "{% url 'teacher-mygradeCalculate' %}?class=" + classId + "&grading_period=" + gradingPeriodId;
+        });
+    });
+</script>
+
+{% endblock %}

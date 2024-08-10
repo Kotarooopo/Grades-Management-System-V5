@@ -25,6 +25,7 @@ urlpatterns = [
     path('teacher-dashboard/', views.teacher_dashboard, name='teacher-dashboard'),
     path('teacher-profile/', views.teacher_profile, name = 'teacher-profile'),
     path('teacher-myClassAdvisory/', views.teacher_myClassAdvisory, name = 'teacher-myClassAdvisory'),
+    path('teacher-prevClassAdvisory/', views.teacher_prevClassAdvisory, name = 'teacher-prevClassAdvisory'),
     path('teacher-myClassAdvisory/myClassRecord/', views.teacher_myClassRecord, name = 'teacher-myClassRecord'),
     path('teacher-myClassAdvisory/myGradeCalculation', views.teacher_gradeCalculate, name = 'teacher-mygradeCalculate'),
     path('remove-student/', views.remove_student, name='remove-student'),
