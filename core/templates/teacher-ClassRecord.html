@@ -227,8 +227,9 @@
                             <option value="" selected disabled>Select Grading Period</option>
                             {% for period in grading_periods %}
                                 <option value="{{ period.id }}">{{ period }}</option>
+                            {% empty %}
+                                <option value="" disabled>No grading periods available for this school year</option>
                             {% endfor %}
-                            
                         </select>
                     </div>
                     <div class="mb-4">

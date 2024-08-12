@@ -1111,7 +1111,7 @@ def teacher_myClassRecord(request):
     selected_class = None
     enrollments = []
     subject_criteria = []
-    current_grading_periods = GradingPeriod.objects.filter(is_current=True)
+    current_grading_periods = []
 
     if selected_class_id:
         try:
@@ -1127,6 +1127,9 @@ def teacher_myClassRecord(request):
 
             # Fetch subject criteria for the class subject
             subject_criteria = SubjectCriterion.objects.filter(subject=selected_class.subject)
+
+
+            current_grading_periods = GradingPeriod.objects.filter(school_year=selected_class.school_year)
 
             all_students = Student.objects.all().order_by('Lastname', 'Firstname')
             enrolled_students = set(enrollment.student for enrollment in enrollments)
