@@ -775,12 +775,6 @@ def admin_class(request):
 
 
 #teacher-myclassAdvisory
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Class, SchoolYear, GradingPeriod
-from .decorators import allowed_users
-from django.db.models import Count
-
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
 def teacher_myClassAdvisory(request):
@@ -797,8 +791,8 @@ def teacher_myClassAdvisory(request):
         student_count=Count('enrollments')
     )
 
-    # Query all grading periods
-    grading_periods = GradingPeriod.objects.all()
+    # Query grading periods for the current school year only
+    grading_periods = GradingPeriod.objects.filter(school_year=current_school_year)
 
     # Handle the class selection
     selected_class_id = request.GET.get('class')
@@ -818,12 +812,12 @@ def teacher_myClassAdvisory(request):
 
 
 
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Class, SchoolYear, GradingPeriod
 from .decorators import allowed_users
 from django.db.models import Count
+import json
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
@@ -852,8 +846,18 @@ def teacher_prevClassAdvisory(request):
             classes_by_year[year] = []
         classes_by_year[year].append(class_obj)
 
-    # Query all grading periods
-    grading_periods = GradingPeriod.objects.all()
+    # Query grading periods for each school year
+    grading_periods_by_year = {}
+    for school_year in previous_school_years:
+        grading_periods = GradingPeriod.objects.filter(school_year=school_year)
+        grading_periods_by_year[school_year.year] = [
+            {'id': period.id, 'period': f"{school_year.year} - {period.period}"}
+            for period in grading_periods
+        ]
+
+    # Convert grading_periods_by_year to JSON for use in JavaScript
+    grading_periods_json = json.dumps(grading_periods_by_year)
+
 
     # Handle the class selection
     selected_class_id = request.GET.get('class')
@@ -864,12 +868,11 @@ def teacher_prevClassAdvisory(request):
 
     context = {
         'classes_by_year': classes_by_year,
-        'grading_periods': grading_periods,
+        'grading_periods_json': grading_periods_json,
         'current_school_year': current_school_year,
         'previous_school_years': previous_school_years,
     }
     return render(request, 'teacher-prevClassAdvisory.html', context)
-
 
 
 #teacher-myclassRecord
