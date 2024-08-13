@@ -1615,6 +1615,9 @@ def teacher_gradeCalculate(request):
     enrollments = Enrollment.objects.filter(class_obj=selected_class).select_related('student')
     criteria = SubjectCriterion.objects.filter(subject=selected_class.subject).order_by('grading_criterion')
 
+    current_school_year = SchoolYear.objects.filter(is_active=True).first()
+    is_current_school_year = selected_class.school_year == current_school_year
+
     results = []
     for enrollment in enrollments:
         student_result = {
@@ -1681,7 +1684,8 @@ def teacher_gradeCalculate(request):
         'results': results,
         'criteria': criteria,
         'total_max_scores': total_max_scores,
-        'grading_period': grading_period
+        'grading_period': grading_period,
+        'is_current_school_year': is_current_school_year,
     }
 
     if request.GET.get('export') == 'pdf':
@@ -1764,7 +1768,10 @@ def student_subjectlist(request):
 
 #student previous classes
 import json
-from django.http import JsonResponse
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .decorators import allowed_users
+from .models import SchoolYear, Enrollment, GradingPeriod
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['student'])
@@ -1776,26 +1783,30 @@ def student_previousClasses(request):
 
     previous_classes = {}
     grading_periods = {}
-    
+
     for school_year in previous_school_years:
         enrollments = Enrollment.objects.filter(
             student=student,
             class_obj__school_year=school_year
         ).select_related('class_obj', 'class_obj__teacher', 'class_obj__subject')
-        
+
         if enrollments.exists():
             previous_classes[school_year] = enrollments
-            grading_periods[school_year.id] = list(GradingPeriod.objects.filter(school_year=school_year).values('id', 'period'))
-    
+            grading_periods[school_year.id] = list(
+                GradingPeriod.objects.filter(school_year=school_year)
+                .values('id', 'period', 'school_year__year')  # Use school_year__year
+            )
+
     # Convert grading_periods to JSON
     grading_periods_json = json.dumps(grading_periods)
-    
+
     context = {
         'previous_classes': previous_classes,
         'grading_periods': grading_periods_json,
     }
-    
+
     return render(request, 'student-PreviousClasses.html', context)
+
 
 
 

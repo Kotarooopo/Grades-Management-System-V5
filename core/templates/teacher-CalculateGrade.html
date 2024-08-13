@@ -38,7 +38,10 @@
                     {% csrf_token %}
                     <input type="hidden" name="class_id" value="{{ selected_class.id }}">
                     <input type="hidden" name="grading_period_id" value="{{ grading_period.id }}">
-                    <button type="submit" class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded text-center">
+                    <button type="submit" 
+                            class="bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded text-center
+                                   {% if not is_current_school_year %}opacity-50 cursor-not-allowed{% endif %}"
+                            {% if not is_current_school_year %}disabled{% endif %}>
                         Upload Grade
                     </button>
                 </form>

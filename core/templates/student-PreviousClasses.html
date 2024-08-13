@@ -80,16 +80,17 @@
 
         // Get the grading period select element
         let gradingPeriodSelect = document.getElementById('grading_period');
-        
+
         // Clear previous options
         gradingPeriodSelect.innerHTML = '<option value="">Select a grading period</option>';
-        
+
         // Get grading periods for the selected school year
         const periods = gradingPeriods[schoolYearId] || [];
         periods.forEach(period => {
             const option = document.createElement('option');
             option.value = period.id;
-            option.text = period.period;
+            const schoolYearText = period.school_year__year; // Use the year field directly
+            option.text = `${schoolYearText} - ${period.period} Grading`;
             gradingPeriodSelect.appendChild(option);
         });
 
@@ -103,5 +104,6 @@
         });
     });
 </script>
+
 
 {% endblock %}
