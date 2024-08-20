@@ -1,0 +1,124 @@
+{% extends 'admin-base.html' %}
+{% load custom_filters %}
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Student Grade Cards</h1>
+        <p class="text-gray-600">View and search student report cards</p>
+    </div>
+
+    <div class="mb-6">
+        <form id="searchForm" class="flex items-center justify-center">
+            <div class="relative w-full max-w-xl">
+                <input type="text" id="student-search" name="student-search" class="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Search by student name..." required>
+                <button type="submit" class="absolute right-0 top-0 mt-2 mr-2">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div id="report-cards-container">
+        {% for report_card in report_cards %}
+        <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+            <div class="bg-green-700 text-white p-4">
+                <h2 class="text-xl font-bold text-center">Report Card</h2>
+                <p class="text-center">{{ report_card.school_year.year }} Academic Year</p>
+            </div>
+        
+            <div class="p-4 bg-gray-100">
+                <p class="mb-2"><strong>Student:</strong> {{ report_card.student.get_full_name }}</p>
+                <p class="mb-2"><strong>Email:</strong> {{ report_card.student.email }}</p>
+                <p><strong>Grade & Section:</strong> {{ report_card.grade_section }}</p>
+            </div>
+
+            <div class="p-4">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="px-4 py-2 text-left">Learning Areas</th>
+                            <th class="px-4 py-2 text-center" colspan="4">Quarter</th>
+                            <th class="px-4 py-2 text-center">Final Grade</th>
+                            <th class="px-4 py-2 text-center">Remarks</th>
+                        </tr>
+                        <tr class="bg-gray-200">
+                            <th></th>
+                            {% for period in report_card.grading_periods %}
+                                <th class="px-4 py-2 text-center">{{ period.period }}</th>
+                            {% endfor %}
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject, grades in report_card.grades_data.items %}
+                            <tr class="border-t hover:bg-gray-50">
+                                <td class="px-4 py-2">{{ subject }}</td>
+                                {% for period in report_card.grading_periods %}
+                                    <td class="px-4 py-2 text-center">{{ grades.quarterly_grades|get_item:period.period|default_if_none:"-" }}</td>
+                                {% endfor %}
+                                <td class="px-4 py-2 text-center font-bold">{{ grades.final_grade|default_if_none:"-" }}</td>
+                                <td class="px-4 py-2 text-center">{{ grades.remarks|default_if_none:"-" }}</td>
+                            </tr>
+                        {% endfor %}
+                        <tr class="border-t font-bold bg-gray-100">
+                            <td class="px-4 py-2" colspan="5">General Average</td>
+                            <td class="px-4 py-2 text-center">{{ report_card.general_average }}</td>
+                            <td class="px-4 py-2 text-center">{{ report_card.general_average|yesno:"Passed,Failed" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-4 bg-gray-100">
+                <h3 class="text-lg font-bold mb-2">Grading Scale</h3>
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="px-4 py-2 text-left">Descriptors</th>
+                            <th class="px-4 py-2 text-left">Grading Scale</th>
+                            <th class="px-4 py-2 text-left">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="px-4 py-2">Outstanding</td><td class="px-4 py-2">90 - 100</td><td class="px-4 py-2">Passed</td></tr>
+                        <tr><td class="px-4 py-2">Very Satisfactory</td><td class="px-4 py-2">85 - 89</td><td class="px-4 py-2">Passed</td></tr>
+                        <tr><td class="px-4 py-2">Satisfactory</td><td class="px-4 py-2">80 - 84</td><td class="px-4 py-2">Passed</td></tr>
+                        <tr><td class="px-4 py-2">Fairly Satisfactory</td><td class="px-4 py-2">75 - 79</td><td class="px-4 py-2">Passed</td></tr>
+                        <tr><td class="px-4 py-2">Did Not Meet Expectations</td><td class="px-4 py-2">Below 75</td><td class="px-4 py-2">Failed</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('student-search');
+    const reportCardsContainer = document.getElementById('report-cards-container');
+
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const searchTerm = searchInput.value.toLowerCase();
+
+        Array.from(reportCardsContainer.children).forEach(card => {
+            const studentName = card.querySelector('p:nth-child(1)').textContent.toLowerCase();
+            const studentEmail = card.querySelector('p:nth-child(2)').textContent.toLowerCase();
+
+            if (studentName.includes(searchTerm) || studentEmail.includes(searchTerm)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

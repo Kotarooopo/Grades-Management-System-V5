@@ -30,6 +30,7 @@
                     <th scope="col" class="px-6 py-3">Subjects</th>
                     <th scope="col" class="px-6 py-3">Teacher</th>
                     <th scope="col" class="px-6 py-3">Action</th>
+                    <th scope="col" class="px-6 py-3">Initial Grade</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,12 +39,15 @@
                     <td class="px-6 py-4">{{ item.subject }}</td>
                     <td class="px-6 py-4 font-medium text-gray-400">{{ item.teacher }}</td>
                     <td class="px-6 py-4">
-                        <button onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                        <button onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'ScoreList')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                    </td>
+                    <td class="px-6 py-4">
+                        <button onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'InitialGrade')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">Initial Grade</button>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="3" class="px-6 py-4 text-center">No subjects found</td>
+                    <td colspan="4" class="px-6 py-4 text-center">No subjects found</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -54,7 +58,7 @@
 <div id="gradingPeriodModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 hidden">
     <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Select Grading Period</h3>
-        <form id="gradingPeriodForm" method="GET" action="{% url 'student-ScoreList' %}">
+        <form id="gradingPeriodForm" method="GET">
             <input type="hidden" id="subject_id" name="subject_id">
             <input type="hidden" id="class_id" name="class_id">
             <div class="mb-4">
@@ -77,18 +81,22 @@
     </div>
 </div>
 
-<script>
-function openGradingPeriodModal(subjectId, classId) {
-    document.getElementById('subject_id').value = subjectId;
-    document.getElementById('class_id').value = classId;
-    document.getElementById('gradingPeriodModal').classList.remove('hidden');
-}
 
-document.querySelectorAll('[data-modal-hide]').forEach(button => {
-    button.addEventListener('click', () => {
-        button.closest('.fixed').classList.add('hidden');
+<script>
+    function openGradingPeriodModal(subjectId, classId, action) {
+        document.getElementById('subject_id').value = subjectId;
+        document.getElementById('class_id').value = classId;
+        const form = document.getElementById('gradingPeriodForm');
+        form.action = action === 'InitialGrade' ? "{% url 'student-InitialGrade' %}" : "{% url 'student-ScoreList' %}";
+        document.getElementById('gradingPeriodModal').classList.remove('hidden');
+    }
+    
+    document.querySelectorAll('[data-modal-hide]').forEach(button => {
+        button.addEventListener('click', () => {
+            button.closest('.fixed').classList.add('hidden');
+        });
     });
-});
 </script>
+    
 
 {% endblock %}

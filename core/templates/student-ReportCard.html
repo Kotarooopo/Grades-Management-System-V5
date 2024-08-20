@@ -45,8 +45,8 @@
                 {% endfor %}
                 <tr class="border-t font-bold">
                     <td class="px-4 py-2" colspan="5">General Average</td>
-                    <td class="px-4 py-2 text-center">{{ report_card.general_average }}</td>
-                    <td class="px-4 py-2 text-center">{{ report_card.general_average|yesno:"Passed,Failed" }}</td>
+                    <td class="px-4 py-2 text-center">{{ report_card.general_average|floatformat:2 }}</td>
+                    <td class="px-4 py-2 text-center">{{ report_card.overall_status }}</td>
                 </tr>
             </tbody>
         </table>

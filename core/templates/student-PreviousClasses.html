@@ -29,6 +29,7 @@
                             <th scope="col" class="px-6 py-3">Subjects</th>
                             <th scope="col" class="px-6 py-3">Teacher</th>
                             <th scope="col" class="px-6 py-3">Action</th>
+                            <th scope="col" class="px-6 py-3">Initial Grade</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -38,6 +39,9 @@
                             <td class="px-6 py-4 font-medium text-gray-400">{{ enrollment.class_obj.teacher.Lastname }}, {{ enrollment.class_obj.teacher.Firstname }}</td>
                             <td class="px-6 py-4">
                                 <button onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', '{{ school_year.id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                            </td>
+                            <td class="px-6 py-4">
+                                <button onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'InitialGrade', '{{ school_year.id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">Initial Grade</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -53,7 +57,7 @@
 <div id="gradingPeriodModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 hidden">
     <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Select Grading Period</h3>
-        <form id="gradingPeriodForm" method="GET" action="{% url 'student-ScoreList' %}">
+        <form id="gradingPeriodForm" method="GET">
             <input type="hidden" id="subject_id" name="subject_id">
             <input type="hidden" id="class_id" name="class_id">
             <div class="mb-4">
@@ -74,9 +78,13 @@
     // Parse the JSON-encoded grading periods
     const gradingPeriods = JSON.parse('{{ grading_periods|escapejs }}');
 
-    function openGradingPeriodModal(subjectId, classId, schoolYearId) {
+    function openGradingPeriodModal(subjectId, classId, action, schoolYearId) {
         document.getElementById('subject_id').value = subjectId;
         document.getElementById('class_id').value = classId;
+
+        // Set the form action based on the action parameter
+        const form = document.getElementById('gradingPeriodForm');
+        form.action = action === 'InitialGrade' ? "{% url 'student-InitialGrade' %}" : "{% url 'student-ScoreList' %}";
 
         // Get the grading period select element
         let gradingPeriodSelect = document.getElementById('grading_period');
@@ -89,7 +97,7 @@
         periods.forEach(period => {
             const option = document.createElement('option');
             option.value = period.id;
-            const schoolYearText = period.school_year__year; // Use the year field directly
+            const schoolYearText = period.school_year__year;
             option.text = `${schoolYearText} - ${period.period} Grading`;
             gradingPeriodSelect.appendChild(option);
         });

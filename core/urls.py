@@ -14,9 +14,12 @@ urlpatterns = [
     path('student-list/', views.student_list, name='student-list'),
     path('administrator-list/', views.administrator_list, name='administrator-list'),
     path('administrator/school-year/', views.manage_school_year, name='admin-SY'),
+    path('administrator/grading-period/', views.admin_GradingPeriod, name='admin-GradingPeriod'),
     path('administrator/admin-subject/', views.admin_subject, name='admin-subject'),
     path('administrator/SubjectCriteria/', views.subject_criteria, name='subject-criteria'),
     path('get-subject-criteria/', views.get_subject_criteria, name='get_subject_criteria'),
+    path('administrator/GradeReport/', views.admin_GradeReport, name='admin-GradeReport'),
+
 
 
     path('administrator/admin-class/', views.admin_class, name='admin-class'),
@@ -38,6 +41,7 @@ urlpatterns = [
     path('student-ScoreList', views.student_scorelist, name='student-ScoreList'),
     path('student-reportCard/', views.student_reportCard, name='student-reportCard'),
     path('student-previousClasses', views.student_previousClasses, name='student-previousClasses'),
+    path('student-InitialGrade', views.student_InitialGrade, name='student-InitialGrade'),
     
     
 

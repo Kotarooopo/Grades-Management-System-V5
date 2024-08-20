@@ -73,6 +73,12 @@ def dashboard(request):
 
 
 
+
+
+
+
+
+
 from django.http import JsonResponse
 from .models import Subject, SubjectCriterion
 
@@ -668,6 +674,120 @@ def manage_school_year(request):
         'form': form,
     }
     return render(request, 'admin-SchoolYear.html', context)
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import Enrollment, Grade, GradingPeriod, SchoolYear, Subject, Student
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['administrator'])
+def admin_GradeReport(request):
+    students = Student.objects.all()
+    school_years = SchoolYear.objects.all().order_by('-year')
+    
+    if not school_years.exists():
+        return render(request, 'admin-GradeReport.html', {'error': 'No school years found.'})
+
+    subjects = Subject.objects.all()
+
+    report_cards = []
+
+    for student in students:
+        for school_year in school_years:
+            enrollments = Enrollment.objects.filter(student=student, class_obj__school_year=school_year)
+            grading_periods = GradingPeriod.objects.filter(school_year=school_year).order_by('period')
+            
+            grades_data = {}
+            for subject in subjects:
+                grades_data[subject.name] = {'quarterly_grades': {}}
+                for period in grading_periods:
+                    grade = Grade.objects.filter(
+                        enrollment__student=student,
+                        enrollment__class_obj__subject=subject,
+                        grading_period=period
+                    ).first()
+                    grades_data[subject.name]['quarterly_grades'][period.period] = grade.quarterly_grade if grade else None
+
+                # Calculate final grade
+                quarterly_grades = [grade for grade in grades_data[subject.name]['quarterly_grades'].values() if grade is not None]
+                if quarterly_grades:
+                    final_grade = round(sum(quarterly_grades) / len(quarterly_grades), 2)
+                    grades_data[subject.name]['final_grade'] = final_grade
+                    grades_data[subject.name]['remarks'] = 'Passed' if final_grade >= 75 else 'Failed'
+                else:
+                    grades_data[subject.name]['final_grade'] = None
+                    grades_data[subject.name]['remarks'] = None
+
+            general_average = round(sum(subject['final_grade'] for subject in grades_data.values() if subject['final_grade'] is not None) / len(grades_data), 2) if grades_data else None
+
+            grade_section = enrollments.first().class_obj.grade_level + ' - ' + enrollments.first().class_obj.section if enrollments.exists() else 'N/A'
+
+            report_cards.append({
+                'student': student,
+                'school_year': school_year,
+                'grades_data': grades_data,
+                'grading_periods': grading_periods,
+                'general_average': general_average,
+                'grade_section': grade_section
+            })
+
+    context = {
+        'report_cards': report_cards,
+    }
+
+    return render(request, 'admin-GradeReport.html', context)
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import SchoolYear, GradingPeriod
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['administrator'])
+def admin_GradingPeriod(request):
+    current_school_year = SchoolYear.objects.filter(is_active=True).first()
+    grading_periods = GradingPeriod.objects.filter(school_year=current_school_year).order_by('period') if current_school_year else []
+
+    if request.method == 'POST':
+        if 'add_grading_period' in request.POST:
+            period = request.POST.get('period')
+            is_current = request.POST.get('is_current') == 'True'
+            
+            if current_school_year:
+                GradingPeriod.objects.create(
+                    school_year=current_school_year,
+                    period=period,
+                    is_current=is_current
+                )
+                messages.success(request, 'Grading Period added successfully.')
+            else:
+                messages.error(request, 'No active school year found.')
+
+        elif 'edit_grading_period' in request.POST:
+            grading_period_id = request.POST.get('edit_id')
+            is_current = request.POST.get('is_current') == 'True'
+            
+            grading_period = GradingPeriod.objects.get(id=grading_period_id)
+            grading_period.is_current = is_current
+            grading_period.save()
+            messages.success(request, 'Grading Period updated successfully.')
+
+        elif 'delete_grading_period' in request.POST:
+            grading_period_id = request.POST.get('delete_id')
+            GradingPeriod.objects.filter(id=grading_period_id).delete()
+            messages.success(request, 'Grading Period deleted successfully.')
+
+        return redirect('admin-GradingPeriod')
+
+    context = {
+        'current_school_year': current_school_year,
+        'grading_periods': grading_periods,
+    }
+    return render(request, 'admin-GradingPeriod.html', context)
 
 
 from django.shortcuts import render, get_object_or_404, redirect
@@ -1928,14 +2048,17 @@ def student_reportCard(request):
 
         general_average = round(sum(subject['final_grade'] for subject in grades_data.values() if subject['final_grade'] is not None) / len(grades_data), 2) if grades_data else None
 
-        grade_section = enrollments.first().class_obj.grade_level + ' - ' + enrollments.first().class_obj.section if enrollments.exists() else 'N/A'
+        # Determine overall pass/fail status
+        overall_status = 'Passed' if general_average is not None and general_average >= 75 else 'Failed'
 
+        grade_section = enrollments.first().class_obj.grade_level + ' - ' + enrollments.first().class_obj.section if enrollments.exists() else 'N/A'
 
         report_cards.append({
             'school_year': school_year,
             'grades_data': grades_data,
             'grading_periods': grading_periods,
             'general_average': general_average,
+            'overall_status': overall_status,
             'grade_section': grade_section
         })
 
@@ -1945,6 +2068,100 @@ def student_reportCard(request):
     }
 
     return render(request, 'student-ReportCard.html', context)
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
+from decimal import Decimal
+from .models import Class, Enrollment, SubjectCriterion, Activity, Score, GradingPeriod, SchoolYear, Student
+
+@login_required(login_url='login')
+def student_InitialGrade(request):
+    class_id = request.GET.get('class_id')
+    grading_period_id = request.GET.get('grading_period')
+    
+    selected_class = get_object_or_404(Class, id=class_id)
+    grading_period = get_object_or_404(GradingPeriod, id=grading_period_id) if grading_period_id else None
+
+    # Get the Student instance associated with the current user
+    student = get_object_or_404(Student, user=request.user)
+
+    # Get the current student's enrollment
+    enrollment = get_object_or_404(Enrollment, class_obj=selected_class, student=student)
+
+    criteria = SubjectCriterion.objects.filter(subject=selected_class.subject).order_by('grading_criterion')
+
+    current_school_year = SchoolYear.objects.filter(is_active=True).first()
+    is_current_school_year = selected_class.school_year == current_school_year
+
+    result = {
+        'student': student,
+        'criteria_scores': []
+    }
+
+    total_weighted_percentage = Decimal(0)
+
+    for criterion in criteria:
+        activities = Activity.objects.filter(
+            class_obj=selected_class,
+            subject_criterion=criterion,
+            grading_period=grading_period
+        )
+        
+        if not activities.exists():
+            result['criteria_scores'].append({
+                'criterion': criterion,
+                'total_score': Decimal(0),
+                'total_max_score': Decimal(0),
+                'percentage': Decimal(0),
+            })
+            continue
+
+        scores = Score.objects.filter(
+            enrollment=enrollment,
+            activity__in=activities
+        )
+        total_score = sum(score.score for score in scores)
+        total_max_score = sum(activity.max_score for activity in activities)
+
+        percentage = (Decimal(total_score) / Decimal(total_max_score) * Decimal(100)) if total_max_score > 0 else Decimal(0)
+        weighted_percentage = percentage * (Decimal(criterion.weightage) / Decimal(100))
+        total_weighted_percentage += weighted_percentage
+
+        result['criteria_scores'].append({
+            'criterion': criterion,
+            'total_score': total_score,
+            'total_max_score': total_max_score,
+            'percentage': weighted_percentage,
+        })
+
+    result['initial_grade'] = total_weighted_percentage
+
+    total_max_scores = {
+        criterion.id: Activity.objects.filter(
+            class_obj=selected_class,
+            subject_criterion=criterion,
+            grading_period=grading_period
+        ).aggregate(
+            total_max_score=Sum('max_score')
+        )['total_max_score'] or Decimal(0)
+        for criterion in criteria
+    }
+
+    context = {
+        'selected_class': selected_class,
+        'result': result,
+        'criteria': criteria,
+        'total_max_scores': total_max_scores,
+        'grading_period': grading_period,
+        'is_current_school_year': is_current_school_year,
+    }
+
+    return render(request, 'student-InitialGrade.html', context)
+
+
 
 
 
