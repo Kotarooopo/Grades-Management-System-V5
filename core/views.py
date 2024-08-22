@@ -1714,15 +1714,16 @@ def transmute_grade(initial_grade):
 
 
 
-
-from django.shortcuts import get_object_or_404
-from .models import Class, Enrollment, SubjectCriterion, Activity, Score, GradingPeriod
-from django.db.models import Sum
 from decimal import Decimal
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from io import BytesIO
+from django.contrib.auth.decorators import login_required
+from .decorators import allowed_users
+from .models import Class, Enrollment, SubjectCriterion, Score, Student, Activity, GradingPeriod, SchoolYear
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
@@ -1739,6 +1740,7 @@ def teacher_gradeCalculate(request):
     is_current_school_year = selected_class.school_year == current_school_year
 
     results = []
+
     for enrollment in enrollments:
         student_result = {
             'student': enrollment.student,
@@ -1748,7 +1750,6 @@ def teacher_gradeCalculate(request):
         total_weighted_percentage = Decimal(0)
 
         for criterion in criteria:
-            # Filter activities by the selected grading period
             activities = Activity.objects.filter(
                 class_obj=selected_class,
                 subject_criterion=criterion,
@@ -1764,7 +1765,6 @@ def teacher_gradeCalculate(request):
                 })
                 continue
 
-            # Filter scores by the selected grading period
             scores = Score.objects.filter(
                 enrollment=enrollment,
                 activity__in=activities
@@ -1785,8 +1785,24 @@ def teacher_gradeCalculate(request):
 
         student_result['initial_grade'] = total_weighted_percentage
         student_result['transmuted_grade'] = transmute_grade(total_weighted_percentage)
+        student_result['quarterly_grade'] = student_result['transmuted_grade']
 
         results.append(student_result)
+
+    # Sort results by quarterly_grade in descending order to rank correctly
+    sorted_results = sorted(results, key=lambda x: x['quarterly_grade'], reverse=True)
+
+    # Assign ranks with consideration for ties
+    rank = 1
+    for i, result in enumerate(sorted_results):
+        if i > 0 and result['quarterly_grade'] == sorted_results[i - 1]['quarterly_grade']:
+            result['rank'] = sorted_results[i - 1]['rank']  # Same rank as the previous student
+        else:
+            result['rank'] = rank  # Assign the current rank
+        rank += 1  # Increment rank for the next student
+
+    # Reorder the results back to the original order if needed (optional)
+    # results = sorted(results, key=lambda x: x['student'].id)
 
     total_max_scores = {
         criterion.id: Activity.objects.filter(
@@ -1801,7 +1817,7 @@ def teacher_gradeCalculate(request):
 
     context = {
         'selected_class': selected_class,
-        'results': results,
+        'results': sorted_results,  # Use sorted_results to show ranks correctly
         'criteria': criteria,
         'total_max_scores': total_max_scores,
         'grading_period': grading_period,
@@ -1820,6 +1836,9 @@ def teacher_gradeCalculate(request):
         return HttpResponse('Error Rendering PDF', status=400)
 
     return render(request, 'teacher-CalculateGrade.html', context)
+
+
+
 
 
 

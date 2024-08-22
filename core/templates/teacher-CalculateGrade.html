@@ -86,11 +86,14 @@
                                         {{ result.initial_grade|floatformat:2 }}
                                     </td>
                                     <td rowspan="{{ result.criteria_scores|length }}" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        {{ result.transmuted_grade }}
+                                        {{ result.quarterly_grade }}
                                     </td>
                                     <td rowspan="{{ result.criteria_scores|length }}" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                        <!-- Rank placeholder, if you want to add ranking logic later -->
-                                        -
+                                        {% if result.rank %}
+                                             {{ result.rank }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
                                     </td>
                                 {% endif %}
                             </tr>

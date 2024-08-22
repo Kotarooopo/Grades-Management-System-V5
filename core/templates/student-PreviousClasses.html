@@ -38,7 +38,7 @@
                             <td class="px-6 py-4">{{ enrollment.class_obj.subject.name }}</td>
                             <td class="px-6 py-4 font-medium text-gray-400">{{ enrollment.class_obj.teacher.Lastname }}, {{ enrollment.class_obj.teacher.Firstname }}</td>
                             <td class="px-6 py-4">
-                                <button onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', '{{ school_year.id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                                <button onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'ViewList', '{{ school_year.id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
                             </td>
                             <td class="px-6 py-4">
                                 <button onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'InitialGrade', '{{ school_year.id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">Initial Grade</button>
@@ -84,7 +84,13 @@
 
         // Set the form action based on the action parameter
         const form = document.getElementById('gradingPeriodForm');
-        form.action = action === 'InitialGrade' ? "{% url 'student-InitialGrade' %}" : "{% url 'student-ScoreList' %}";
+        if (action === 'InitialGrade') {
+            form.action = "{% url 'student-InitialGrade' %}";
+        } else if (action === 'ViewList') {
+            form.action = "{% url 'student-ScoreList' %}";
+        }
+
+ 
 
         // Get the grading period select element
         let gradingPeriodSelect = document.getElementById('grading_period');
