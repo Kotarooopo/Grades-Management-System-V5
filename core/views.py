@@ -491,30 +491,48 @@ def student_dashboard(request):
 
 
 
-#test
-from django.shortcuts import render
+#teacher-list
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from .decorators import allowed_users
 from .models import Teacher, Administrator, Class
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
 def teacher_list(request):
     if request.method == 'POST':
-        edit_id = request.POST.get('edit_id')
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
+        if 'change_pass' in request.POST:
+            edit_id = request.POST.get('edit_id')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
 
-        if new_password and confirm_password:
-            if new_password != confirm_password:
-                messages.error(request, "Passwords do not match.")
-                return redirect('teacher-list')
+            if new_password and confirm_password:
+                if new_password != confirm_password:
+                    messages.error(request, "Passwords do not match.")
+                    return redirect('teacher-list')
 
-            user = get_object_or_404(User, id=edit_id)
-            user.password = make_password(new_password)
-            user.save()
-            messages.success(request, "Password updated successfully.")
-        else:
-            messages.error(request, "Please fill in both password fields.")
+                user = get_object_or_404(User, id=edit_id)
+                user.set_password(new_password)
+                user.save()
+                messages.success(request, "Password updated successfully.")
+            else:
+                messages.error(request, "Please fill in both password fields.")
         
+        elif 'toggle_status' in request.POST:
+            toggle_status_id = request.POST.get('toggle_status_id')
+            current_status = request.POST.get('current_status')
+
+            user = get_object_or_404(User, id=toggle_status_id)
+            if current_status == 'active':
+                user.is_active = False
+                messages.success(request, f"Account for {user.email} has been deactivated successfully.")
+            else:
+                user.is_active = True
+                messages.success(request,f"Account for {user.email} has been activated successfully.")
+            user.save()
+
         return redirect('teacher-list')
 
     teachers = Teacher.objects.all()
@@ -523,37 +541,52 @@ def teacher_list(request):
 
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
+from .models import Student
 
 User = get_user_model()
-
-from django.contrib.auth.hashers import make_password
-from django.shortcuts import redirect, get_object_or_404
-from django.contrib import messages
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
 def student_list(request):
     if request.method == 'POST':
-        edit_id = request.POST.get('edit_id')
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
+        if 'change_pass' in request.POST:
+            edit_id = request.POST.get('edit_id')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
 
-        if new_password and confirm_password:
-            if new_password != confirm_password:
-                messages.error(request, "Passwords do not match.")
-                return redirect('student-list')
+            if new_password and confirm_password:
+                if new_password != confirm_password:
+                    messages.error(request, "Passwords do not match.")
+                    return redirect('student-list')
 
-            user = get_object_or_404(User, id=edit_id)
-            user.password = make_password(new_password)
-            user.save()
-            messages.success(request, "Password updated successfully.")
-        else:
-            messages.error(request, "Please fill in both password fields.")
+                user = get_object_or_404(User, id=edit_id)
+                user.password = make_password(new_password)
+                user.save()
+                messages.success(request, "Password updated successfully.")
+            else:
+                messages.error(request, "Please fill in both password fields.")
         
+        elif 'deactivate_account' in request.POST:
+            deactivate_id = request.POST.get('deactivate_id')
+            user = get_object_or_404(User, id=deactivate_id)
+            user.is_active = False
+            user.save()
+            messages.success(request, f"Account for {user.email} has been deactivated.")
+
+
+        elif 'toggle_status' in request.POST:
+            toggle_status_id = request.POST.get('toggle_status_id')
+            current_status = request.POST.get('current_status')
+            user = get_object_or_404(User, id=toggle_status_id)
+            user.is_active = not user.is_active
+            user.save()
+            action = "activated" if user.is_active else "deactivated"
+            messages.success(request, f"Account for {user.email} has been {action}.")
+
         return redirect('student-list')
 
     students = Student.objects.all()

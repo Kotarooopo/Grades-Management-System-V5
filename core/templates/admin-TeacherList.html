@@ -51,7 +51,9 @@
                 <th scope="col" class="px-6 py-3">
                     Phone Number
                 </th>
-                
+                <th scope="col" class="px-6 py-3">
+                    Status
+                </th>
                 <th scope="col" class="px-6 py-3">
                     Action
                 </th>
@@ -85,18 +87,39 @@
                 <td class="px-6 py-4">
                     {{ teacher.Phone_Number }}
                 </td>
+                <td class="px-6 py-4">
+                    {% if teacher.user.is_active %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                            Inactive
+                        </span>
+                    {% endif %}
+                </td>
                 
                 <td class="px-6 py-4">
-                    <a href="#" class="font-medium text-green-600 dark:text-green-500 hover:underline edit-btn"
-                    data-modal-target="edit-modal"
-                    data-modal-toggle="edit-modal"
-                    data-id="{{ teacher.user.id }}"
-                    data-email="{{ teacher.email }}">Edit
-                    </a>
-                <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline delete-btn" 
-                        data-modal-target="delete-modal" 
-                        data-modal-toggle="delete-modal"
-                        data-id="">Delete
+                    <button
+                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md edit-btn"
+                        data-modal-target="edit-modal"
+                        data-modal-toggle="edit-modal"
+                        data-id="{{ teacher.user.id }}"
+                        data-email="{{ teacher.email }}">Edit
+                    </button>
+                    <button 
+                        class="font-medium py-1 px-3 rounded-md toggle-status-btn
+                            {% if teacher.user.is_active %}
+                                text-gray-600 dark:text-gray-500 border border-gray-600 dark:border-gray-500 hover:bg-gray-700 dark:hover:bg-gray-600 hover:text-white
+                            {% else %}
+                                text-green-600 dark:text-green-500 border border-green-600 dark:border-green-500 hover:bg-green-700 dark:hover:bg-green-600 hover:text-white
+                            {% endif %}"
+                        data-modal-target="toggle-status-modal"
+                        data-modal-toggle="toggle-status-modal"
+                        data-id="{{ teacher.user.id }}"
+                        data-status="{% if teacher.user.is_active %}active{% else %}inactive{% endif %}">
+                        {% if teacher.user.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </button>
                 </a>
                 </td>
             </tr>
@@ -153,7 +176,66 @@
         </div>
     </div>
 </div>
+<!-- Deactivate Modal -->
+<div id="deactivate-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Deactivate Student Account
+                </h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="deactivate-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5">
+                <p class="mb-4 text-gray-700 dark:text-gray-300">Are you sure you want to deactivate this student account? This action can be reversed later.</p>
+                <form class="space-y-4" action="{% url 'teacher-list' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="deactivate_id" id="deactivate_id">
+                    <button type="submit" name="deactivate_account" class="w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">Deactivate Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Toggle Status Modal -->
+<div id="toggle-status-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    <span id="toggle-status-action">Deactivate</span> Teacher Account
+                </h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="toggle-status-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5">
+                <p class="mb-4 text-gray-700 dark:text-gray-300">Are you sure you want to <span id="toggle-status-action-confirm">deactivate</span> this teacher account?</p>
+                <form class="space-y-4" action="{% url 'teacher-list' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="toggle_status_id" id="toggle_status_id">
+                    <input type="hidden" name="current_status" id="current_status">
+                    <button type="submit" name="toggle_status" id="toggle-status-button" class="w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">Deactivate Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 function deactivateTeacher(teacherId) {
@@ -247,6 +329,50 @@ function deleteTeacher(teacherId) {
     });
 </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const toggleStatusButtons = document.querySelectorAll('.toggle-status-btn');
+    const toggleStatusModal = document.getElementById('toggle-status-modal');
+    const toggleStatusAction = document.getElementById('toggle-status-action');
+    const toggleStatusActionConfirm = document.getElementById('toggle-status-action-confirm');
+    const toggleStatusButton = document.getElementById('toggle-status-button');
+    const toggleStatusId = document.getElementById('toggle_status_id');
+    const currentStatus = document.getElementById('current_status');
+
+    toggleStatusButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const teacherId = this.getAttribute('data-id');
+            const status = this.getAttribute('data-status');
+
+            toggleStatusId.value = teacherId;
+            currentStatus.value = status;
+
+            if (status === 'active') {
+                toggleStatusAction.textContent = 'Deactivate';
+                toggleStatusActionConfirm.textContent = 'deactivate';
+                toggleStatusButton.textContent = 'Deactivate Account';
+                toggleStatusButton.classList.remove('bg-green-700', 'hover:bg-green-800');
+                toggleStatusButton.classList.add('bg-red-700', 'hover:bg-red-800');
+            } else {
+                toggleStatusAction.textContent = 'Activate';
+                toggleStatusActionConfirm.textContent = 'activate';
+                toggleStatusButton.textContent = 'Activate Account';
+                toggleStatusButton.classList.remove('bg-red-700', 'hover:bg-red-800');
+                toggleStatusButton.classList.add('bg-green-700', 'hover:bg-green-800');
+            }
+
+            toggleStatusModal.classList.remove('hidden');
+        });
+    });
+
+    // Close modal when clicking outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target === toggleStatusModal) {
+            toggleStatusModal.classList.add('hidden');
+        }
+    });
+});
+</script>
 
 
 
