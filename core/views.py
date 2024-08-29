@@ -604,7 +604,7 @@ def administrator_list(request):
 #subject Criteria
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Exists, OuterRef
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import Subject, SubjectCriterion, GradingCriterion
@@ -626,6 +626,13 @@ def subject_criteria(request):
                 criteria_types = ['WW', 'PT', 'QE']
                 weightages = [ww_weightage, pt_weightage, qe_weightage]
                 
+                # Validate total weightage
+                weightages = [int(w) if w else 0 for w in weightages]  # Default to 0 if empty
+                total_weightage = sum(weightages)
+                
+                if total_weightage != 100:
+                    raise ValueError("Total weightage must be exactly 100%")
+                
                 for criteria_type, weightage in zip(criteria_types, weightages):
                     SubjectCriterion.objects.update_or_create(
                         subject=subject,
@@ -634,9 +641,49 @@ def subject_criteria(request):
                     )
                 
                 messages.success(request, "Subject criteria updated successfully.")
+            except ValueError as e:
+                messages.error(request, str(e))
             except Exception as e:
                 messages.error(request, f"An error occurred: {str(e)}")
-        
+
+        elif 'subject_id' in request.POST:  # This checks if it's a new criteria submission
+                subject_id = request.POST.get('subject_id')
+                ww_weightage = request.POST.get('ww_weightage')
+                pt_weightage = request.POST.get('pt_weightage')
+                qe_weightage = request.POST.get('qe_weightage')
+                
+                try:
+                    subject = Subject.objects.get(id=subject_id)
+                    
+                    criteria_types = ['WW', 'PT', 'QE']
+                    weightages = [ww_weightage, pt_weightage, qe_weightage]
+                    
+                    total_weightage = sum(int(w) for w in weightages if w)
+                    if total_weightage != 100:
+                        raise ValueError("Total weightage must be exactly 100%")
+                    
+                    for criteria_type, weightage in zip(criteria_types, weightages):
+                        SubjectCriterion.objects.create(
+                            subject=subject,
+                            grading_criterion=GradingCriterion.objects.get(criteria_type=criteria_type),
+                            weightage=weightage
+                        )
+                    
+                    messages.success(request, "Subject criteria added successfully.")
+                except ValueError as e:
+                    messages.error(request, str(e))
+                except Exception as e:
+                    messages.error(request, f"An error occurred: {str(e)}")
+
+        elif 'clear_criteria' in request.POST:
+            subject_id = request.POST.get('delete_id')
+            try:
+                subject = Subject.objects.get(id=subject_id)
+                SubjectCriterion.objects.filter(subject=subject).delete()
+                messages.success(request, f"Criteria for {subject.name} have been cleared.")
+            except Exception as e:
+                messages.error(request, f"An error occurred: {str(e)}")
+
         return redirect('subject-criteria')
     
     elif request.method == 'GET':
@@ -660,10 +707,16 @@ def subject_criteria(request):
     criteria = GradingCriterion.objects.all()
     subject_criteria = SubjectCriterion.objects.select_related('subject', 'grading_criterion').all()
     
+    # Get subjects without criteria
+    subjects_without_criteria = Subject.objects.annotate(
+        has_criteria=Exists(SubjectCriterion.objects.filter(subject=OuterRef('pk')))
+    ).filter(has_criteria=False)
+    
     context = {
         'subjects': subjects,
         'criteria': criteria,
-        'subject_criteria': subject_criteria
+        'subject_criteria': subject_criteria,
+        'subjects_without_criteria': subjects_without_criteria
     }
     
     return render(request, 'admin-SubjectCriteria.html', context)
