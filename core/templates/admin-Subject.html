@@ -3,6 +3,15 @@
 {% block content %}
 {% load static %}
 
+
+<style>
+    .hover-red-override:hover {
+  background-color: #c53030 !important; /* Equivalent to Tailwind's bg-red-700 */
+  color: white !important;
+}
+
+</style>
+
 <div class="bg-white rounded-lg shadow-md p-6">
     {% if messages %}
     <div class="messages mb-4">
@@ -38,26 +47,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for subject in subject %}
+                    {% for subject in subjects %}
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td class="px-6 py-4">
                                 {{ subject.name }}   
                             </td>
                             <td class="px-6 py-4">
-                                <a href="#" class="font-medium text-green-600 dark:text-green-500 hover:underline edit-btn" 
-                                    data-modal-target="edit-modal" 
-                                    data-modal-toggle="edit-modal"
-                                    data-id="{{ subject.id }}" 
-                                    data-name="{{ subject.name }}">Edit
-                                </a>
-                                <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline delete-btn" 
-                                        data-modal-target="delete-modal" 
-                                        data-modal-toggle="delete-modal"
-                                        data-id="{{ subject.id }}">Delete
-                                </a>
+                                <button type="button" 
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md edit-btn"
+                                        data-modal-target="edit-modal" 
+                                        data-modal-toggle="edit-modal"
+                                        data-id="{{ subject.id }}" 
+                                        data-name="{{ subject.name }}"
+                                        data-ww="{% for criterion in subject.subjectcriterion_set.all %}{% if criterion.grading_criterion.criteria_type == 'WW' %}{{ criterion.weightage }}{% endif %}{% endfor %}"
+                                        data-pt="{% for criterion in subject.subjectcriterion_set.all %}{% if criterion.grading_criterion.criteria_type == 'PT' %}{{ criterion.weightage }}{% endif %}{% endfor %}"
+                                        data-qe="{% for criterion in subject.subjectcriterion_set.all %}{% if criterion.grading_criterion.criteria_type == 'QE' %}{{ criterion.weightage }}{% endif %}{% endfor %}">
+                                    Edit
+                                </button>
+
+                                
+                                <button type="button" class="font-medium text-red-600 border border-red-600 py-1 px-3 rounded-md hover-red-override delete-btn"
+                                    data-modal-target="delete-modal" 
+                                    data-modal-toggle="delete-modal"
+                                    data-id="{{ subject.id }}">
+                                    Delete
+                                </button>
                             </td>
                         </tr>
-                        {% endfor %}
+                    {% endfor %}
                     </tbody>
                 </table>
         
@@ -98,7 +115,8 @@
     </div> 
 
     <!-- Edit modal -->
-    <div id="edit-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0
+<!-- Edit modal -->
+<div id="edit-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0
     h-[calc(100%-1rem)] max-h-full">
     <div class="relative p-4 w-full max-w-md max-h-full">
         <!-- Modal content -->
@@ -131,6 +149,7 @@
     </div>
 </div>
 
+
 <!-- Delete modal -->
 <div id="delete-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative p-4 w-full max-w-md max-h-full">
@@ -162,25 +181,26 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Edit Subject
-    document.querySelectorAll('.edit-btn').forEach(button => {
-        button.addEventListener('click', event => {
-            const subjectId = event.currentTarget.dataset.id;
-            const subjectName = event.currentTarget.dataset.name;
-            document.getElementById('edit_id').value = subjectId;
-            document.getElementById('edit_subject').value = subjectName;
+    document.addEventListener('DOMContentLoaded', () => {
+        // Edit Subject
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', event => {
+                const subjectId = event.currentTarget.dataset.id;
+                const subjectName = event.currentTarget.dataset.name;
+                document.getElementById('edit_id').value = subjectId;
+                document.getElementById('edit_subject').value = subjectName;
+            });
+        });
+    
+        // Delete Subject
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', event => {
+                const subjectId = event.currentTarget.dataset.id;
+                document.getElementById('delete_id').value = subjectId;
+            });
         });
     });
-
-    // Delete Subject
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', event => {
-            const subjectId = event.currentTarget.dataset.id;
-            document.getElementById('delete_id').value = subjectId;
-        });
-    });
-});
-</script>
+    </script>
+    
 
 {% endblock %}

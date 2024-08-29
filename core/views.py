@@ -602,45 +602,62 @@ def administrator_list(request):
 
 
 #subject Criteria
-
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
 from django.contrib import messages
+from django.http import JsonResponse
 from .models import Subject, SubjectCriterion, GradingCriterion
 from .decorators import allowed_users
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
 def subject_criteria(request):
-    subjects = Subject.objects.all()
-    criteria = GradingCriterion.objects.all()
-    
     if request.method == 'POST':
-        subject_id = request.POST.get('subject')
-        criterion_id = request.POST.get('criterion')
-        weightage = request.POST.get('weightage')
-        
-        if subject_id and criterion_id and weightage:
+        if 'update_criteria' in request.POST:
+            subject_id = request.POST.get('edit_subject_id')
+            ww_weightage = request.POST.get('edit_ww_weightage')
+            pt_weightage = request.POST.get('edit_pt_weightage')
+            qe_weightage = request.POST.get('edit_qe_weightage')
+            
             try:
                 subject = Subject.objects.get(id=subject_id)
-                criterion = GradingCriterion.objects.get(id=criterion_id)
                 
-                # Create or update the SubjectCriterion
-                SubjectCriterion.objects.update_or_create(
-                    subject=subject,
-                    grading_criterion=criterion,
-                    defaults={'weightage': weightage}
-                )
+                criteria_types = ['WW', 'PT', 'QE']
+                weightages = [ww_weightage, pt_weightage, qe_weightage]
                 
-                messages.success(request, "Subject criterion added successfully.")
+                for criteria_type, weightage in zip(criteria_types, weightages):
+                    SubjectCriterion.objects.update_or_create(
+                        subject=subject,
+                        grading_criterion=GradingCriterion.objects.get(criteria_type=criteria_type),
+                        defaults={'weightage': weightage}
+                    )
+                
+                messages.success(request, "Subject criteria updated successfully.")
             except Exception as e:
                 messages.error(request, f"An error occurred: {str(e)}")
-        else:
-            messages.error(request, "Please fill all the fields.")
         
-        return redirect('subject-criteria')  # Redirect to the same page
+        return redirect('subject-criteria')
     
+    elif request.method == 'GET':
+        if 'get_criteria' in request.GET:
+            subject_id = request.GET.get('subject_id')
+            try:
+                subject = Subject.objects.get(id=subject_id)
+                criteria = SubjectCriterion.objects.filter(subject=subject)
+                
+                data = {
+                    'ww_weightage': criteria.get(grading_criterion__criteria_type='WW').weightage,
+                    'pt_weightage': criteria.get(grading_criterion__criteria_type='PT').weightage,
+                    'qe_weightage': criteria.get(grading_criterion__criteria_type='QE').weightage,
+                }
+                
+                return JsonResponse(data)
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=400)
+    
+    subjects = Subject.objects.all()
+    criteria = GradingCriterion.objects.all()
     subject_criteria = SubjectCriterion.objects.select_related('subject', 'grading_criterion').all()
     
     context = {
@@ -650,7 +667,6 @@ def subject_criteria(request):
     }
     
     return render(request, 'admin-SubjectCriteria.html', context)
-
 
 
 
@@ -825,13 +841,15 @@ def admin_GradingPeriod(request):
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from .models import Subject
 from .forms import SubjectForm
+from .decorators import allowed_users
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
 def admin_subject(request):
-    subject = Subject.objects.all()
+    subjects = Subject.objects.all()
 
     if request.method == 'POST':
         if 'add_subject' in request.POST:
@@ -840,23 +858,25 @@ def admin_subject(request):
                 form.save()
                 messages.success(request, 'Subject added successfully!')
             else:
-                messages.error(request, 'Failed to add subject.')
-        elif 'edit_id' in request.POST:
-            subject = get_object_or_404(Subject, id=request.POST['edit_id'])
+                messages.error(request, 'Failed to add subject. Please check the form.')
+        elif 'edit_subject' in request.POST:
+            subject_id = request.POST.get('edit_id')
+            subject = get_object_or_404(Subject, id=subject_id)
             form = SubjectForm(request.POST, instance=subject)
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Subject updated successfully!')
             else:
-                messages.error(request, 'Failed to update subject.')
-        elif 'delete_id' in request.POST:
-            subject = get_object_or_404(Subject, id=request.POST['delete_id'])
+                messages.error(request, 'Failed to update subject. Please check the form.')
+        elif 'delete_subject' in request.POST:
+            subject_id = request.POST.get('delete_id')
+            subject = get_object_or_404(Subject, id=subject_id)
             subject.delete()
             messages.success(request, 'Subject deleted successfully!')
         return redirect('admin-subject')
 
     context = {
-        'subject': subject,
+        'subjects': subjects,
         'form': SubjectForm()
     }
     return render(request, 'admin-Subject.html', context)

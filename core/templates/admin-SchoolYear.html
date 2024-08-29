@@ -44,21 +44,33 @@
                         {% for year in years %}
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td class="px-6 py-4">{{ year.year }}</td>
-                            <td class="px-6 py-4">{% if year.is_active %}Yes{% else %}No{% endif %}</td>
                             <td class="px-6 py-4">
-                                <a href="#" class="font-medium text-green-600 dark:text-green-500 hover:underline edit-btn" 
+                                {% if year.is_active %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Yes
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        No
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <button 
+                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md edit-btn"
                                     data-modal-target="edit-modal" 
                                     data-modal-toggle="edit-modal"
                                     data-id="{{ year.id }}" 
                                     data-year="{{ year.year }}"
-                                    data-is-active="{{ year.is_active|yesno:'True,False' }}">Edit
-                                </a>
-                                <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline delete-btn" 
+                                    data-is-active="{{ year.is_active|yesno:'True,False' }}">
+                                    Edit
+                                </button>
+                                <!-- <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline delete-btn" 
                                         data-modal-target="delete-modal" 
                                         data-modal-toggle="delete-modal"
                                         data-id="{{ year.id }}" 
                                         data-year="{{ year.year }}">Delete
-                                </a>
+                                </a> -->
                             </td>
                         </tr>
                         {% endfor %}
