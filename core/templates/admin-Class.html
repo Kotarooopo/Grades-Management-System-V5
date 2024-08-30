@@ -3,6 +3,16 @@
 {% block content %}
 {% load static %}
 
+
+<style>
+    .hover-red-override:hover {
+  background-color: #c53030 !important; /* Equivalent to Tailwind's bg-red-700 */
+  color: white !important;
+}
+
+</style>
+
+
 <div class="bg-white rounded-lg shadow-md p-6">
     {% if messages %}
     <div class="messages mb-4">
@@ -24,6 +34,15 @@
                 </svg>
                 Add Class
             </button>     
+            <div class="flex flex-col items-end space-y-2">
+                <a href="{% url 'admin-prevClass' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    Previous Classes  
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                        <path fill-rule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M19.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06L17.69 12l-6.97-6.97a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                    </svg>                                
+                </a>
+            </div>
             
             <!-- Current Classes -->
             <h4 class="text-lg font-medium text-gray-900 mt-6 mb-2">Current Classes ({{ current_school_year.year }})</h4>
@@ -45,19 +64,25 @@
                         <td class="px-6 py-4">{{ class.teacher.name }}</td>
                         <td class="px-6 py-4">{{ class.subject.name }}</td>
                         <td class="px-6 py-4">
-                            <button class="font-medium text-green-600 dark:text-green-500 hover:underline edit-btn" 
+
+                            <button type="button" 
+                                class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md edit-btn"
                                 data-modal-target="edit-modal" 
                                 data-modal-toggle="edit-modal"
                                 data-id="{{ class.id }}" 
                                 data-school-year="{{ class.school_year.id }}"
                                 data-grade-level="{{ class.grade_level }}"
                                 data-section="{{ class.section }}"
-                                data-teacher="{{ class.teacher.id }}"
-                                data-subject="{{ class.subject.id }}">Edit</button>
-                            <button class="font-medium text-red-600 dark:text-red-500 hover:underline delete-btn" 
-                                data-modal-target="delete-modal" 
-                                data-modal-toggle="delete-modal"
-                                data-id="{{ class.id }}">Delete</button>
+                                data-teacher="{{ class.teacher.user_id }}"
+                                data-subject="{{ class.subject.id }}">
+                                Edit
+                            </button>
+                            <button type="button" class="font-medium text-red-600 border border-red-600 py-1 px-3 rounded-md hover-red-override delete-btn"
+                                    data-modal-target="delete-modal" 
+                                    data-modal-toggle="delete-modal"
+                                    data-id="{{ class.id }}">
+                                    Delete
+                            </button>
                         </td>
                     </tr>
                     {% empty %}
@@ -67,58 +92,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-
-            <!-- Button to toggle previous classes -->
-            <button id="togglePreviousClasses" class="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                Show Previous Classes
-            </button>
-
-            <!-- Previous Classes (hidden by default) -->
-            <div id="previousClassesSection" class="hidden">
-                <h4 class="text-lg font-medium text-gray-900 mt-6 mb-2">Previous Classes</h4>
-                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th scope="col" class="px-6 py-3">School Year</th>
-                            <th scope="col" class="px-6 py-3">Grade Level</th>
-                            <th scope="col" class="px-6 py-3">Section</th>
-                            <th scope="col" class="px-6 py-3">Teacher</th>
-                            <th scope="col" class="px-6 py-3">Subject</th>
-                            <th scope="col" class="px-6 py-3">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for class in previous_classes %}
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td class="px-6 py-4">{{ class.school_year.year }}</td>
-                            <td class="px-6 py-4">{{ class.grade_level }}</td>
-                            <td class="px-6 py-4">{{ class.section }}</td>
-                            <td class="px-6 py-4">{{ class.teacher.name }}</td>
-                            <td class="px-6 py-4">{{ class.subject.name }}</td>
-                            <td class="px-6 py-4">
-                                <button class="font-medium text-green-600 dark:text-green-500 hover:underline edit-btn" 
-                                    data-modal-target="edit-modal" 
-                                    data-modal-toggle="edit-modal"
-                                    data-id="{{ class.id }}" 
-                                    data-school-year="{{ class.school_year.id }}"
-                                    data-grade-level="{{ class.grade_level }}"
-                                    data-section="{{ class.section }}"
-                                    data-teacher="{{ class.teacher.id }}"
-                                    data-subject="{{ class.subject.id }}">Edit</button>
-                                <button class="font-medium text-red-600 dark:text-red-500 hover:underline delete-btn" 
-                                    data-modal-target="delete-modal" 
-                                    data-modal-toggle="delete-modal"
-                                    data-id="{{ class.id }}">Delete</button>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="px-6 py-4 text-center">No previous classes found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 </div>
@@ -303,7 +276,16 @@
             document.getElementById('edit_school_year').value = schoolYear;
             document.getElementById('edit_grade_level').value = gradeLevel;
             document.getElementById('edit_section').value = section;
-            document.getElementById('edit_teacher').value = teacher;
+            
+            // Update these lines to ensure the correct option is selected
+            const teacherSelect = document.getElementById('edit_teacher');
+            if (teacherSelect) {
+                const teacherOption = teacherSelect.querySelector(`option[value="${teacher}"]`);
+                if (teacherOption) {
+                    teacherOption.selected = true;
+                }
+            }
+            
             document.getElementById('edit_subject').value = subject;
         });
     });

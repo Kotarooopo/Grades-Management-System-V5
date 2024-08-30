@@ -938,7 +938,7 @@ def admin_subject(request):
 # class
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Case, When
 from .forms import AddClassForm
 from .models import Class, SchoolYear, Subject, Teacher
 from .models import GradingPeriod
@@ -947,9 +947,16 @@ from .models import GradingPeriod
 @allowed_users(allowed_roles=['administrator'])
 def admin_class(request):
     current_school_year = SchoolYear.objects.filter(is_active=True).first()
+
+    grade_order = Case(
+        When(grade_level='Grade 7', then=0),
+        When(grade_level='Grade 8', then=1),
+        When(grade_level='Grade 9', then=2),
+        When(grade_level='Grade 10', then=3),
+    )
     
-    current_classes = Class.objects.filter(school_year=current_school_year).order_by('grade_level', 'section')
-    previous_classes = Class.objects.filter(~Q(school_year=current_school_year)).order_by('-school_year__year', 'grade_level', 'section')
+    
+    current_classes = Class.objects.filter(school_year=current_school_year).order_by(grade_order, 'section')
     
     active_school_years = SchoolYear.objects.filter(is_active=True)
     teachers = Teacher.objects.all()
@@ -989,13 +996,51 @@ def admin_class(request):
     context = {
         'form': form,
         'current_classes': current_classes,
-        'previous_classes': previous_classes,
         'current_school_year': current_school_year,
         'active_school_years': active_school_years,
         'teachers': teachers,
         'subjects': subjects,
     }
     return render(request, 'admin-Class.html', context)
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from itertools import groupby
+from operator import attrgetter
+from .decorators import allowed_users
+from .models import SchoolYear, Class
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['administrator'])
+def admin_prevClass(request):
+    try:
+        current_school_year = SchoolYear.objects.get(is_active=True)
+    except SchoolYear.DoesNotExist:
+        current_school_year = None
+
+    if current_school_year:
+        previous_classes = Class.objects.filter(
+            ~Q(school_year=current_school_year)
+        ).select_related('school_year', 'teacher', 'subject').order_by('-school_year__year', 'grade_level', 'section')
+    else:
+        previous_classes = Class.objects.all().select_related('school_year', 'teacher', 'subject').order_by('-school_year__year', 'grade_level', 'section')
+
+    # Group classes by school year
+    grouped_classes = {}
+    for school_year, classes in groupby(previous_classes, key=attrgetter('school_year.year')):
+        grouped_classes[school_year] = sorted(classes, key=lambda c: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'].index(c.grade_level))
+
+    context = {
+        'grouped_classes': grouped_classes,
+        'current_school_year': current_school_year,
+    }
+    return render(request, 'admin-prevClass.html', context)
+
+
+
 
 
 

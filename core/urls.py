@@ -19,9 +19,7 @@ urlpatterns = [
     path('administrator/SubjectCriteria/', views.subject_criteria, name='subject-criteria'),
     path('get-subject-criteria/', views.get_subject_criteria, name='get_subject_criteria'),
     path('administrator/GradeReport/', views.admin_GradeReport, name='admin-GradeReport'),
-
-
-
+    path('administrator/Class/PreviousClass', views.admin_prevClass, name ='admin-prevClass'),
     path('administrator/admin-class/', views.admin_class, name='admin-class'),
 
     path('update-score/', views.update_score, name='update_score'),

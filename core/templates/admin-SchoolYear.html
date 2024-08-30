@@ -3,6 +3,17 @@
 {% block content %}
 
 {% load static %}
+
+
+<style>
+    .hover-red-override:hover {
+  background-color: #c53030 !important; /* Equivalent to Tailwind's bg-red-700 */
+  color: white !important;
+}
+
+</style>
+
+
 <div class="bg-white rounded-lg shadow-md p-6">
     {% if messages %}
     <div class="messages mb-4">
@@ -65,12 +76,13 @@
                                     data-is-active="{{ year.is_active|yesno:'True,False' }}">
                                     Edit
                                 </button>
-                                <!-- <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline delete-btn" 
-                                        data-modal-target="delete-modal" 
-                                        data-modal-toggle="delete-modal"
-                                        data-id="{{ year.id }}" 
-                                        data-year="{{ year.year }}">Delete
-                                </a> -->
+                                <button type="button" class="font-medium text-red-600 border border-red-600 py-1 px-3 rounded-md hover-red-override delete-btn"
+                                    data-modal-target="delete-modal" 
+                                    data-modal-toggle="delete-modal"
+                                    data-id="{{ year.id }}" 
+                                    data-year="{{ year.year }}">
+                                    Delete
+                                </button>
                             </td>
                         </tr>
                         {% endfor %}
