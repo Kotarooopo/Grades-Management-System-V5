@@ -1333,6 +1333,7 @@ def get_scores(request):
     # Fetch enrollments for the selected class
     enrollments = Enrollment.objects.filter(class_obj=selected_class)
     
+    
     scores_data = []
     for enrollment in enrollments:
         student_scores = []
@@ -1354,6 +1355,7 @@ def get_scores(request):
             },
             'scores': student_scores,
         })
+        
     
     return JsonResponse({
         'selected_class': selected_class.id,
@@ -1549,35 +1551,51 @@ def teacher_myClassRecord(request):
     return render(request, 'teacher-ClassRecord.html', context)
 
 
-import json
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from .models import Enrollment
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
+@require_POST
 def remove_student(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            enrollment_id = data.get('enrollment_id')
-            if not enrollment_id:
-                return JsonResponse({'success': False, 'error': 'Missing enrollment_id'}, status=400)
-            
-            # Debugging log to check the value of enrollment_id
-            print(f'Received enrollment_id: {enrollment_id}')
-
-            enrollment = get_object_or_404(Enrollment, id=enrollment_id)
-            enrollment.delete()
-            return JsonResponse({'success': True})
-        except json.JSONDecodeError as e:
-            return JsonResponse({'success': False, 'error': 'Invalid JSON: ' + str(e)}, status=400)
-        except Exception as e:
-            # Log the error for debugging
-            print(f"Error in remove_student view: {e}")
-            return JsonResponse({'success': False, 'error': 'An error occurred: ' + str(e)}, status=500)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
-
+    try:
+        data = json.loads(request.body)
+        enrollment_id = data.get('enrollment_id')
+        
+        logger.info(f'Received request to remove student. Enrollment ID: {enrollment_id}')
+        
+        if not enrollment_id:
+            logger.error('Missing enrollment_id in request')
+            return JsonResponse({'success': False, 'error': 'Missing enrollment_id'}, status=400)
+        
+        enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+        student_name = f"{enrollment.student.Firstname} {enrollment.student.Lastname}"
+        
+        logger.info(f'Removing student: {student_name} (Enrollment ID: {enrollment_id})')
+        
+        enrollment.delete()
+        
+        logger.info(f'Successfully removed student: {student_name}')
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{student_name} has been removed from the class.'
+        })
+    except json.JSONDecodeError as e:
+        logger.error(f'Invalid JSON in request body: {str(e)}')
+        return JsonResponse({'success': False, 'error': 'Invalid JSON in request body'}, status=400)
+    except Enrollment.DoesNotExist:
+        logger.error(f'Enrollment not found: {enrollment_id}')
+        return JsonResponse({'success': False, 'error': 'Enrollment not found'}, status=404)
+    except Exception as e:
+        logger.exception(f"Unexpected error in remove_student view: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'An unexpected error occurred'}, status=500)
 
  
 

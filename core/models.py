@@ -28,6 +28,20 @@ class SchoolYear(models.Model):
 
     def __str__(self):
         return self.year
+
+    def save(self, *args, **kwargs):
+        if self.is_active:
+            # Check if there's already an active school year
+            active_year = SchoolYear.objects.filter(is_active=True).exclude(pk=self.pk).first()
+            if active_year:
+                # If there's an active year, deactivate it
+                active_year.is_active = False
+                active_year.save()
+        
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = "School Years"
     
 class Subject(models.Model):
     name = models.CharField(max_length=100)

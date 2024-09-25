@@ -3,6 +3,14 @@
 {% block content %}
 {% load static %}
 
+
+<style>
+    .hover-red-override:hover {
+  background-color: #c53030 !important; /* Equivalent to Tailwind's bg-red-700 */
+  color: white !important;
+}
+
+</style>
 <div class="bg-white rounded-lg shadow-md p-6">
     <!-- Display messages if any -->
      
@@ -45,7 +53,7 @@
                     <div class="flex items-center">
                         <form class="max-w-sm">
                             <select id="grading_period" class="mb-1 ml-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                <option selected disabled>Select Grading Period</option>
+                                
                                 <option value="1st">1st Grading</option>
                                 <option value="2nd">2nd Grading</option>
                                 <option value="3rd">3rd Grading</option>
@@ -56,7 +64,6 @@
                     <div class="flex items-center">
                         <form class="max-w-sm">
                             <select id="criteria" class="mb-1  ml-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                <option selected disabled>Select Criteria</option>
                                 <option value="WW">Written Works</option>
                                 <option value="PT">Performance Tasks</option>
                                 <option value="QE">Quarterly Exams</option>
@@ -113,60 +120,7 @@
                     </tr>
                 </thead>
                 <tbody id="studentScoresBody">
-                    <!-- {% for enrollment in enrollments %}
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td class="px-6 py-4">{{ enrollment.student.Lastname }}, {{ enrollment.student.Firstname }}</td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col space-y-2">
-                                    {% for score in enrollment.scores %}
-                                        <p>{{ score.activity_name }}</p>
-                                    {% empty %}
-                                        <p>No activities available</p>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col space-y-2">
-                                    {% for score in enrollment.scores %}
-                                        <p>{{ score.score_date }}</p>
-                                    {% empty %}
-                                        <p>No dates available</p>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col space-y-2">
-                                    {% for score in enrollment.scores %}
-                                        <p>{{ score.score }}</p>
-                                    {% empty %}
-                                        <p>No scores available</p>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col space-y-2">
-                                    {% for score in enrollment.scores %}
-                                        <p>{{ score.max_score }}</p>
-                                    {% empty %}
-                                        <p>No scores available</p>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col space-y-2">
-                                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline addscore-btn" 
-                                        data-modal-target="addscore-modal" 
-                                        data-modal-toggle="addscore-modal"
-                                        data-id="{{ enrollment.id }}">Add Score
-                                    </a>
-                                </div>                                    
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="6" class="px-6 py-4 text-center">No students found in this class.</td>
-                        </tr>
-                    {% endfor %} -->
+                    
                 </tbody>
             </table>
             
@@ -618,10 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Selected Criteria:', selectedCriteria);
             console.log('Selected Grading Period:', selectedGradingPeriod);
     
-            if (!selectedCriteria || !selectedGradingPeriod) {
-                console.log('Both criteria and grading period must be selected');
-                return;
-            }
+            
     
             const url = `/api/get_scores/?criteria=${selectedCriteria}&grading_period=${selectedGradingPeriod}&class_id={{ selected_class.id }}`;
             console.log('Fetching from URL:', url);
@@ -647,7 +598,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         let scoresHtml = '';
                         let totalsHtml = '';
                         let editLinkHtml = '';
-                        let enrollmentId = student.enrollment_id; // Store enrollment ID here
+
+                        // Ensure we always have an enrollment ID for the student
+                        let enrollmentId = student.enrollment_id;
 
                         if (student.scores && student.scores.length > 0) {
                             student.scores.sort((a, b) => a.activity_name.localeCompare(b.activity_name));
@@ -680,12 +633,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             editLinkHtml = '<p>-</p>';
                         }
 
-                        const removeLinkHtml = enrollmentId ? `<p>
-                                            <a href="#" class="font-medium text-red-600 dark:text-red-500 hover:underline remove-student"
-                                                data-enrollment-id="${enrollmentId}"  
-                                                data-student-name="${student.student.Firstname} ${student.student.Lastname}">Remove
-                                            </a>
-                                        </p>` : '<p>-</p>';
+                        const removeLinkHtml = `<p>
+                            <button type="button" class="font-medium text-red-600 border border-red-600 py-1 px-3 rounded-md hover-red-override remove-student"
+                                data-enrollment-id="${enrollmentId}"  
+                                data-student-name="${student.student.Firstname} ${student.student.Lastname}">Remove
+                            </button>
+                        </p>`;
 
                         row.innerHTML = `
                             <td class="px-6 py-4 text-gray-900"><strong>${student.student.Lastname}, ${student.student.Firstname}</strong></td>
@@ -752,15 +705,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
             if (e.target.classList.contains('remove-student')) {
                 e.preventDefault();
-                const link = e.target.closest('.remove-student');
-                if (!link) return;
-    
-                const enrollmentId = link.getAttribute('data-enrollment-id');
-                const studentName = link.getAttribute('data-student-name');
-    
-                // Debugging log to check the value of enrollmentId
-                console.log('Enrollment ID:', enrollmentId);
-    
+                const button = e.target;
+                const enrollmentId = button.getAttribute('data-enrollment-id');
+                const studentName = button.getAttribute('data-student-name');
+
+                console.log('Remove button clicked. Button:', button);
+                console.log('Data attributes:', button.dataset);
+                console.log('Removing student. Enrollment ID:', enrollmentId);
+                console.log('Student Name:', studentName);
+
+                if (!enrollmentId) {
+                    console.error('Enrollment ID is missing');
+                    alert('Error: Cannot remove student due to missing information.');
+                    return;
+                }
+
                 if (confirm(`Are you sure you want to remove ${studentName} from this class?`)) {
                     fetch('/remove-student/', {
                         method: 'POST',
@@ -771,16 +730,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         body: JSON.stringify({ enrollment_id: enrollmentId })
                     })
                     .then(response => {
+                        console.log('Response status:', response.status);
                         if (!response.ok) {
-                            throw new Error('Network response was not ok');
+                            return response.text().then(text => {
+                                throw new Error(`Network response was not ok: ${response.status} ${text}`);
+                            });
                         }
                         return response.json();
                     })
                     .then(data => {
+                        console.log('Response data:', data);
                         if (data.success) {
                             console.log('Student removed successfully');
-                            // Show success message or refresh the list
-                            updateScores();  // Refresh the scores display
+                            // Remove the row from the table
+                            const row = button.closest('tr');
+                            if (row) {
+                                row.remove();
+                            }
+                            // Show success message
+                            alert(`${studentName} has been removed from the class.`);
                         } else {
                             console.error('Failed to remove student:', data.error);
                             alert('Failed to remove student: ' + data.error);
@@ -788,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .catch(error => {
                         console.error('Error removing student:', error);
-                        alert('Error removing student. Please try again.');
+                        alert('Error removing student: ' + error.message);
                     });
                 }
             }

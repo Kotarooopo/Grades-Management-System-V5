@@ -60,22 +60,27 @@
                                 <td class="px-6 py-4">{{ advisory.section }}</td>
                                 <td class="px-6 py-4">{{ advisory.student_count }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="text-green-600 font-medium">Current</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Current
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex flex-col space-y-2">
-                                        <a href="{% url 'teacher-myClassAdvisory' %}?class={{ advisory.id }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">
-                                            View List
-                                        </a>
-                                    </div>
-                                </td>                                
+                                    <a 
+                                        href="{% url 'teacher-myClassAdvisory' %}?class={{ advisory.id }}" 
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                    >
+                                        View List
+                                    </a>
+                                </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex flex-col space-y-2">
-                                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn" 
-                                            data-modal-toggle="gradingPeriodModal"
-                                            data-id="{{ advisory.id }}">Calculate
-                                        </a>
-                                    </div>
+                                    <a 
+                                        href="#" 
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                        data-modal-toggle="gradingPeriodModal"
+                                        data-id="{{ advisory.id }}"
+                                    >
+                                        Calculate
+                                    </a>
                                 </td>
                             </tr>
                         {% endfor %}
