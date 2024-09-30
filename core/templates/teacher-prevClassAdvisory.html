@@ -55,21 +55,26 @@
                                 <td class="px-6 py-4">{{ class.section }}</td>                       
                                 <td class="px-6 py-4">{{ class.student_count }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="text-red-600 font-medium">Previous</span>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Previous
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex flex-col space-y-2">
-                                        <a href="{% url 'teacher-prevClassAdvisory' %}?class={{ class.id }}" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View List</a>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col space-y-2">
-                                        <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn" 
-                                            data-modal-toggle="gradingPeriodModal"
-                                            data-id="{{ class.id }}"
-                                            data-school-year="{{ class.school_year.year }}">Calculate
+                                        <a 
+                                            href="{% url 'teacher-prevClassAdvisory' %}?class={{ class.id }}"
+                                            class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                        >
+                                        View List
                                         </a>
-                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a 
+                                        href="#" 
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                        data-modal-toggle="gradingPeriodModal"
+                                        data-id="{{ class.id }}"
+                                        data-school-year="{{ class.school_year.year }}">Calculate
+                                    </a>
                                 </td>
                             </tr>
                         {% endfor %}
