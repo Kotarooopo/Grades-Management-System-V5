@@ -1317,36 +1317,31 @@ def get_scores(request):
     selected_criteria = request.GET.get('criteria')
     selected_grading_period = request.GET.get('grading_period')
     
-    # Fetch the selected class
     selected_class = get_object_or_404(Class, id=selected_class_id)
-    
-    # Fetch the selected grading period
     grading_period = get_object_or_404(GradingPeriod, period=selected_grading_period, school_year=selected_class.school_year)
     
-    # Fetch activities based on selected criteria, class, and grading period
     activities = Activity.objects.filter(
         class_obj=selected_class,
         subject_criterion__grading_criterion__criteria_type=selected_criteria,
         grading_period=grading_period
     ).order_by('date_created')
     
-    # Fetch enrollments for the selected class
     enrollments = Enrollment.objects.filter(class_obj=selected_class)
-    
     
     scores_data = []
     for enrollment in enrollments:
         student_scores = []
         for activity in activities:
             score = Score.objects.filter(enrollment=enrollment, activity=activity).first()
-            student_scores.append({
-                'activity_name': activity.name,
-                'date_created': activity.date_created.strftime('%Y-%m-%d'),
-                'score': score.score if score else 0,
-                'max_score': activity.max_score,
-                'enrollment_id': enrollment.id,
-                'activity_id': activity.id,
-            })
+            if score:
+                student_scores.append({
+                    'activity_name': activity.name,
+                    'date_created': activity.date_created.strftime('%Y-%m-%d'),
+                    'score': score.score,
+                    'max_score': activity.max_score,
+                    'enrollment_id': enrollment.id,
+                    'activity_id': activity.id,
+                })
         
         scores_data.append({
             'student': {
@@ -1354,8 +1349,8 @@ def get_scores(request):
                 'Lastname': enrollment.student.Lastname,
             },
             'scores': student_scores,
+            'enrollment_id': enrollment.id,  # Always include the enrollment ID
         })
-        
     
     return JsonResponse({
         'selected_class': selected_class.id,

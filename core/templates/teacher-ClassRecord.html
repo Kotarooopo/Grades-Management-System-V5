@@ -662,6 +662,47 @@ document.addEventListener('DOMContentLoaded', function() {
     
         // Event delegation for handling edit and remove actions
         studentScoresBody.addEventListener('click', function (e) {
+            
+            if (e.target.classList.contains('edit-scoremodal')) {
+                e.preventDefault();
+                const link = e.target.closest('.edit-scoremodal');  // Get the closest anchor tag with the class
+                if (!link) return;
+    
+                console.log('Clicked link:', link);  // Debugging log
+    
+                // Debugging: Log all data attributes
+                const dataAttributes = link.dataset;
+                for (let key in dataAttributes) {
+                    console.log(`data-${key}:`, dataAttributes[key]);
+                }
+    
+                const enrollmentId = link.getAttribute('data-enrollment-id');
+                const activityId = link.getAttribute('data-activity-id');
+                const activityName = link.getAttribute('data-activity-name');
+                const enrollmentName = link.getAttribute('data-enrollment-name');
+                const currentScore = link.getAttribute('data-score');
+                const maxScore = link.getAttribute('data-max-score');
+    
+                console.log("Enrollment ID:", enrollmentId);  // Log the retrieved values
+                console.log("Activity ID:", activityId);
+    
+                if (enrollmentId && activityId) {
+                    document.getElementById('enrollment-id').value = enrollmentId;
+                    document.getElementById('activity-id').value = activityId;
+                    document.getElementById('activity-name').textContent = activityName;
+                    document.getElementById('enrollment-name').textContent = enrollmentName;
+                    document.getElementById('score').value = currentScore; // Populate current score
+    
+                    console.log("Opening edit modal:");
+                    console.log("Enrollment ID:", enrollmentId);
+                    console.log("Activity ID:", activityId);
+                    console.log("Current Score:", currentScore);
+    
+                    editScoreModal.classList.remove('hidden');
+                } else {
+                    console.error('Enrollment ID or Activity ID is missing');
+                }
+            }
             if (e.target.classList.contains('remove-student')) {
                 e.preventDefault();
                 const button = e.target;
@@ -717,46 +758,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error('Error removing student:', error);
                         alert('Error removing student: ' + error.message);
                     });
-                }
-            }
-            if (e.target.classList.contains('edit-scoremodal')) {
-                e.preventDefault();
-                const link = e.target.closest('.edit-scoremodal');  // Get the closest anchor tag with the class
-                if (!link) return;
-    
-                console.log('Clicked link:', link);  // Debugging log
-    
-                // Debugging: Log all data attributes
-                const dataAttributes = link.dataset;
-                for (let key in dataAttributes) {
-                    console.log(`data-${key}:`, dataAttributes[key]);
-                }
-    
-                const enrollmentId = link.getAttribute('data-enrollment-id');
-                const activityId = link.getAttribute('data-activity-id');
-                const activityName = link.getAttribute('data-activity-name');
-                const enrollmentName = link.getAttribute('data-enrollment-name');
-                const currentScore = link.getAttribute('data-score');
-                const maxScore = link.getAttribute('data-max-score');
-    
-                console.log("Enrollment ID:", enrollmentId);  // Log the retrieved values
-                console.log("Activity ID:", activityId);
-    
-                if (enrollmentId && activityId) {
-                    document.getElementById('enrollment-id').value = enrollmentId;
-                    document.getElementById('activity-id').value = activityId;
-                    document.getElementById('activity-name').textContent = activityName;
-                    document.getElementById('enrollment-name').textContent = enrollmentName;
-                    document.getElementById('score').value = currentScore; // Populate current score
-    
-                    console.log("Opening edit modal:");
-                    console.log("Enrollment ID:", enrollmentId);
-                    console.log("Activity ID:", activityId);
-                    console.log("Current Score:", currentScore);
-    
-                    editScoreModal.classList.remove('hidden');
-                } else {
-                    console.error('Enrollment ID or Activity ID is missing');
                 }
             }
     
