@@ -16,7 +16,24 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"></script>
     <!-- <script src="{% static 'js/obfuscated.min.js' %}"></script> -->
-    
+    <style>
+        .cancel-button {
+          background-color: #D1D5DB;
+          color: #1F2937;
+          transition: background-color 0.3s;
+        }
+        .cancel-button:hover {
+          background-color: #9CA3AF;
+        }
+        .logout-button {
+          background-color: #EF4444;
+          color: white;
+          transition: background-color 0.3s;
+        }
+        .logout-button:hover {
+          background-color: #B91C1C;
+        }
+      </style>
 </head>
 
 <!-- <body oncontextmenu="return false;" class="bg-gray-100"></body> -->
@@ -190,14 +207,14 @@
   
   <!-- Logout Modal -->
   <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
-      <div class="bg-white rounded-lg p-4">
-          <h2 class="text-lg font-bold mb-4">Confirm Logout</h2>
-          <p class="mb-4">Are you sure you want to logout?</p>
-          <div class="flex justify-end">
-              <button class="bg-gray-500 text-white px-4 py-2 rounded-md mr-2" onclick="hideLogoutModal()">Cancel</button>
-              <button class="bg-red-500 text-white px-4 py-2 rounded-md" onclick="confirmLogout()">Logout</button>
-          </div>
+    <div class="bg-white rounded-lg p-4">
+      <h2 class="text-lg font-bold mb-4">Confirm Logout</h2>
+      <p class="mb-4">Are you sure you want to logout?</p>
+      <div class="flex justify-end">
+        <button class="cancel-button px-4 py-2 rounded-md mr-2 cursor-pointer font-medium" onclick="hideLogoutModal()">Cancel</button>
+        <button class="logout-button px-4 py-2 rounded-md cursor-pointer font-medium" onclick="confirmLogout()">Logout</button>
       </div>
+    </div>
   </div>
     
   </div>
