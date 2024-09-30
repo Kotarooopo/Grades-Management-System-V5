@@ -1555,7 +1555,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
-from .models import Enrollment
+from django.db import transaction
+from .models import Enrollment, Score
 import json
 import logging
 
@@ -1571,17 +1572,28 @@ def remove_student(request):
         logger.info(f'Received request to remove student. Enrollment ID: {enrollment_id}')
         
         if not enrollment_id:
-            logger.error('Missing enrollment_id in request')
-            return JsonResponse({'success': False, 'error': 'Missing enrollment_id'}, status=400)
+            logger.error(f'Invalid enrollment_id in request: {enrollment_id}')
+            return JsonResponse({'success': False, 'error': 'Invalid or missing enrollment_id'}, status=400)
         
-        enrollment = get_object_or_404(Enrollment, id=enrollment_id)
-        student_name = f"{enrollment.student.Firstname} {enrollment.student.Lastname}"
+        try:
+            enrollment_id = int(enrollment_id)
+        except ValueError:
+            logger.error(f'enrollment_id is not a valid integer: {enrollment_id}')
+            return JsonResponse({'success': False, 'error': 'enrollment_id must be a valid integer'}, status=400)
         
-        logger.info(f'Removing student: {student_name} (Enrollment ID: {enrollment_id})')
-        
-        enrollment.delete()
-        
-        logger.info(f'Successfully removed student: {student_name}')
+        with transaction.atomic():
+            enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+            student_name = f"{enrollment.student.Firstname} {enrollment.student.Lastname}"
+            
+            logger.info(f'Removing student: {student_name} (Enrollment ID: {enrollment_id})')
+            
+            # Delete associated scores (if any)
+            Score.objects.filter(enrollment=enrollment).delete()
+            
+            # Now delete the enrollment
+            enrollment.delete()
+            
+            logger.info(f'Successfully removed student: {student_name}')
         
         return JsonResponse({
             'success': True,
@@ -1595,7 +1607,7 @@ def remove_student(request):
         return JsonResponse({'success': False, 'error': 'Enrollment not found'}, status=404)
     except Exception as e:
         logger.exception(f"Unexpected error in remove_student view: {str(e)}")
-        return JsonResponse({'success': False, 'error': 'An unexpected error occurred'}, status=500)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
  
 

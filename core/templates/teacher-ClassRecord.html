@@ -662,6 +662,63 @@ document.addEventListener('DOMContentLoaded', function() {
     
         // Event delegation for handling edit and remove actions
         studentScoresBody.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-student')) {
+                e.preventDefault();
+                const button = e.target;
+                const enrollmentId = button.getAttribute('data-enrollment-id');
+                const studentName = button.getAttribute('data-student-name');
+
+                console.log('Remove button clicked. Button:', button);
+                console.log('Data attributes:', button.dataset);
+                console.log('Removing student. Enrollment ID:', enrollmentId);
+                console.log('Student Name:', studentName);
+
+                if (!enrollmentId || enrollmentId === 'undefined') {
+                    console.error('Invalid Enrollment ID:', enrollmentId);
+                    alert('Error: Cannot remove student due to missing or invalid enrollment information.');
+                    return;
+                }
+
+                if (confirm(`Are you sure you want to remove ${studentName} from this class?`)) {
+                    fetch('/remove-student/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ enrollment_id: enrollmentId })
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(`Network response was not ok: ${response.status} ${JSON.stringify(errorData)}`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data);
+                        if (data.success) {
+                            console.log('Student removed successfully');
+                            // Remove the row from the table
+                            const row = button.closest('tr');
+                            if (row) {
+                                row.remove();
+                            }
+                            // Show success message
+                            alert(`${studentName} has been removed from the class.`);
+                        } else {
+                            console.error('Failed to remove student:', data.error);
+                            alert('Failed to remove student: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error removing student:', error);
+                        alert('Error removing student: ' + error.message);
+                    });
+                }
+            }
             if (e.target.classList.contains('edit-scoremodal')) {
                 e.preventDefault();
                 const link = e.target.closest('.edit-scoremodal');  // Get the closest anchor tag with the class
@@ -703,63 +760,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
     
-            if (e.target.classList.contains('remove-student')) {
-                e.preventDefault();
-                const button = e.target;
-                const enrollmentId = button.getAttribute('data-enrollment-id');
-                const studentName = button.getAttribute('data-student-name');
-
-                console.log('Remove button clicked. Button:', button);
-                console.log('Data attributes:', button.dataset);
-                console.log('Removing student. Enrollment ID:', enrollmentId);
-                console.log('Student Name:', studentName);
-
-                if (!enrollmentId) {
-                    console.error('Enrollment ID is missing');
-                    alert('Error: Cannot remove student due to missing information.');
-                    return;
-                }
-
-                if (confirm(`Are you sure you want to remove ${studentName} from this class?`)) {
-                    fetch('/remove-student/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: JSON.stringify({ enrollment_id: enrollmentId })
-                    })
-                    .then(response => {
-                        console.log('Response status:', response.status);
-                        if (!response.ok) {
-                            return response.text().then(text => {
-                                throw new Error(`Network response was not ok: ${response.status} ${text}`);
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Response data:', data);
-                        if (data.success) {
-                            console.log('Student removed successfully');
-                            // Remove the row from the table
-                            const row = button.closest('tr');
-                            if (row) {
-                                row.remove();
-                            }
-                            // Show success message
-                            alert(`${studentName} has been removed from the class.`);
-                        } else {
-                            console.error('Failed to remove student:', data.error);
-                            alert('Failed to remove student: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error removing student:', error);
-                        alert('Error removing student: ' + error.message);
-                    });
-                }
-            }
+            
         });
     
         // Function to get CSRF token
