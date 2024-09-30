@@ -38,10 +38,20 @@
                             <td class="px-6 py-4">{{ enrollment.class_obj.subject.name }}</td>
                             <td class="px-6 py-4 font-medium text-gray-400">{{ enrollment.class_obj.teacher.Lastname }}, {{ enrollment.class_obj.teacher.Firstname }}</td>
                             <td class="px-6 py-4">
-                                <button onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'ViewList', '{{ school_year.id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                                <button 
+                                    onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'ViewList', '{{ school_year.id }}')"
+                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                    >
+                                    View
+                                </button>
                             </td>
                             <td class="px-6 py-4">
-                                <button onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'InitialGrade', '{{ school_year.id }}')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">Initial Grade</button>
+                                <button 
+                                    onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'InitialGrade', '{{ school_year.id }}')"
+                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                    >
+                                    Inital Grade        
+                                </button>
                             </td>
                         </tr>
                         {% endfor %}

@@ -39,10 +39,20 @@
                     <td class="px-6 py-4">{{ item.subject }}</td>
                     <td class="px-6 py-4 font-medium text-gray-400">{{ item.teacher }}</td>
                     <td class="px-6 py-4">
-                        <button onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'ScoreList')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">View</button>
+                        <button 
+                                    onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'ScoreList')"
+                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                    >
+                                    View
+                        </button>
                     </td>
                     <td class="px-6 py-4">
-                        <button onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'InitialGrade')" class="font-medium text-blue-600 dark:text-blue-500 hover:underline view-btn">Initial Grade</button>
+                        <button 
+                                    onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'InitialGrade')"
+                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                    >
+                                    Initial Grade
+                        </button>
                     </td>
                 </tr>
                 {% empty %}
