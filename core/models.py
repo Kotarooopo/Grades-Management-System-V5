@@ -4,15 +4,22 @@ import os
 import uuid
 from PIL import Image
 from django.db import IntegrityError
+from django.conf import settings
     
+import logging
 
 from django.core.exceptions import ValidationError
 
+logger = logging.getLogger(__name__)
 def resize_image(image, size=(300, 300)):
-    img = Image.open(image)
-    img.thumbnail(size)
-    img_format = img.format
-    img.save(image.path, img_format)
+    if image and hasattr(image, 'path') and os.path.isfile(image.path):
+        try:
+            img = Image.open(image.path)
+            img.thumbnail(size)
+            img_format = img.format
+            img.save(image.path, img_format)
+        except Exception as e:
+            logger.error(f"Error resizing image: {str(e)}")
 
 def user_directory_path(instance, filename):
     ext = filename.split('.')[-1]

@@ -130,7 +130,7 @@ class UserRegistrationForm(forms.Form):
     first_name = forms.CharField(max_length=200)
     middle_name = forms.CharField(max_length=200, required=False)
     last_name = forms.CharField(max_length=200)
-    gender = forms.ChoiceField(choices=[('male', 'Male'), ('female', 'Female')])
+    gender = forms.ChoiceField(choices=[('Male', 'Male'), ('Female', 'Female')])
     phone_number = forms.CharField(max_length=11)
     profile_picture = forms.ImageField(required=False)
 

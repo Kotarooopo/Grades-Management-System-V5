@@ -541,57 +541,163 @@ def teacher_list(request):
 
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import Group
+from .models import Student, User
+from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Student
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.db import transaction
+import logging
 
-User = get_user_model()
+logger = logging.getLogger(__name__)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
+@require_http_methods(["GET", "POST"])
 def student_list(request):
     if request.method == 'POST':
-        if 'change_pass' in request.POST:
-            edit_id = request.POST.get('edit_id')
-            new_password = request.POST.get('new_password')
-            confirm_password = request.POST.get('confirm_password')
+        user_id = request.POST.get('user')
+        print(f"User ID received: {user_id}")
 
-            if new_password and confirm_password:
-                if new_password != confirm_password:
-                    messages.error(request, "Passwords do not match.")
-                    return redirect('student-list')
+        if not user_id:
+            logger.error("User ID is empty")
+            return JsonResponse({'status': 'error', 'message': 'User ID is required.'}, status=400)
 
-                user = get_object_or_404(User, id=edit_id)
-                user.password = make_password(new_password)
+        email = request.POST.get('email')
+        firstname = request.POST.get('Firstname')
+        lastname = request.POST.get('Lastname')
+        middle_initial = request.POST.get('Middle-Initial')
+        phone_number = request.POST.get('phone_number')
+        gender = request.POST.get('gender')
+        role = request.POST.get('role')
+        status = request.POST.get('status')
+
+        try:
+            with transaction.atomic():
+                user = User.objects.get(id=user_id)
+
+                # Update User model fields
+                user.email = email
+                user.is_active = (status == 'Active')
+
+                # Reset all roles first
+                user.is_student = False
+                user.is_teacher = False
+                user.is_administrator = False
+
+                # Create or update specific user types based on the selected role
+                if role == 'Student':
+                    user.is_student = True
+                    student, created = Student.objects.get_or_create(user=user)
+                    student.Firstname = firstname
+                    student.Lastname = lastname
+                    student.Middle_Initial = middle_initial
+                    student.Phone_Number = phone_number
+                    student.Gender = gender
+                    student.save()
+                    
+                    # Delete other role-specific objects if they exist
+                    Teacher.objects.filter(user=user).delete()
+                    Administrator.objects.filter(user=user).delete()
+                elif role == 'Teacher':
+                    user.is_teacher = True
+                    teacher, created = Teacher.objects.get_or_create(user=user)
+                    teacher.Firstname = firstname
+                    teacher.Lastname = lastname
+                    teacher.Middle_Initial = middle_initial
+                    teacher.Phone_Number = phone_number
+                    teacher.Gender = gender
+                    teacher.save()
+                    
+                    # Delete other role-specific objects if they exist
+                    Student.objects.filter(user=user).delete()
+                    Administrator.objects.filter(user=user).delete()
+                elif role == 'Admin':
+                    user.is_administrator = True
+                    administrator, created = Administrator.objects.get_or_create(user=user)
+                    administrator.Firstname = firstname
+                    administrator.Lastname = lastname
+                    administrator.Middle_Initial = middle_initial
+                    administrator.Phone_Number = phone_number
+                    administrator.Gender = gender
+                    administrator.save()
+                    
+                    # Delete other role-specific objects if they exist
+                    Student.objects.filter(user=user).delete()
+                    Teacher.objects.filter(user=user).delete()
+
                 user.save()
-                messages.success(request, "Password updated successfully.")
-            else:
-                messages.error(request, "Please fill in both password fields.")
+
+                logger.info(f"User {user_id} updated successfully")
+                return JsonResponse({'status': 'success', 'message': 'User updated successfully.'})
+
+        except User.DoesNotExist:
+            logger.error(f"User {user_id} not found")
+            return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+        except Exception as e:
+            logger.exception(f"Error updating user {user_id}: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': 'An error occurred while updating the user.'}, status=500)
         
-        elif 'deactivate_account' in request.POST:
-            deactivate_id = request.POST.get('deactivate_id')
-            user = get_object_or_404(User, id=deactivate_id)
-            user.is_active = False
-            user.save()
-            messages.success(request, f"Account for {user.email} has been deactivated.")
+    sort_by = request.GET.get('sort', 'user__email')  # Default sort by email
+    order = request.GET.get('order', 'asc')
 
+    # Define the sorting field
+    if order == 'asc':
+        sort_order = sort_by
+    else:
+        sort_order = f'-{sort_by}'
 
-        elif 'toggle_status' in request.POST:
-            toggle_status_id = request.POST.get('toggle_status_id')
-            current_status = request.POST.get('current_status')
-            user = get_object_or_404(User, id=toggle_status_id)
-            user.is_active = not user.is_active
-            user.save()
-            action = "activated" if user.is_active else "deactivated"
-            messages.success(request, f"Account for {user.email} has been {action}.")
+    # Retrieve students with sorting
+    students = Student.objects.select_related('user').order_by(sort_order)
 
-        return redirect('student-list')
+    context = {
+        'students': students,
+        'sort_by': sort_by,
+        'order': order,
+    }
 
     students = Student.objects.all()
-    return render(request, 'admin-StudentList.html', {'students': students})
+    return render(request, 'admin-StudentList.html', context)
 
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
+from django.db import transaction
+from .models import User
+import logging
+
+logger = logging.getLogger(__name__)
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def change_student_password(request):
+    if not request.user.is_administrator:
+        return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
+    email = request.POST.get('email')
+    new_password = request.POST.get('new_password')
+
+    if not email or not new_password:
+        logger.error("Email or new password is missing")
+        return JsonResponse({'status': 'error', 'message': 'Email and new password are required.'}, status=400)
+
+    try:
+        with transaction.atomic():
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+
+            logger.info(f"Password changed successfully for user: {email}")
+            return JsonResponse({'status': 'success', 'message': 'Password changed successfully.'})
+
+    except User.DoesNotExist:
+        logger.error(f"User with email {email} not found")
+        return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+    except Exception as e:
+        logger.exception(f"Error changing password for user {email}: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': 'An error occurred while changing the password.'}, status=500)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])

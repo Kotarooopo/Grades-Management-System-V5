@@ -49,6 +49,7 @@ urlpatterns = [
     path('api/get_activity_details/<int:activity_id>/', views.get_activity_details, name='get_activity_details'),
     path('edit_activity/<int:activity_id>/', views.edit_activity, name='edit_activity'),
     path('delete-activity/', views.delete_activity, name='delete_activity'),
+    path('change_student_password/', views.change_student_password, name='change_student_password'),
 
 
 

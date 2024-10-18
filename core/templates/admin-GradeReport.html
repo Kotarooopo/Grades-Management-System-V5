@@ -12,7 +12,7 @@
     <div class="mb-6">
         <form id="searchForm" class="flex items-center justify-center">
             <div class="relative w-full max-w-xl">
-                <input type="text" id="student-search" name="student-search" class="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Search by student name..." required>
+                <input type="text" id="student-search" name="student-search" class="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Search by last name, first name, or email..." required>
                 <button type="submit" class="absolute right-0 top-0 mt-2 mr-2">
                     <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -22,6 +22,19 @@
         </form>
     </div>
 
+    <!-- Debug information -->
+    <div class="mb-4 p-4 bg-yellow-100 rounded">
+        <h2 class="font-bold">Debug Info:</h2>
+        <p>Number of report cards: {{ report_cards|length }}</p>
+        {% if report_cards %}
+            <p>First report card student: {{ report_cards.0.student.get_full_name }}</p>
+            <p>First report card school year: {{ report_cards.0.school_year.year }}</p>
+            <p>Number of subjects in first report card: {{ report_cards.0.grades_data|length }}</p>
+        {% else %}
+            <p>No report cards available.</p>
+        {% endif %}
+    </div>
+
     <div id="report-cards-container">
         {% for report_card in report_cards %}
         <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
@@ -29,7 +42,7 @@
                 <h2 class="text-xl font-bold text-center">Report Card</h2>
                 <p class="text-center">{{ report_card.school_year.year }} Academic Year</p>
             </div>
-        
+
             <div class="p-4 bg-gray-100">
                 <p class="mb-2"><strong>Student:</strong> {{ report_card.student.get_full_name }}</p>
                 <p class="mb-2"><strong>Email:</strong> {{ report_card.student.email }}</p>
@@ -68,57 +81,90 @@
                         <tr class="border-t font-bold bg-gray-100">
                             <td class="px-4 py-2" colspan="5">General Average</td>
                             <td class="px-4 py-2 text-center">{{ report_card.general_average }}</td>
-                            <td class="px-4 py-2 text-center">{{ report_card.general_average|yesno:"Passed,Failed" }}</td>
+                            <td class="px-4 py-2 text-center">
+                                {% if report_card.general_average < 75 %}
+                                    Failed
+                                {% else %}
+                                    Passed
+                                {% endif %}
+                            </td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="p-4 bg-gray-100">
-                <h3 class="text-lg font-bold mb-2">Grading Scale</h3>
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="px-4 py-2 text-left">Descriptors</th>
-                            <th class="px-4 py-2 text-left">Grading Scale</th>
-                            <th class="px-4 py-2 text-left">Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td class="px-4 py-2">Outstanding</td><td class="px-4 py-2">90 - 100</td><td class="px-4 py-2">Passed</td></tr>
-                        <tr><td class="px-4 py-2">Very Satisfactory</td><td class="px-4 py-2">85 - 89</td><td class="px-4 py-2">Passed</td></tr>
-                        <tr><td class="px-4 py-2">Satisfactory</td><td class="px-4 py-2">80 - 84</td><td class="px-4 py-2">Passed</td></tr>
-                        <tr><td class="px-4 py-2">Fairly Satisfactory</td><td class="px-4 py-2">75 - 79</td><td class="px-4 py-2">Passed</td></tr>
-                        <tr><td class="px-4 py-2">Did Not Meet Expectations</td><td class="px-4 py-2">Below 75</td><td class="px-4 py-2">Failed</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
+        <div class="p-4 text-center">
+            <button class="print-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Print Report Card
+            </button>
+        </div>
+        {% empty %}
+        <p class="text-center text-gray-600">No report cards found.</p>
         {% endfor %}
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchForm = document.getElementById('searchForm');
-    const searchInput = document.getElementById('student-search');
-    const reportCardsContainer = document.getElementById('report-cards-container');
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('student-search');
+        const reportCardsContainer = document.getElementById('report-cards-container');
 
-    searchForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const searchTerm = searchInput.value.toLowerCase();
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchTerm = searchInput.value.toLowerCase();
+            let isResultFound = false;
 
-        Array.from(reportCardsContainer.children).forEach(card => {
-            const studentName = card.querySelector('p:nth-child(1)').textContent.toLowerCase();
-            const studentEmail = card.querySelector('p:nth-child(2)').textContent.toLowerCase();
+            Array.from(reportCardsContainer.children).forEach(card => {
+                if (card.classList.contains('bg-white')) {  // Only search report card divs
+                    const studentInfo = card.querySelector('p:nth-child(1)').textContent.toLowerCase();
+                    const studentEmail = card.querySelector('p:nth-child(2)').textContent.toLowerCase();
 
-            if (studentName.includes(searchTerm) || studentEmail.includes(searchTerm)) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
+                    // Split the student info into parts
+                    const [, fullName] = studentInfo.split(':');
+                    const [lastName] = fullName.trim().split(',').map(part => part.trim());
+
+                    // Check if the search term matches last name or email
+                    if (lastName.includes(searchTerm) || studentEmail.includes(searchTerm)) {
+                        card.style.display = '';
+                        card.nextElementSibling.style.display = ''; // Show the print button div
+                        isResultFound = true;
+                    } else {
+                        card.style.display = 'none';
+                        card.nextElementSibling.style.display = 'none'; // Hide the print button div
+                    }
+                }
+            });
+
+            // Show/hide the "No report cards found" message
+            const noReportCardsMessage = reportCardsContainer.querySelector('p.text-center.text-gray-600');
+            if (noReportCardsMessage) {
+                noReportCardsMessage.style.display = isResultFound ? 'none' : 'block';
             }
         });
+    
+        // Print functionality
+        const printButtons = document.querySelectorAll('.print-button');
+        printButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const reportCard = this.closest('.bg-white.shadow-md');
+                const printWindow = window.open('', '', 'height=600,width=800');
+                
+                printWindow.document.write('<html><head><title>Print Report Card</title>');
+                printWindow.document.write('<link rel="stylesheet" href="{% static "css/tailwind.min.css" %}" type="text/css" />');
+                printWindow.document.write('</head><body>');
+                printWindow.document.write(reportCard.innerHTML);
+                printWindow.document.write('</body></html>');
+                
+                printWindow.document.close();
+                printWindow.focus();
+                
+                printWindow.onload = function() {
+                    printWindow.print();
+                    printWindow.close();
+                };
+            });
+        });
     });
-});
 </script>
 {% endblock %}
