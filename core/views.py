@@ -112,19 +112,18 @@ def login(request):
         if user is not None:
             auth_login(request, user)
             if user.is_administrator:
-                return redirect('admin-dashboard')
+                return JsonResponse({'success': True, 'redirect_url': '/admin-dashboard/'})
             elif user.is_teacher:
-                return redirect('teacher-dashboard')
+                return JsonResponse({'success': True, 'redirect_url': '/teacher-dashboard/'})
             elif user.is_student:
-                return redirect('student-dashboard')
+                return JsonResponse({'success': True, 'redirect_url': '/student-dashboard/'})
             else:
-                messages.error(request, 'User role not defined.')
-                return redirect('login')
+                return JsonResponse({'success': False, 'message': 'User role not defined.'})
         else:
-            messages.error(request, 'Username or Password is incorrect')
+            return JsonResponse({'success': False, 'message': 'Username or Password is incorrect'})
 
-    context = {}
-    return render(request, 'login.html', context)
+    # Handle GET request
+    return render(request, 'login.html')
 
 
 
@@ -140,8 +139,7 @@ def logoutUser(request):
 
 
 #edit-profile admin
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .forms import AdministratorForm, PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -154,30 +152,31 @@ def profile(request):
     if request.method == 'POST':
         if 'current_password' in request.POST:
             change_form = PasswordChangeForm(request.POST)
-            form = AdministratorForm(instance=admin)
             if change_form.is_valid():
                 current_password = change_form.cleaned_data['current_password']
                 new_password = change_form.cleaned_data['new_password']
                 
                 if not request.user.check_password(current_password):
-                    messages.error(request, 'Current password is incorrect')
+                    return JsonResponse({'status': 'error', 'message': 'Current password is incorrect'})
                 else:
                     user = request.user
                     user.set_password(new_password)
                     user.save()
-                    update_session_auth_hash(request, user)  # Important!
-                    messages.success(request, 'Your password was successfully updated!')
-                    return redirect('admin-profile')  # Redirect to the profile page
+                    update_session_auth_hash(request, user)
+                    return JsonResponse({'status': 'success', 'message': 'Your password was successfully updated!'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Invalid form data'})
         else:
             form = AdministratorForm(request.POST, request.FILES, instance=admin)
-            change_form = PasswordChangeForm()
             if form.is_valid():
                 form.save()
-                messages.success(request, 'Profile updated successfully!')
-                return redirect('admin-profile')  # Redirect to the profile page
-    else:
-        form = AdministratorForm(instance=admin)
-        change_form = PasswordChangeForm()
+                return JsonResponse({'status': 'success', 'message': 'Profile updated successfully!'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'There was an issue updating the profile'})
+    
+    # If not POST, fallback for GET
+    form = AdministratorForm(instance=admin)
+    change_form = PasswordChangeForm()
 
     context = {
         'form': form,
@@ -185,6 +184,8 @@ def profile(request):
         'administrator': admin,
     }
     return render(request, 'admin-profile.html', context)
+
+
 
 
 

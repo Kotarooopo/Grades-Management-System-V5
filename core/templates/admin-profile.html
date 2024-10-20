@@ -35,12 +35,12 @@
     
     
 
-    <div class="container mx-auto p-4">
+    <div class="w-full lg:w-2/3">
         <!-- Navigation Tabs -->
         <div class="flex border-b mb-4">
-            <button class="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none" onclick="showTab('overview')">Overview</button>
-            <button class="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none" onclick="showTab('edit-profile')">Edit Profile</button>
-            <button class="px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none" onclick="showTab('change-password')">Change Password</button>
+            <button id="tab-overview" class="tab-button active-tab px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none" onclick="showTab('overview')">Overview</button>
+            <button id="tab-edit-profile" class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none" onclick="showTab('edit-profile')">Edit Profile</button>
+            <button id="tab-change-password" class="tab-button px-4 py-2 font-medium text-gray-600 hover:text-gray-800 focus:outline-none" onclick="showTab('change-password')">Change Password</button>
         </div>
     
         <!-- Overview Tab -->
@@ -53,11 +53,9 @@
                     <dt class="font-medium text-gray-500">Phone Number</dt>
                     <dt class="font-medium text-gray-500">Gender</dt>
                     <dt class="font-medium text-gray-500">Email</dt>
-                    
                 </div>
                 <div class="space-y-2 text-left">
                     <dd class="text-gray-900">{{ request.user.administrator.Firstname }} {{ request.user.administrator.Middle_Initial }} {{ request.user.administrator.Lastname }}</dd>
-                    <dd class="text-gray-900">{{ request.user.administrator.id }}</dd>
                     <dd class="text-gray-900">Admin</dd>
                     <dd class="text-gray-900">{{ request.user.administrator.Phone_Number }}</dd>
                     <dd class="text-gray-900">{{ request.user.administrator.Gender }}</dd>
@@ -70,14 +68,6 @@
         <!-- Edit Profile Tab (hidden by default) -->
         <div id="edit-profile" class="bg-white rounded-lg shadow-md p-6 hidden">
             <h3 class="text-lg font-medium text-gray-900">Edit Profile</h3>
-        
-            {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
         
             <form method="post" action="{% url 'admin-profile' %}" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -94,18 +84,12 @@
                             </div>
                         {% endif %}
                     </div>
-                    <label for="{{ form.profile_picture.id_for_label }}" class="cursor-pointer bg-green-700 text-white py-2 px-4 rounded-md inline-block">
+                    <label for="{{ form.profile_picture.id_for_label }}" class="cursor-pointer bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md inline-block font-semibold">
                         Upload New Image
                     </label>
                     <input type="file" id="{{ form.profile_picture.id_for_label }}" name="{{ form.profile_picture.name }}" class="hidden" accept="image/*" onchange="updateFileName(this)">
                     <p id="fileName" class="mt-2 text-sm text-gray-600"></p>
                 </div>
-        
-                <div class="mb-4">
-                    <label class="block text-gray-700">Admin ID</label>
-                    <input type="text" value="{{ administrator.user_id }}" readonly class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100">
-                </div>
-        
                 <div class="mb-4">
                     <label class="block text-gray-700">First Name</label>
                     <input type="text" name="{{ form.Firstname.name }}" value="{{ request.user.administrator.Firstname }}" class="mt-1 block w-full rounded-md border-gray-300">
@@ -138,7 +122,10 @@
                     <label class="block text-gray-700">Email Address</label>
                     <input type="email" name="{{ form.email.name }}" value="{{ request.user.administrator.user }}" class="mt-1 block w-full rounded-md border-gray-300">
                 </div>
-                <button type="button" onclick="showSaveChangesModal()" class="bg-green-700 text-white py-2 px-4 rounded-md mt-4">Save Changes</button>
+                <button type="button" onclick="showSaveChangesModal()" class="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md mt-4 font-semibold">
+                    Save Changes
+                </button>
+                
 
                 <div id="saveChangesModal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
                     <div class="bg-white rounded-lg p-4">
@@ -160,7 +147,7 @@
             <form class="space-y-4 mt-4" action="{% url 'admin-profile' %}" method="POST">
                 {% csrf_token %}
                 {{ change_form.as_p }}
-                <button type="button" onclick="showPassChangesModal()" class="bg-green-700 text-white py-2 px-4 rounded-md mt-4">Save Changes</button>
+                <button type="button" onclick="showPassChangesModal()" class="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md mt-4 font-semibold">Save Changes</button>
 
                 <div id="passChangesModal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
                     <div class="bg-white rounded-lg p-4">
@@ -178,57 +165,132 @@
     </div>
 
 
+
+
     <!-- Savechanges Modal -->
     <script>
-        function showSaveChangesModal() {
-            document.getElementById('saveChangesModal').classList.remove('hidden');
-        }
+// Function to show the save changes modal
+function showSaveChangesModal() {
+    document.getElementById('saveChangesModal').classList.remove('hidden');
+}
+
+// Function to hide the save changes modal
+function hideSaveChangesModal() {
+    document.getElementById('saveChangesModal').classList.add('hidden');
+}
+
+// Function to confirm and submit the form
+function confirmSaveChanges() {
+    hideSaveChangesModal();
     
-        function hideSaveChangesModal() {
-            document.getElementById('saveChangesModal').classList.add('hidden');
-        }
+    // Get the form
+    const form = document.querySelector('#edit-profile form');
     
-        function confirmSaveChanges() {
-            console.log('Save Changes confirmed');
-            hideLogoutModal();
-
-            window.location.href = "{% url 'admin-profile' %}";
-        }
-    </script>
-
-
-
-    <!-- passwordchange Modal -->
-    <script>
-        function showPassChangesModal() {
-            document.getElementById('passChangesModal').classList.remove('hidden');
-        }
+    // Create FormData object
+    const formData = new FormData(form);
     
-        function hidePassChangesModal() {
-            document.getElementById('passChangesModal').classList.add('hidden');
+    // Send AJAX request
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(data.message);
+            // Optionally refresh the page or update the UI
+            location.reload();
+        } else {
+            alert(data.message || 'An error occurred while updating the profile.');
         }
-    
-        function confirmpassChanges() {
-            console.log('Save Changes confirmed');
-            hideLogoutModal();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An unexpected error occurred. Please try again.');
+    });
+}
 
-            window.location.href = "{% url 'admin-profile' %}";
+// Function to show the password change modal
+function showPassChangesModal() {
+    document.getElementById('passChangesModal').classList.remove('hidden');
+}
+
+// Function to hide the password change modal
+function hidePassChangesModal() {
+    document.getElementById('passChangesModal').classList.add('hidden');
+}
+
+// Function to confirm and submit the password change form
+function confirmPassChanges() {
+    hidePassChangesModal();
+    
+    // Get the form
+    const form = document.querySelector('#change-password form');
+    
+    // Create FormData object
+    const formData = new FormData(form);
+    
+    // Send AJAX request
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(data.message);
+            // Optionally refresh the page or update the UI
+            location.reload();
+        } else {
+            alert(data.message || 'An error occurred while changing the password.');
         }
-    </script>
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An unexpected error occurred. Please try again.');
+    });
+}
 
-    
-    <script>
-    function showTab(tabId) {
-        // Hide all tabs
-        document.querySelectorAll('#overview, #edit-profile, #change-password').forEach(tab => {
-            tab.classList.add('hidden');
-        });
-        // Show the selected tab
-        document.getElementById(tabId).classList.remove('hidden');
-    }
-    </script>
+// Function to switch between tabs
+function showTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll('#overview, #edit-profile, #change-password').forEach(tab => {
+        tab.classList.add('hidden');
+    });
+
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active-tab');
+    });
+
+    // Show the selected tab
+    document.getElementById(tabId).classList.remove('hidden');
+
+    // Add active class to the clicked button
+    document.getElementById('tab-' + tabId).classList.add('active-tab');
+}
+</script>
     
 </div>
+
+<style>
+    .active-tab {
+        background-color: #f7fafc; /* bg-gray-100 */
+        color: #2563EB; /* text-blue-600 from Tailwind */
+        border-bottom: 2px solid #2563EB; /* Blue border matching text-blue-600 */
+        border-top-left-radius: 8px; /* Rounded top-left edge */
+        border-top-right-radius: 8px; /* Rounded top-right edge */
+    }
+</style>
+
+
+
 
 {% endblock %}
 

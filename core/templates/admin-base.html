@@ -318,7 +318,32 @@ function setActiveTab() {
 
 // Call setActiveTab when the page loads
 document.addEventListener('DOMContentLoaded', setActiveTab);
+document.addEventListener('DOMContentLoaded', function() {
+    setActiveTab(); // Set initial active tab
 
-// Your existing JavaScript code here...
+    // Add click listeners to all sidebar items
+    const allSidebarItems = document.querySelectorAll('#sidebar a, #submenu1 a, #submenu2 a');
+    allSidebarItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            // Remove active class from all items
+            allSidebarItems.forEach(i => {
+                i.classList.remove('bg-blue-700');
+                i.classList.add('hover:bg-blue-600');
+            });
+
+            // Add active class to clicked item
+            this.classList.add('bg-blue-700');
+            this.classList.remove('hover:bg-blue-600');
+
+            // If it's a submenu item, show the parent submenu
+            const submenu = this.closest('.hidden');
+            if (submenu) {
+                submenu.classList.remove('hidden');
+            }
+
+            setActiveTab(this);
+        });
+    });
+});
 
 </script>

@@ -13,12 +13,18 @@
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
         }
-        /* Ensures the centering is effective */
         .flex-center {
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh; /* Full viewport height */
+            min-height: 100vh;
+        }
+        .login-button {
+            background-color: #15803d;
+            transition: background-color 0.3s ease;
+        }
+        .login-button:hover {
+            background-color: #166534;
         }
     </style>
 </head>
@@ -50,12 +56,11 @@
                 <label for="remember" class="ml-2 block text-sm text-gray-900">Remember me</label>
             </div>
            
-            <div class="mb-4">
-                <button type="submit"
-                    class="w-full bg-green-900 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:bg-green-700">
-                    Login
-                </button>
-            </div>
+            <button type="submit"
+                class="w-full text-white py-2 px-4 rounded-md focus:outline-none login-button font-semibold">
+                Login
+            </button>
+        
             <div class="flex justify-center">
                 <div class="text-center">
                     {% for message in messages %}
@@ -87,12 +92,44 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const form = document.querySelector('form');
+            const form = document.getElementById('login-form');
             const loadingSpinner = document.getElementById('loading-spinner');
 
             form.addEventListener('submit', function (e) {
+                e.preventDefault(); // Prevent the form from submitting normally
+
                 // Show loading spinner
                 loadingSpinner.classList.remove('hidden');
+
+                // Get form data
+                const formData = new FormData(form);
+
+                // Send AJAX request
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading spinner
+                    loadingSpinner.classList.add('hidden');
+
+                    if (data.success) {
+                        // Redirect to dashboard or desired page
+                        window.location.href = data.redirect_url;
+                    } else {
+                        // Show alert for failed login
+                        alert('Login failed. Please check your credentials and try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingSpinner.classList.add('hidden');
+                    alert('An error occurred. Please try again later.');
+                });
             });
         });
     </script>

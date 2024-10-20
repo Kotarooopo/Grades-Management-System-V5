@@ -22,22 +22,9 @@
         </form>
     </div>
 
-    <!-- Debug information -->
-    <div class="mb-4 p-4 bg-yellow-100 rounded">
-        <h2 class="font-bold">Debug Info:</h2>
-        <p>Number of report cards: {{ report_cards|length }}</p>
-        {% if report_cards %}
-            <p>First report card student: {{ report_cards.0.student.get_full_name }}</p>
-            <p>First report card school year: {{ report_cards.0.school_year.year }}</p>
-            <p>Number of subjects in first report card: {{ report_cards.0.grades_data|length }}</p>
-        {% else %}
-            <p>No report cards available.</p>
-        {% endif %}
-    </div>
-
-    <div id="report-cards-container">
+    <div id="report-cards-container" style="display: none;">
         {% for report_card in report_cards %}
-        <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+        <div class="bg-white shadow-md rounded-lg overflow-hidden mb-8 report-card">
             <div class="bg-green-700 text-white p-4">
                 <h2 class="text-xl font-bold text-center">Report Card</h2>
                 <p class="text-center">{{ report_card.school_year.year }} Academic Year</p>
@@ -91,13 +78,14 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="p-4 text-center">
+                    <button class="print-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Print Report Card
+                    </button>
+                </div>
             </div>
         </div>
-        <div class="p-4 text-center">
-            <button class="print-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Print Report Card
-            </button>
-        </div>
+        
         {% empty %}
         <p class="text-center text-gray-600">No report cards found.</p>
         {% endfor %}
@@ -109,45 +97,39 @@
         const searchForm = document.getElementById('searchForm');
         const searchInput = document.getElementById('student-search');
         const reportCardsContainer = document.getElementById('report-cards-container');
+        const reportCards = document.querySelectorAll('.report-card');
 
         searchForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const searchTerm = searchInput.value.toLowerCase();
             let isResultFound = false;
 
-            Array.from(reportCardsContainer.children).forEach(card => {
-                if (card.classList.contains('bg-white')) {  // Only search report card divs
-                    const studentInfo = card.querySelector('p:nth-child(1)').textContent.toLowerCase();
-                    const studentEmail = card.querySelector('p:nth-child(2)').textContent.toLowerCase();
+            reportCards.forEach(card => {
+                const studentInfo = card.querySelector('.bg-gray-100 p:nth-child(1)').textContent.toLowerCase();
+                const studentEmail = card.querySelector('.bg-gray-100 p:nth-child(2)').textContent.toLowerCase();
 
-                    // Split the student info into parts
-                    const [, fullName] = studentInfo.split(':');
-                    const [lastName] = fullName.trim().split(',').map(part => part.trim());
-
-                    // Check if the search term matches last name or email
-                    if (lastName.includes(searchTerm) || studentEmail.includes(searchTerm)) {
-                        card.style.display = '';
-                        card.nextElementSibling.style.display = ''; // Show the print button div
-                        isResultFound = true;
-                    } else {
-                        card.style.display = 'none';
-                        card.nextElementSibling.style.display = 'none'; // Hide the print button div
-                    }
+                // Check if the search term matches the student's full name or email
+                if (studentInfo.includes(searchTerm) || studentEmail.includes(searchTerm)) {
+                    card.style.display = ''; // Show the report card
+                    isResultFound = true;
+                } else {
+                    card.style.display = 'none'; // Hide the report card
                 }
             });
 
-            // Show/hide the "No report cards found" message
-            const noReportCardsMessage = reportCardsContainer.querySelector('p.text-center.text-gray-600');
-            if (noReportCardsMessage) {
-                noReportCardsMessage.style.display = isResultFound ? 'none' : 'block';
+            // Show/hide the report card container
+            if (isResultFound) {
+                reportCardsContainer.style.display = 'block';
+            } else {
+                reportCardsContainer.style.display = 'none';
             }
         });
-    
+
         // Print functionality
         const printButtons = document.querySelectorAll('.print-button');
         printButtons.forEach(button => {
             button.addEventListener('click', function() {
-                const reportCard = this.closest('.bg-white.shadow-md');
+                const reportCard = this.closest('.report-card');
                 const printWindow = window.open('', '', 'height=600,width=800');
                 
                 printWindow.document.write('<html><head><title>Print Report Card</title>');
