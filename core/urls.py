@@ -50,6 +50,7 @@ urlpatterns = [
     path('edit_activity/<int:activity_id>/', views.edit_activity, name='edit_activity'),
     path('delete-activity/', views.delete_activity, name='delete_activity'),
     path('change_student_password/', views.change_student_password, name='change_student_password'),
+    #path('export-report-card/', views.export_report_card, name='export-report-card'),
 
 
 

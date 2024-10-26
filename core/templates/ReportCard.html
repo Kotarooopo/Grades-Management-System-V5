@@ -1,0 +1,156 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Student Report Card</title>
+    <style>
+        @page {
+            size: letter portrait;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #006400;
+            color: white;
+        }
+        .student-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .grades-table td {
+            text-align: center;
+        }
+        .grades-table th {
+            text-align: center;
+        }
+        .final-grade {
+            font-weight: bold;
+            background-color: #f5f5f5;
+        }
+        .grading-scale {
+            margin-top: 20px;
+        }
+        .grading-scale h2 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .remarks {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Report Card</h1>
+        <p>{{ report_card.school_year.year }} Academic Year</p>
+    </div>
+
+    <div class="student-info">
+        <p><strong>Student:</strong> {{ report_card.student.get_full_name }}</p>
+        <p><strong>Email:</strong> {{ report_card.student.email }}</p>
+        <p><strong>Grade & Section:</strong> {{ report_card.grade_section }}</p>
+    </div>
+
+    <table class="grades-table">
+        <thead>
+            <tr>
+                <th rowspan="2">Learning Areas</th>
+                <th colspan="4">Quarter</th>
+                <th rowspan="2">Final Grade</th>
+                <th rowspan="2">Remarks</th>
+            </tr>
+            <tr>
+                {% for period in report_card.grading_periods %}
+                    <th>{{ period.period }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject, grades in report_card.grades_data.items %}
+                <tr>
+                    <td>{{ subject }}</td>
+                    {% for period in report_card.grading_periods %}
+                        <td>{{ grades.quarterly_grades|get_item:period.period|default_if_none:"-" }}</td>
+                    {% endfor %}
+                    <td class="final-grade">{{ grades.final_grade|default_if_none:"-" }}</td>
+                    <td class="remarks">{{ grades.remarks|default_if_none:"-" }}</td>
+                </tr>
+            {% endfor %}
+            <tr class="final-grade">
+                <td colspan="5">General Average</td>
+                <td>{{ report_card.general_average }}</td>
+                <td>
+                    {% if report_card.general_average < 75 %}
+                        Failed
+                    {% else %}
+                        Passed
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="grading-scale">
+        <h4>Grading Scale</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Descriptors</th>
+                    <th>Grading Scale</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Outstanding</td>
+                    <td>90 - 100</td>
+                    <td>Passed</td>
+                </tr>
+                <tr>
+                    <td>Very Satisfactory</td>
+                    <td>85 - 89</td>
+                    <td>Passed</td>
+                </tr>
+                <tr>
+                    <td>Satisfactory</td>
+                    <td>80 - 84</td>
+                    <td>Passed</td>
+                </tr>
+                <tr>
+                    <td>Fairly Satisfactory</td>
+                    <td>75 - 79</td>
+                    <td>Passed</td>
+                </tr>
+                <tr>
+                    <td>Did Not Meet Expectations</td>
+                    <td>Below 75</td>
+                    <td>Failed</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

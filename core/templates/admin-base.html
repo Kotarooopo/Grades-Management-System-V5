@@ -127,64 +127,62 @@
                   </div>
   
                   <!-- Users Dropdown -->
-                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="dropdown1()">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
-                          <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
-                      </svg>
-                      <div class="flex justify-between w-full items-center">
-                          <span class="text-[15px] ml-4 text-gray-200 font-bold">Users</span>
-                          <span class="text-sm rotate-180" id="arrow1">
-                              <i class="bi bi-chevron-down"></i>
-                          </span>
-                      </div>
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="toggleDropdown('users-dropdown')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6 transition-transform duration-300">
+                      <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
+                    </svg>
+                    <div class="flex justify-between w-full items-center">
+                      <span class="text-[15px] ml-4 text-gray-200 font-bold">Users</span>
+                      <span class="text-sm transition-transform duration-300" id="arrow-users">
+                        <i class="bi bi-chevron-down"></i>
+                      </span>
+                    </div>
                   </div>
-                  <div class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden" id="submenu1">
-                        <a href="{% url 'student-list' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                            <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Students</h1>
-                        </a>
-                        <a href="{% url 'teacher-list' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                            <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Teachers</h1>
-                        </a>
-                        <a href="{% url 'administrator-list' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                            <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Admins</h1>
-                        </a>
-                      <a href="{% url 'register' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Create Account</h1>
-                      </a>
-                  </div>
-  
-                  <!-- Maintenance Dropdown -->
-                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="dropdown2()">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
-                          <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
-                      </svg>
-                      <div class="flex justify-between w-full items-center">
-                          <span class="text-[15px] ml-4 text-gray-200 font-bold">Maintenance</span>
-                          <span class="text-sm rotate-180" id="arrow2">
-                              <i class="bi bi-chevron-down"></i>
-                          </span>
-                      </div>
-                  </div>
-                  <div class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden" id="submenu2">
-                    <a href="{% url 'admin-SY' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                      <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">School Year</h1>
+                  <div id="users-dropdown" class="text-left text-sm mt-2 w-3/5 mx-auto text-gray-200 font-bold hidden">
+                    <a href="{% url 'student-list' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">Students</span>
                     </a>
-                    <a href="{% url 'admin-GradingPeriod' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Grading Period</h1>
-                      </a>
-                    <a href="{% url 'admin-subject' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Subjects</h1>
-                      </a>
+                    <a href="{% url 'teacher-list' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">Teachers</span>
+                    </a>
+                    <a href="{% url 'administrator-list' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">Admins</span>
+                    </a>
+                    <a href="{% url 'register' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">Create Account</span>
+                    </a>
+                  </div>
 
-                      <a href="{% url 'subject-criteria' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Subjects Criteria</h1>
-                      </a>
-                    <a href="{% url 'admin-class' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
-                      <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Classes</h1>
-                    </a>
-                    
-                    
+                  <!-- Maintenance Dropdown -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="toggleDropdown('maintenance-dropdown')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                      <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
+                    </svg>
+                    <div class="flex justify-between w-full items-center">
+                      <span class="text-[15px] ml-4 text-gray-200 font-bold">Maintenance</span>
+                      <span class="text-sm transition-transform duration-300" id="arrow-maintenance">
+                        <i class="bi bi-chevron-down"></i>
+                      </span>
+                    </div>
                   </div>
+                  <div id="maintenance-dropdown" class="text-left text-sm mt-2 w-3/5 mx-auto text-gray-200 font-bold hidden">
+                    <a href="{% url 'admin-SY' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">School Year</span>
+                    </a>
+                    <a href="{% url 'admin-GradingPeriod' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">Grading Period</span>
+                    </a>
+                    <a href="{% url 'admin-subject' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">Subjects</span>
+                    </a>
+                    <a href="{% url 'subject-criteria' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">Subjects Criteria</span>
+                    </a>
+                    <a href="{% url 'admin-class' %}" class="block p-1.5 mt-1 rounded-md duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                      <span class="text-[13px] ml-2">Classes</span>
+                    </a>
+                  </div>
+
   
                   <!-- Logout -->
                   <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="showLogoutModal()">
@@ -225,125 +223,122 @@
 
 
 <script>
-  function dropdown1() {
-      document.querySelector("#submenu1").classList.toggle("hidden");
-      document.querySelector("#arrow1").classList.toggle("rotate-0");
-  }
-
-  function dropdown2() {
-      document.querySelector("#submenu2").classList.toggle("hidden");
-      document.querySelector("#arrow2").classList.toggle("rotate-0");
-  }
-
-  const sidebarToggle = document.getElementById('sidebar-toggle');
-  const sidebar = document.getElementById('sidebar');
-
-  sidebarToggle.addEventListener('click', (event) => {
-      event.stopPropagation();
-      if (window.innerWidth < 1024) {  // Only toggle on small screens
-          sidebar.classList.toggle('-translate-x-full');
-      }
-  });
-
-  // Close sidebar when clicking outside of it on small screens
-  document.addEventListener('click', (event) => {
-      if (window.innerWidth < 1024) {  // Only close on small screens
-          const clickedOutsideSidebar = !sidebar.contains(event.target) && event.target !== sidebarToggle;
-          
-          if (clickedOutsideSidebar && !sidebar.classList.contains('-translate-x-full')) {
-              sidebar.classList.add('-translate-x-full');
-          }
-      }
-  });
-
-  // Adjust sidebar visibility on window resize
-  window.addEventListener('resize', () => {
-      if (window.innerWidth >= 1024) {
-          sidebar.classList.remove('-translate-x-full');
-      } else {
-          sidebar.classList.add('-translate-x-full');
-      }
-  });
-
-  function showLogoutModal() {
-      document.getElementById('logoutModal').classList.remove('hidden');
-  }
-
-  function hideLogoutModal() {
-      document.getElementById('logoutModal').classList.add('hidden');
-  }
-
-  function confirmLogout() {
-      // Implement logout logic here
-      console.log('Logout confirmed');
-      hideLogoutModal();
-
-      window.location.href = "{% url 'logout' %}";
-  }
-</script>
-
-<script>
-function setActiveTab() {
-    const currentPath = window.location.pathname;
-    const menuItems = document.querySelectorAll('[data-url]');
-
-    menuItems.forEach(item => {
-        const itemPath = item.getAttribute('data-url');
-        if (currentPath === itemPath) {
-            item.classList.add('bg-blue-700'); // Active state
-            item.classList.remove('hover:bg-blue-600');
-        } else {
-            item.classList.remove('bg-blue-700');
-            item.classList.add('hover:bg-blue-600');
-        }
-    });
-
-    // Handle submenu items
-    const submenuItems = document.querySelectorAll('#submenu1 a, #submenu2 a');
-    submenuItems.forEach(item => {
-        if (item.getAttribute('href') === currentPath) {
-            item.classList.add('bg-blue-700', 'rounded-md');
-            item.classList.remove('hover:bg-blue-600');
-            // Show parent submenu if it's hidden
-            const submenu = item.closest('.hidden');
-            if (submenu) {
-                submenu.classList.remove('hidden');
-            }
-        } else {
-            item.classList.remove('bg-blue-700');
-            item.classList.add('hover:bg-blue-600');
-        }
-    });
-}
-
-// Call setActiveTab when the page loads
-document.addEventListener('DOMContentLoaded', setActiveTab);
 document.addEventListener('DOMContentLoaded', function() {
-    setActiveTab(); // Set initial active tab
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const allSidebarItems = document.querySelectorAll('#sidebar > nav > div, #users-dropdown > a, #maintenance-dropdown > a');
+    const currentPath = window.location.pathname;
+
+    function setActiveTab(item) {
+        allSidebarItems.forEach(i => {
+            i.classList.remove('bg-blue-700');
+            // Remove this line to prevent adding hover class to all items
+            // i.classList.add('hover:bg-blue-600');
+        });
+        item.classList.add('bg-blue-700');
+        item.classList.remove('hover:bg-blue-600');
+
+        // If the active item is a submenu item, keep its parent dropdown open
+        const parentDropdown = item.closest('.hidden');
+        if (parentDropdown) {
+            parentDropdown.classList.remove('hidden');
+            const parentToggle = parentDropdown.previousElementSibling;
+            const arrow = parentToggle.querySelector('#dropdown-icon, #arrow2');
+            if (arrow) arrow.classList.add('rotate-360');
+        }
+    }
+
+    // Set initial active tab
+    allSidebarItems.forEach(item => {
+        const link = item.tagName === 'A' ? item : item.querySelector('a');
+        if (link && link.getAttribute('href') === currentPath) {
+            setActiveTab(item);
+        }
+    });
 
     // Add click listeners to all sidebar items
-    const allSidebarItems = document.querySelectorAll('#sidebar a, #submenu1 a, #submenu2 a');
     allSidebarItems.forEach(item => {
         item.addEventListener('click', function(e) {
-            // Remove active class from all items
-            allSidebarItems.forEach(i => {
-                i.classList.remove('bg-blue-700');
-                i.classList.add('hover:bg-blue-600');
-            });
-
-            // Add active class to clicked item
-            this.classList.add('bg-blue-700');
-            this.classList.remove('hover:bg-blue-600');
-
-            // If it's a submenu item, show the parent submenu
-            const submenu = this.closest('.hidden');
-            if (submenu) {
-                submenu.classList.remove('hidden');
+            // If it's a submenu toggle, don't prevent default
+            if (this.getAttribute('onclick') && !this.closest('a')) {
+                return;
             }
 
+            e.preventDefault();
+            e.stopPropagation(); // Prevent event bubbling
             setActiveTab(this);
+
+            // Navigate to the link
+            const link = this.tagName === 'A' ? this : this.querySelector('a');
+            if (link) {
+                window.location.href = link.getAttribute('href');
+            }
         });
+    });
+
+
+    // Sidebar toggle for small screens
+    sidebarToggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+        sidebar.classList.toggle('-translate-x-full');
+    });
+
+    // Close sidebar when clicking outside of it on small screens
+    document.addEventListener('click', (event) => {
+        if (window.innerWidth < 1024) {
+            const clickedOutsideSidebar = !sidebar.contains(event.target) && event.target !== sidebarToggle;
+            if (clickedOutsideSidebar && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+    });
+
+    // Adjust sidebar visibility on window resize
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1024) {
+            sidebar.classList.remove('-translate-x-full');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+        }
     });
 });
 
-</script>
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const arrow = dropdown.previousElementSibling.querySelector('.bi-chevron-down');
+
+    if (dropdown.classList.contains('hidden')) {
+        dropdown.classList.remove('hidden');
+        arrow.classList.add('rotate-180'); // Rotate arrow downwards
+    } else {
+        dropdown.classList.add('hidden');
+        arrow.classList.remove('rotate-180'); // Reset rotation
+    }
+}
+
+
+
+function showLogoutModal() {
+    document.getElementById('logoutModal').classList.remove('hidden');
+}
+
+function hideLogoutModal() {
+    document.getElementById('logoutModal').classList.add('hidden');
+}
+
+function confirmLogout() {
+    console.log('Logout confirmed');
+    hideLogoutModal();
+    window.location.href = "{% url 'logout' %}";
+}
+  </script>
+
+<style>
+  .hover-bg-blue:hover {
+      background-color: #007bff;
+  }
+  
+  .transition-transform {
+      transition: transform 0.3s ease;
+  }
+  </style>

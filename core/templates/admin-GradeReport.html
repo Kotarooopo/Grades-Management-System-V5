@@ -78,11 +78,58 @@
                         </tr>
                     </tbody>
                 </table>
-                <div class="p-4 text-center">
-                    <button class="print-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Print Report Card
-                    </button>
+                <div class="p-4">
+                    <h2 class="text-lg font-bold mb-2">Grading Scale</h2>
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="px-4 py-2 text-left">Descriptors</th>
+                                <th class="px-4 py-2 text-left">Grading Scale</th>
+                                <th class="px-4 py-2 text-left">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-4 py-2">Outstanding</td>
+                                <td class="px-4 py-2">90 - 100</td>
+                                <td class="px-4 py-2">Passed</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">Very Satisfactory</td>
+                                <td class="px-4 py-2">85 - 89</td>
+                                <td class="px-4 py-2">Passed</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">Satisfactory</td>
+                                <td class="px-4 py-2">80 - 84</td>
+                                <td class="px-4 py-2">Passed</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">Fairly Satisfactory</td>
+                                <td class="px-4 py-2">75 - 79</td>
+                                <td class="px-4 py-2">Passed</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-2">Did Not Meet Expectations</td>
+                                <td class="px-4 py-2">Below 75</td>
+                                <td class="px-4 py-2">Failed</td>
+                            </tr>
+                            <!-- Add more rows for other grade levels -->
+                            <!-- ... -->
+                        </tbody>
+                    </table>
                 </div>
+                <div class="p-4 text-center">
+                    <form class="export-form" method="POST" action="{% url 'admin-GradeReport' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="student_id" value="{{ report_card.student.user.id }}">
+                        <input type="hidden" name="school_year_id" value="{{ report_card.school_year.id }}">
+                        <button type="submit" name="export" class="export-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Export Report Card as PDF
+                        </button>
+                    </form>
+                </div>
+                
             </div>
         </div>
         
@@ -98,53 +145,46 @@
         const searchInput = document.getElementById('student-search');
         const reportCardsContainer = document.getElementById('report-cards-container');
         const reportCards = document.querySelectorAll('.report-card');
+        const exportForms = document.querySelectorAll('.export-form');
 
         searchForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const searchTerm = searchInput.value.toLowerCase();
             let isResultFound = false;
 
-            reportCards.forEach(card => {
+            reportCards.forEach((card, index) => {
                 const studentInfo = card.querySelector('.bg-gray-100 p:nth-child(1)').textContent.toLowerCase();
                 const studentEmail = card.querySelector('.bg-gray-100 p:nth-child(2)').textContent.toLowerCase();
+                const exportForm = exportForms[index];
 
                 // Check if the search term matches the student's full name or email
                 if (studentInfo.includes(searchTerm) || studentEmail.includes(searchTerm)) {
                     card.style.display = ''; // Show the report card
+                    if (exportForm) {
+                        exportForm.style.display = ''; // Show the export form
+                    }
                     isResultFound = true;
                 } else {
                     card.style.display = 'none'; // Hide the report card
+                    if (exportForm) {
+                        exportForm.style.display = 'none'; // Hide the export form
+                    }
                 }
             });
 
             // Show/hide the report card container
-            if (isResultFound) {
-                reportCardsContainer.style.display = 'block';
-            } else {
-                reportCardsContainer.style.display = 'none';
-            }
+            reportCardsContainer.style.display = isResultFound ? 'block' : 'none';
         });
 
-        // Print functionality
-        const printButtons = document.querySelectorAll('.print-button');
-        printButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const reportCard = this.closest('.report-card');
-                const printWindow = window.open('', '', 'height=600,width=800');
-                
-                printWindow.document.write('<html><head><title>Print Report Card</title>');
-                printWindow.document.write('<link rel="stylesheet" href="{% static "css/tailwind.min.css" %}" type="text/css" />');
-                printWindow.document.write('</head><body>');
-                printWindow.document.write(reportCard.innerHTML);
-                printWindow.document.write('</body></html>');
-                
-                printWindow.document.close();
-                printWindow.focus();
-                
-                printWindow.onload = function() {
-                    printWindow.print();
-                    printWindow.close();
-                };
+        // Handle export form submission
+        exportForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                // Only allow export if the parent report card is visible
+                if (this.closest('.report-card').style.display === 'none') {
+                    e.preventDefault();
+                    alert('Please search for a student first.');
+                    return false;
+                }
             });
         });
     });

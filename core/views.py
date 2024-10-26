@@ -887,27 +887,32 @@ def manage_school_year(request):
 
 
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 from django.shortcuts import render
 from .models import Enrollment, Grade, GradingPeriod, SchoolYear, Subject, Student
+import logging
+from django.http import HttpResponse, FileResponse
+import io
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
 def admin_GradeReport(request):
     students = Student.objects.all()
     school_years = SchoolYear.objects.all().order_by('-year')
-    
+
     if not school_years.exists():
         return render(request, 'admin-GradeReport.html', {'error': 'No school years found.'})
 
     subjects = Subject.objects.all()
-
     report_cards = []
 
     for student in students:
         for school_year in school_years:
             enrollments = Enrollment.objects.filter(student=student, class_obj__school_year=school_year)
             grading_periods = GradingPeriod.objects.filter(school_year=school_year).order_by('period')
-            
+
             grades_data = {}
             for subject in subjects:
                 grades_data[subject.name] = {'quarterly_grades': {}}
@@ -942,11 +947,101 @@ def admin_GradeReport(request):
                 'grade_section': grade_section
             })
 
+    # Check if the export request is made
+    if request.method == 'POST' and 'export' in request.POST:
+        student_id = request.POST.get('student_id')
+        school_year_id = request.POST.get('school_year_id')
+
+        try:
+            # Get the student and school year
+            selected_student = Student.objects.get(user_id=student_id)
+            selected_school_year = SchoolYear.objects.get(id=school_year_id)
+            
+            # Get enrollments and grading periods
+            selected_enrollments = Enrollment.objects.filter(
+                student=selected_student, 
+                class_obj__school_year=selected_school_year
+            )
+            
+            if not selected_enrollments.exists():
+                return HttpResponse('No enrollment found for this student in the selected school year.')
+
+            grading_periods = GradingPeriod.objects.filter(
+                school_year=selected_school_year
+            ).order_by('period')
+            
+            # Prepare grades data
+            grades_data = {}
+            for enrollment in selected_enrollments:
+                subject = enrollment.class_obj.subject
+                grades_data[subject.name] = {'quarterly_grades': {}}
+                
+                for period in grading_periods:
+                    grade = Grade.objects.filter(
+                        enrollment=enrollment,
+                        grading_period=period
+                    ).first()
+                    grades_data[subject.name]['quarterly_grades'][period.period] = grade.quarterly_grade if grade else None
+
+                # Calculate final grade
+                quarterly_grades = [grade for grade in grades_data[subject.name]['quarterly_grades'].values() if grade is not None]
+                if quarterly_grades:
+                    final_grade = round(sum(quarterly_grades) / len(quarterly_grades), 2)
+                    grades_data[subject.name]['final_grade'] = final_grade
+                    grades_data[subject.name]['remarks'] = 'Passed' if final_grade >= 75 else 'Failed'
+                else:
+                    grades_data[subject.name]['final_grade'] = None
+                    grades_data[subject.name]['remarks'] = None
+
+            # Calculate general average
+            final_grades = [subject['final_grade'] for subject in grades_data.values() if subject['final_grade'] is not None]
+            general_average = round(sum(final_grades) / len(final_grades), 2) if final_grades else None
+            
+            # Get grade and section
+            grade_section = f"{selected_enrollments.first().class_obj.grade_level} - {selected_enrollments.first().class_obj.section}"
+
+            # Prepare context for PDF template
+            context = {
+                'report_card': {
+                    'student': selected_student,
+                    'school_year': selected_school_year,
+                    'grades_data': grades_data,
+                    'grading_periods': grading_periods,
+                    'general_average': general_average,
+                    'grade_section': grade_section
+                }
+            }
+
+            # Create the HTTP response
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{selected_student.get_full_name()}_report_card.pdf"'
+
+            # Create the PDF using template
+            template = get_template('ReportCard.html')
+            html = template.render(context)
+
+            # Generate PDF
+            pisa_status = pisa.CreatePDF(
+                html,
+                dest=response,
+                encoding='UTF-8'
+            )
+
+            if pisa_status.err:
+                return HttpResponse('Error generating PDF', status=500)
+            
+            return response
+
+        except Exception as e:
+            logger.exception("Error generating PDF")
+            return HttpResponse(f'An error occurred while generating the PDF: {str(e)}', status=500)
+
     context = {
         'report_cards': report_cards,
     }
 
     return render(request, 'admin-GradeReport.html', context)
+
 
 
 
@@ -2525,3 +2620,11 @@ def upload_grades(request):
         messages.error(request, f'Error uploading grades: {str(e)}')
     
     return redirect('teacher-myClassAdvisory')
+
+
+
+
+
+
+
+
