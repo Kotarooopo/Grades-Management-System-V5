@@ -551,7 +551,72 @@
     });
 </script>
     
-
+<script>
+    // Add this script after your existing script
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('simple-search');
+    const tableBody = document.querySelector('tbody');
+    const originalRows = Array.from(tableBody.querySelectorAll('tr')); // Store original table rows
+    
+    // Function to filter table rows based on search input
+    function filterTable(searchQuery) {
+        searchQuery = searchQuery.toLowerCase();
+        
+        originalRows.forEach(row => {
+            // Get the text content of name column (index 2 - Full Name column)
+            const fullName = row.querySelector('th:nth-child(3)').textContent.toLowerCase();
+            const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            
+            // Show/hide row based on whether it matches the search query
+            if (fullName.includes(searchQuery) || email.includes(searchQuery)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Show "No results found" message if no matches
+        const visibleRows = originalRows.filter(row => row.style.display !== 'none');
+        if (visibleRows.length === 0) {
+            let noResultsRow = tableBody.querySelector('.no-results');
+            if (!noResultsRow) {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.className = 'no-results';
+                noResultsRow.innerHTML = `
+                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                        No students found matching "${searchQuery}"
+                    </td>
+                `;
+                tableBody.appendChild(noResultsRow);
+            }
+        } else {
+            const noResultsRow = tableBody.querySelector('.no-results');
+            if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+    }
+    
+    // Handle form submission
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        filterTable(searchInput.value);
+    });
+    
+    // Optional: Real-time search as user types
+    searchInput.addEventListener('input', function() {
+        filterTable(this.value);
+    });
+    
+    // Clear search when input is cleared
+    searchInput.addEventListener('change', function() {
+        if (this.value === '') {
+            filterTable('');
+        }
+    });
+});
+</script>
 
 
 {% endblock %}
