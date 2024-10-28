@@ -493,15 +493,23 @@ def student_dashboard(request):
 
 
 #teacher-list
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Q
+import logging
 from .decorators import allowed_users
-from .models import Teacher, Administrator, Class
+from .models import Teacher, Administrator, Class, Student
+
+logger = logging.getLogger(__name__)
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
+@require_http_methods(["GET", "POST"])
 def teacher_list(request):
     if request.method == 'POST':
         if 'change_pass' in request.POST:
@@ -520,7 +528,8 @@ def teacher_list(request):
                 messages.success(request, "Password updated successfully.")
             else:
                 messages.error(request, "Please fill in both password fields.")
-        
+                return redirect('teacher-list')
+
         elif 'toggle_status' in request.POST:
             toggle_status_id = request.POST.get('toggle_status_id')
             current_status = request.POST.get('current_status')
@@ -531,25 +540,193 @@ def teacher_list(request):
                 messages.success(request, f"Account for {user.email} has been deactivated successfully.")
             else:
                 user.is_active = True
-                messages.success(request,f"Account for {user.email} has been activated successfully.")
+                messages.success(request, f"Account for {user.email} has been activated successfully.")
+            user.save()
+            return redirect('teacher-list')
+
+        # Handle user update
+        user_id = request.POST.get('user')
+        print(f"User ID received: {user_id}")
+
+        if not user_id:
+            logger.error("User ID is empty")
+            return JsonResponse({'status': 'error', 'message': 'User ID is required.'}, status=400)
+
+        email = request.POST.get('email')
+        firstname = request.POST.get('Firstname')
+        lastname = request.POST.get('Lastname')
+        middle_initial = request.POST.get('Middle-Initial')
+        phone_number = request.POST.get('phone_number')
+        gender = request.POST.get('gender')
+        role = request.POST.get('role')
+        status = request.POST.get('status')
+
+        try:
+            with transaction.atomic():
+                user = User.objects.get(id=user_id)
+                user.email = email
+                user.is_active = (status == 'Active')
+
+                # Store current role info for transition handling
+                was_teacher = hasattr(user, 'teacher')
+
+                # Handle role transition
+                if role == 'Student' and was_teacher:
+                    # Get teacher data before deletion
+                    teacher_data = {
+                        'Firstname': user.teacher.Firstname,
+                        'Lastname': user.teacher.Lastname,
+                        'Middle_Initial': user.teacher.Middle_Initial,
+                        'Phone_Number': user.teacher.Phone_Number,
+                        'Gender': user.teacher.Gender
+                    }
+                    
+                    # Delete teacher profile
+                    user.teacher.delete()
+                    user.is_teacher = False
+                    
+                    # Create student profile with existing data
+                    student = Student.objects.create(
+                        user=user,
+                        Firstname=teacher_data['Firstname'],
+                        Lastname=teacher_data['Lastname'],
+                        Middle_Initial=teacher_data['Middle_Initial'],
+                        Phone_Number=teacher_data['Phone_Number'],
+                        Gender=teacher_data['Gender']
+                    )
+                    user.is_student = True
+                    messages.success(request, f"User role changed from Teacher to Student successfully.")
+
+                elif role == 'Teacher':
+                    # Update existing teacher profile or create new one
+                    teacher, created = Teacher.objects.get_or_create(user=user)
+                    teacher.Firstname = firstname
+                    teacher.Lastname = lastname
+                    teacher.Middle_Initial = middle_initial
+                    teacher.Phone_Number = phone_number
+                    teacher.Gender = gender
+                    teacher.save()
+
+                    user.is_teacher = True
+                    # If user was a student, remove student profile
+                    if hasattr(user, 'student'):
+                        user.student.delete()
+                        user.is_student = False
+                        messages.success(request, f"User role changed from Student to Teacher successfully.")
+
+                # Delete other role-specific objects if they exist
+                Administrator.objects.filter(user=user).delete()
+
+                user.save()
+                logger.info(f"User {user_id} updated successfully with role {role}")
+                return JsonResponse({
+                    'status': 'success', 
+                    'message': 'User updated successfully.',
+                    'redirect': 'teacher-list' if role == 'Student' else None
+                })
+
+        except User.DoesNotExist:
+            logger.error(f"User {user_id} not found")
+            return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+        except Exception as e:
+            logger.exception(f"Error updating user {user_id}: {str(e)}")
+            return JsonResponse({'status': 'error', 'message': 'An error occurred while updating the user.'}, status=500)
+
+    # Handle GET request for displaying the teacher list and searching
+    sort_by = request.GET.get('sort', 'user__email')
+    order = request.GET.get('order', 'asc')
+    sort_order = sort_by if order == 'asc' else f'-{sort_by}'
+
+    # Handle AJAX search requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        query = request.GET.get('query', '').strip()
+
+        teachers = Teacher.objects.filter(
+            Q(Firstname__icontains=query) | 
+            Q(Lastname__icontains=query) |
+            Q(user__email__icontains=query)
+        ).select_related('user')
+
+        return JsonResponse({
+            'teachers': [
+                {
+                    'id': teacher.user.id,
+                    'email': teacher.user.email,
+                    'Firstname': teacher.Firstname,
+                    'Lastname': teacher.Lastname,
+                    'Middle_Initial': teacher.Middle_Initial,
+                    'Phone_Number': teacher.Phone_Number,
+                    'Gender': teacher.Gender,
+                    'profile_picture': teacher.profile_picture.url if teacher.profile_picture else None,
+                    'is_active': teacher.user.is_active
+                }
+                for teacher in teachers
+            ]
+        })
+
+    teachers = Teacher.objects.select_related('user').order_by(sort_order)
+
+    context = {
+        'teachers': teachers,
+        'sort_by': sort_by,
+        'order': order,
+    }
+
+    return render(request, 'admin-TeacherList.html', context)
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
+from django.db import transaction
+from .models import User, Teacher
+import logging
+
+logger = logging.getLogger(__name__)
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def change_teacher_password(request):
+    if not request.user.is_administrator:
+        return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
+    email = request.POST.get('email')
+    new_password = request.POST.get('new_password')
+
+    if not email or not new_password:
+        logger.error("Email or new password is missing")
+        return JsonResponse({'status': 'error', 'message': 'Email and new password are required.'}, status=400)
+
+    try:
+        with transaction.atomic():
+            user = User.objects.get(email=email)
+            if not hasattr(user, 'teacher'):
+                logger.error(f"User with email {email} is not a teacher")
+                return JsonResponse({'status': 'error', 'message': 'User is not a teacher.'}, status=400)
+
+            user.set_password(new_password)
             user.save()
 
-        return redirect('teacher-list')
+            logger.info(f"Password changed successfully for teacher: {email}")
+            return JsonResponse({'status': 'success', 'message': 'Password changed successfully.'})
 
-    teachers = Teacher.objects.all()
-    return render(request, 'admin-TeacherList.html', {'teachers': teachers})
+    except User.DoesNotExist:
+        logger.error(f"User with email {email} not found")
+        return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+    except Exception as e:
+        logger.exception(f"Error changing password for teacher {email}: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': 'An error occurred while changing the password.'}, status=500)
+
 
 
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
-from .models import Student, User
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.db import transaction
 import logging
+from django.db.models import Q
+from .models import Student, User, Teacher, Administrator
 
 logger = logging.getLogger(__name__)
 
@@ -597,7 +774,7 @@ def student_list(request):
                     student.Phone_Number = phone_number
                     student.Gender = gender
                     student.save()
-                    
+
                     # Delete other role-specific objects if they exist
                     Teacher.objects.filter(user=user).delete()
                     Administrator.objects.filter(user=user).delete()
@@ -610,7 +787,7 @@ def student_list(request):
                     teacher.Phone_Number = phone_number
                     teacher.Gender = gender
                     teacher.save()
-                    
+
                     # Delete other role-specific objects if they exist
                     Student.objects.filter(user=user).delete()
                     Administrator.objects.filter(user=user).delete()
@@ -623,7 +800,7 @@ def student_list(request):
                     administrator.Phone_Number = phone_number
                     administrator.Gender = gender
                     administrator.save()
-                    
+
                     # Delete other role-specific objects if they exist
                     Student.objects.filter(user=user).delete()
                     Teacher.objects.filter(user=user).delete()
@@ -639,17 +816,62 @@ def student_list(request):
         except Exception as e:
             logger.exception(f"Error updating user {user_id}: {str(e)}")
             return JsonResponse({'status': 'error', 'message': 'An error occurred while updating the user.'}, status=500)
-        
+
+    # Handle GET request for displaying the student list and searching
     sort_by = request.GET.get('sort', 'user__email')  # Default sort by email
     order = request.GET.get('order', 'asc')
 
     # Define the sorting field
-    if order == 'asc':
-        sort_order = sort_by
-    else:
-        sort_order = f'-{sort_by}'
+    sort_order = sort_by if order == 'asc' else f'-{sort_by}'
 
-    # Retrieve students with sorting
+    # Handle AJAX search requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        query = request.GET.get('query', '').strip()
+
+        # Filter students based on the search query
+        students = Student.objects.filter(
+            Q(Firstname__icontains=query) | 
+            Q(Lastname__icontains=query) |
+            Q(user__email__icontains=query)
+        ).select_related('user')
+
+        # Prepare data for JSON response
+        student_data = [
+            {
+                'user': {
+                    'id': student.user.id,
+                    'email': student.user.email,
+                    'is_student': student.user.is_student,
+                    'is_active': student.user.is_active,
+                },
+                'Firstname': student.Firstname,
+                'Lastname': student.Lastname,
+                'Middle_Initial': student.Middle_Initial,
+                'Phone_Number': student.Phone_Number,
+                'Gender': student.Gender,
+                'profile_picture': student.profile_picture.url if student.profile_picture else None,
+            }
+            for student in students
+        ]
+        
+        return JsonResponse({
+            'students': [
+                {
+                    'id': student.user.id,
+                    'email': student.user.email,
+                    'Firstname': student.Firstname,
+                    'Lastname': student.Lastname,
+                    'Middle_Initial': student.Middle_Initial,
+                    'Phone_Number': student.Phone_Number,
+                    'Gender': student.Gender,
+                    'profile_picture': student.profile_picture.url if student.profile_picture else None,
+                    'is_active': student.user.is_active
+                }
+                for student in students
+            ]
+        })
+
+    # Retrieve students with sorting for the initial page load
     students = Student.objects.select_related('user').order_by(sort_order)
 
     context = {
@@ -658,8 +880,8 @@ def student_list(request):
         'order': order,
     }
 
-    students = Student.objects.all()
     return render(request, 'admin-StudentList.html', context)
+
 
 
 from django.contrib.auth.decorators import login_required
@@ -895,12 +1117,16 @@ from .models import Enrollment, Grade, GradingPeriod, SchoolYear, Subject, Stude
 import logging
 from django.http import HttpResponse, FileResponse
 import io
+from django.templatetags.static import static
+from django.contrib.sites.shortcuts import get_current_site
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
 def admin_GradeReport(request):
+
     students = Student.objects.all()
     school_years = SchoolYear.objects.all().order_by('-year')
+    logo_url = request.build_absolute_uri(static('core/image/logo.png'))
 
     if not school_years.exists():
         return render(request, 'admin-GradeReport.html', {'error': 'No school years found.'})
@@ -951,6 +1177,8 @@ def admin_GradeReport(request):
     if request.method == 'POST' and 'export' in request.POST:
         student_id = request.POST.get('student_id')
         school_year_id = request.POST.get('school_year_id')
+
+        
 
         try:
             # Get the student and school year
@@ -1016,6 +1244,7 @@ def admin_GradeReport(request):
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = f'attachment; filename="{selected_student.get_full_name()}_report_card.pdf"'
 
+
             # Create the PDF using template
             template = get_template('ReportCard.html')
             html = template.render(context)
@@ -1038,6 +1267,7 @@ def admin_GradeReport(request):
 
     context = {
         'report_cards': report_cards,
+        'logo_url': logo_url,
     }
 
     return render(request, 'admin-GradeReport.html', context)
