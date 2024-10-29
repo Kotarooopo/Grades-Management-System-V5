@@ -674,6 +674,40 @@ def teacher_list(request):
 
     return render(request, 'admin-TeacherList.html', context)
 
+
+from django.http import JsonResponse
+import json
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['administrator'])
+@require_http_methods(["POST"])
+def delete_teacher(request):
+    try:
+        data = json.loads(request.body)  # Load JSON data from the request
+        user_id = data.get('user_id')  # Get 'user_id' from parsed JSON data
+
+        if not user_id:
+            return JsonResponse({'status': 'error', 'message': 'User ID is required.'}, status=400)
+
+        with transaction.atomic():
+            # Get user and related teacher object
+            user = get_object_or_404(User, id=user_id)
+            teacher = get_object_or_404(Teacher, user=user)
+
+            # Delete teacher and user records
+            teacher.delete()
+            user.delete()
+
+            logger.info(f"Teacher and user with ID {user_id} deleted successfully")
+            return JsonResponse({'status': 'success', 'message': 'Teacher deleted successfully.'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data.'}, status=400)
+    except Exception as e:
+        logger.exception(f"Error deleting user {user_id}: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': 'An error occurred while deleting the Teacher.'}, status=500)
+    
+
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
@@ -921,6 +955,44 @@ def change_student_password(request):
     except Exception as e:
         logger.exception(f"Error changing password for user {email}: {str(e)}")
         return JsonResponse({'status': 'error', 'message': 'An error occurred while changing the password.'}, status=500)
+    
+    
+
+
+
+from django.http import JsonResponse
+import json
+
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['administrator'])
+@require_http_methods(["POST"])
+def delete_student(request):
+    try:
+        data = json.loads(request.body)  # Load JSON data from the request
+        user_id = data.get('user_id')  # Get 'user_id' from parsed JSON data
+
+        if not user_id:
+            return JsonResponse({'status': 'error', 'message': 'User ID is required.'}, status=400)
+
+        with transaction.atomic():
+            # Get user and related student object
+            user = get_object_or_404(User, id=user_id)
+            student = get_object_or_404(Student, user=user)
+
+            # Delete student and user records
+            student.delete()
+            user.delete()
+
+            logger.info(f"Student and user with ID {user_id} deleted successfully")
+            return JsonResponse({'status': 'success', 'message': 'Student deleted successfully.'})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data.'}, status=400)
+    except Exception as e:
+        logger.exception(f"Error deleting user {user_id}: {str(e)}")
+        return JsonResponse({'status': 'error', 'message': 'An error occurred while deleting the student.'}, status=500)
+
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])

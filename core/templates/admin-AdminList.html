@@ -37,8 +37,16 @@
                 {% for administrator in administrator %}
                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                     <td class="px-6 py-4">
-                        <img src="{{ administrator.profile_picture.url }}" alt="{{ administrator.Firstname }}'s profile" class="w-10 h-10 rounded-full">
+                        {% if administrator.profile_picture %}
+                                <img src="{{ administrator.profile_picture.url }}" alt="{{ administrator.Firstname }}'s profile" class="w-10 h-10 rounded-full">
+                            {% else %}
+                                <div class="w-10 h-10 rounded-full bg-green-700 flex items-center justify-center text-white text-3xl">
+                                    {{ administrator.Firstname|first }}
+                                </div>
+                    {% endif %}
                     </td>
+
+                    
                     <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         {{ administrator.email }}
                     </td>
@@ -55,7 +63,7 @@
                         {{ administrator.Phone_Number }}
                     </td>
                     <td class="px-6 py-4">
-                        {% if student.user.is_active %}
+                        {% if administrator.user.is_active %}
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
                         {% else %}
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
