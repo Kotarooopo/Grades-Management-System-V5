@@ -238,6 +238,30 @@
         });
     });
 </script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Handle form submissions
+    $('form').on('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        const formData = $(this).serialize(); // Serialize form data
+        
+        $.ajax({
+            type: 'POST',
+            url: $(this).attr('action'), // Get the form action URL
+            data: formData,
+            success: function(response) {
+                alert(response.message); // Alert the success message
+                location.reload(); // Optionally reload the page to reflect changes
+            },
+            error: function(xhr) {
+                alert(xhr.responseJSON.error || 'An error occurred.'); // Alert the error message
+            }
+        });
+    });
+});
+</script>
+
 
 
 

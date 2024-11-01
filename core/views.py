@@ -1192,8 +1192,8 @@ def subject_criteria(request):
 
 
 #School Year
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .decorators import allowed_users
 from .models import SchoolYear
@@ -1211,39 +1211,29 @@ def manage_school_year(request):
             try:
                 school_year = SchoolYear.objects.get(id=year_id)
                 school_year.delete()
-                messages.success(request, 'School Year deleted successfully.')
+                return JsonResponse({'message': 'School Year deleted successfully.'}, status=200)
             except SchoolYear.DoesNotExist:
-                messages.error(request, 'School Year not found.')
-            return redirect('admin-SY')
+                return JsonResponse({'error': 'School Year not found.'}, status=404)
         
         year_id = request.POST.get('edit_id')
-        if year_id:
-            # Editing existing school year
-            school_year = get_object_or_404(SchoolYear, id=year_id)
-            form = SchoolYearForm(request.POST, instance=school_year)
-            success_message = 'School Year updated successfully!'
-            error_message = 'Error updating School Year. Please check the form.'
-        else:
-            # Adding new school year
-            form = SchoolYearForm(request.POST)
-            success_message = 'School Year added successfully!'
-            error_message = 'Error adding School Year. Please check the form.'
-        
+        form = SchoolYearForm(request.POST, instance=get_object_or_404(SchoolYear, id=year_id) if year_id else None)
+
         if form.is_valid():
             form.save()
-            messages.success(request, success_message)
+            if year_id:
+                return JsonResponse({'message': 'School Year updated successfully!'}, status=200)
+            else:
+                return JsonResponse({'message': 'School Year added successfully!'}, status=201)
         else:
-            messages.error(request, error_message)
+            return JsonResponse({'error': 'Invalid form data make sure its unique.'}, status=400)
         
-        return redirect('admin-SY')
-    else:
-        form = SchoolYearForm()
-    
+    form = SchoolYearForm()
     context = {
         'years': years,
         'form': form,
     }
     return render(request, 'admin-SchoolYear.html', context)
+
 
 
 
