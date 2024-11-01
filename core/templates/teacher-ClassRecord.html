@@ -582,7 +582,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     studentScoresBody.innerHTML = '';  // Clear current table rows
                     console.log('Data received from server:', data);
-    
                     if (data.scores_data.length === 0) {
                         studentScoresBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center">No students found in this class.</td></tr>';
                         return;
@@ -591,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     data.scores_data.forEach(student => {
                         console.log('Student data:', student);
                         const row = document.createElement('tr');
-                        row.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700";
+                        row.className = "bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer";
 
                         let activitiesHtml = '';
                         let datesHtml = '';

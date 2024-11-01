@@ -66,14 +66,14 @@
                 <tbody>
                     {% for result in results %}
                         {% for score in result.criteria_scores %}
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
                                 {% if forloop.first %}
                                     <td rowspan="{{ result.criteria_scores|length }}" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {{ result.student.get_full_name }}
                                     </td>
                                 {% endif %}
-                                <td class="px-6 py-4">{{ score.criterion.grading_criterion.get_criteria_type_display }}</td>
-                                <td class="px-6 py-4">{{ score.criterion.weightage }}%</td>
+                                    <td class="px-6 py-4">{{ score.criterion.grading_criterion.get_criteria_type_display }}</td>
+                                    <td class="px-6 py-4">{{ score.criterion.weightage }}%</td>
                                 
                                 {% with total_max_score=total_max_scores|get_item:score.criterion.id %}
                                     <td class="px-6 py-4">{{ total_max_score }}</td>
