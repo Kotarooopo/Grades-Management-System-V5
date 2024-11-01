@@ -100,7 +100,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'gms_database',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': '',     
         'PORT': '3306',
         'HOST': 'localhost'
     }

@@ -24,13 +24,46 @@
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                     <th scope="col" class="px-6 py-3">Profile Picture</th>
-                    <th scope="col" class="px-6 py-3">Email Address</th>
-                    <th scope="col" class="px-6 py-3">Full Name</th>
+                    <th scope="col" class="px-6 py-3">
+                        <a href="?sort=user__email&order={% if sort_by == 'user__email' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                            Email Address
+                            {% if sort_by == 'user__email' %}
+                                {% if order == 'asc' %}
+                                    ▲
+                                {% else %}
+                                    ▼
+                                {% endif %}
+                            {% endif %}
+                        </a>  
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        <a href="?sort=Lastname&order={% if sort_by == 'Lastname' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                            Full Name
+                            {% if sort_by == 'Lastname' %}
+                                {% if order == 'asc' %}
+                                    ▲
+                                {% else %}
+                                    ▼
+                                {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
                     <th scope="col" class="px-6 py-3">Role</th>
-                    <th scope="col" class="px-6 py-3">Gender</th>
+                    <th scope="col" class="px-6 py-3">
+                        <a href="?sort=Gender&order={% if sort_by == 'Gender' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                            Gender
+                            {% if sort_by == 'Gender' %}
+                                {% if order == 'asc' %}
+                                    ▲
+                                {% else %}
+                                    ▼
+                                {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
                     <th scope="col" class="px-6 py-3">Phone Number</th>
                     <th scope="col" class="px-6 py-3">Status</th>
-                    <th scope="col" class="px-6 py-3">Action</th>
+                   
                 </tr>
             </thead>
             <tbody>
@@ -70,19 +103,6 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4">
-                        <button 
-                            class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md edit-btn"
-                            data-id="{{ student.user.id }}" 
-                            data-email="{{ student.email }}" 
-                            data-firstname="{{ student.Firstname }}" 
-                            data-middle="{{ student.Middle_Initial }}" 
-                            data-lastname="{{ student.Lastname }}" 
-                            data-phone="{{ student.Phone_Number }}" 
-                            data-gender="{{ student.Gender }}" 
-                            data-role="{% if student.user.is_student %}Student{% elif student.user.is_teacher %}Teacher{% elif student.user.is_administrator %}Administrator{% else %}Unknown Role{% endif %}"  
-                            data-status="{{ student.user.is_active|yesno:'Active,Inactive' }}">
-                            Edit
-                        </button>
             
                         
                     </td>                 

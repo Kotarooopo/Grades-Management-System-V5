@@ -315,7 +315,9 @@ def student_profile(request):
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import UserRegistrationForm
-
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.contrib import messages
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
@@ -323,9 +325,27 @@ def register_user(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            messages.success(request, 'Account created successfully')
-            return redirect('login')  # Redirect to login page after successful registration
+            try:
+                form.save()
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Account created successfully!'
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                })
+        else:
+            errors = []
+            for field, field_errors in form.errors.items():
+                for error in field_errors:
+                    errors.append(f"{field}: {error}")
+            
+            return JsonResponse({
+                'status': 'error',
+                'message': errors[0]  # Return first error message
+            })
     else:
         form = UserRegistrationForm()
     
@@ -994,11 +1014,58 @@ def delete_student(request):
 
 
 
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
+@require_http_methods(["GET"])
 def administrator_list(request):
-    administrator = Administrator.objects.all()
-    return render(request, 'admin-AdminList.html', {'administrator': administrator})
+    # Get sort parameters from request
+    sort_by = request.GET.get('sort', 'user__email')  # Default sort by email
+    order = request.GET.get('order', 'asc')
+
+    # Define the sorting field
+    sort_order = sort_by if order == 'asc' else f'-{sort_by}'
+
+    # Handle AJAX search requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        query = request.GET.get('query', '').strip()
+
+        # Filter administrators based on the search query
+        administrators = Administrator.objects.filter(
+            Q(Firstname__icontains=query) | 
+            Q(Lastname__icontains=query) |
+            Q(user__email__icontains=query)
+        ).select_related('user')
+
+        # Prepare data for JSON response
+        return JsonResponse({
+            'administrators': [
+                {
+                    'id': admin.user.id,
+                    'email': admin.user.email,
+                    'Firstname': admin.Firstname,
+                    'Lastname': admin.Lastname,
+                    'Middle_Initial': admin.Middle_Initial,
+                    'Phone_Number': admin.Phone_Number,
+                    'Gender': admin.Gender,
+                    'profile_picture': admin.profile_picture.url if admin.profile_picture else None,
+                    'is_active': admin.user.is_active
+                }
+                for admin in administrators
+            ]
+        })
+
+    # Retrieve administrators with sorting for the initial page load
+    administrator = Administrator.objects.select_related('user').order_by(sort_order)
+
+    context = {
+        'administrator': administrator,
+        'sort_by': sort_by,
+        'order': order,
+    }
+
+    return render(request, 'admin-AdminList.html', context)
+
 
 
 

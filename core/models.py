@@ -206,7 +206,7 @@ class Teacher(models.Model):
     Gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
     Phone_Number = models.CharField(max_length=11, null=True, blank=True)
 
-    profile_picture = models.ImageField(upload_to=user_directory_path, default='media/default_profile.png', blank=True)
+    profile_picture = models.ImageField(upload_to=user_directory_path, default='core/images/default_profile.png', blank=True)
     
     def save(self, *args, **kwargs):
         if self.profile_picture:
@@ -302,7 +302,7 @@ class Student(models.Model):
     Gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
     Phone_Number = models.CharField(max_length=11, null=True, blank=True)
 
-    profile_picture = models.ImageField(upload_to=user_directory_path, default='core/default_profile.png', blank=True)
+    profile_picture = models.ImageField(upload_to=user_directory_path, default='core/images/default_profile.png', blank=True)
     def save(self, *args, **kwargs):
         if self.profile_picture:
             resize_image(self.profile_picture)
