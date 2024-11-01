@@ -1,3 +1,4 @@
+<!-- teacher-base.html -->
 {% load static tailwind_tags %}
 {% load static %}
 <!DOCTYPE html>
@@ -16,23 +17,30 @@
     />
 
     <style>
-        .cancel-button {
+      .cancel-button {
           background-color: #D1D5DB;
           color: #1F2937;
           transition: background-color 0.3s;
-        }
-        .cancel-button:hover {
+      }
+      .cancel-button:hover {
           background-color: #9CA3AF;
-        }
-        .logout-button {
+      }
+      .logout-button {
           background-color: #EF4444;
           color: white;
           transition: background-color 0.3s;
-        }
-        .logout-button:hover {
+      }
+      .logout-button:hover {
           background-color: #B91C1C;
-        }
-      </style>
+      }
+      .hover-bg-blue:hover {
+          background-color: #007bff;
+      }
+      
+      .transition-transform {
+          transition: transform 0.3s ease;
+      }
+  </style>
 </head>
 
 <body class="bg-gray-100">
@@ -104,18 +112,18 @@
                 </div>
   
                   <!-- Users Dropdown -->
-                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="dropdown1()">
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="toggleDropdown('submenu1')">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                           <path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" />
                       </svg>
                       <div class="flex justify-between w-full items-center">
                           <span class="text-[15px] ml-4 text-gray-200 font-bold">My Class</span>
-                          <span class="text-sm rotate-180" id="arrow1">
+                          <span class="text-sm rotate-180" id="dropdown-icon">
                               <i class="bi bi-chevron-down"></i>
                           </span>
                       </div>
                   </div>
-                  <div class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden" id="submenu1">
+                  <div id="submenu1" class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden" id="submenu1">
                     <a href="{% url 'teacher-myClassAdvisory' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
                         <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Class Advisory</h1>
                     </a>
@@ -159,45 +167,95 @@
 
 
 <script>
-  function dropdown1() {
-      document.querySelector("#submenu1").classList.toggle("hidden");
-      document.querySelector("#arrow1").classList.toggle("rotate-0");
-  }
+  document.addEventListener('DOMContentLoaded', function() {
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('sidebar');
+      const allSidebarItems = document.querySelectorAll('#sidebar > nav > div, #submenu1 > a');
+      const currentPath = window.location.pathname;
 
-  function dropdown2() {
-      document.querySelector("#submenu2").classList.toggle("hidden");
-      document.querySelector("#arrow2").classList.toggle("rotate-0");
-  }
+      function setActiveTab(item) {
+          allSidebarItems.forEach(i => {
+              i.classList.remove('bg-blue-700');
+          });
+          item.classList.add('bg-blue-700');
+          item.classList.remove('hover:bg-blue-600');
 
-  const sidebarToggle = document.getElementById('sidebar-toggle');
-  const sidebar = document.getElementById('sidebar');
-
-  sidebarToggle.addEventListener('click', (event) => {
-      event.stopPropagation();
-      if (window.innerWidth < 1024) {  // Only toggle on small screens
-          sidebar.classList.toggle('-translate-x-full');
-      }
-  });
-
-  // Close sidebar when clicking outside of it on small screens
-  document.addEventListener('click', (event) => {
-      if (window.innerWidth < 1024) {  // Only close on small screens
-          const clickedOutsideSidebar = !sidebar.contains(event.target) && event.target !== sidebarToggle;
-          
-          if (clickedOutsideSidebar && !sidebar.classList.contains('-translate-x-full')) {
-              sidebar.classList.add('-translate-x-full');
+          // If the active item is a submenu item, keep its parent dropdown open
+          const parentDropdown = item.closest('.hidden');
+          if (parentDropdown) {
+              parentDropdown.classList.remove('hidden');
+              const parentToggle = parentDropdown.previousElementSibling;
+              const arrow = parentToggle.querySelector('#dropdown-icon');
+              if (arrow) arrow.querySelector('i').classList.add('rotate-180');
           }
       }
+
+      // Set initial active tab
+      allSidebarItems.forEach(item => {
+          const link = item.tagName === 'A' ? item : item.querySelector('a');
+          if (link && link.getAttribute('href') === currentPath) {
+              setActiveTab(item);
+          }
+      });
+
+      // Add click listeners to all sidebar items
+      allSidebarItems.forEach(item => {
+          item.addEventListener('click', function(e) {
+              // If it's a submenu toggle, don't prevent default
+              if (this.getAttribute('onclick') && !this.closest('a')) {
+                  return;
+              }
+
+              e.preventDefault();
+              e.stopPropagation(); // Prevent event bubbling
+              setActiveTab(this);
+
+              // Navigate to the link
+              const link = this.tagName === 'A' ? this : this.querySelector('a');
+              if (link) {
+                  window.location.href = link.getAttribute('href');
+              }
+          });
+      });
+
+      // Sidebar toggle for small screens
+      sidebarToggle?.addEventListener('click', (event) => {
+          event.stopPropagation();
+          sidebar.classList.toggle('-translate-x-full');
+      });
+
+      // Close sidebar when clicking outside of it on small screens
+      document.addEventListener('click', (event) => {
+          if (window.innerWidth < 1024) {
+              const clickedOutsideSidebar = !sidebar.contains(event.target) && event.target !== sidebarToggle;
+              if (clickedOutsideSidebar && !sidebar.classList.contains('-translate-x-full')) {
+                  sidebar.classList.add('-translate-x-full');
+              }
+          }
+      });
+
+      // Adjust sidebar visibility on window resize
+      window.addEventListener('resize', () => {
+          if (window.innerWidth >= 1024) {
+              sidebar.classList.remove('-translate-x-full');
+          } else {
+              sidebar.classList.add('-translate-x-full');
+          }
+      });
   });
 
-  // Adjust sidebar visibility on window resize
-  window.addEventListener('resize', () => {
-      if (window.innerWidth >= 1024) {
-          sidebar.classList.remove('-translate-x-full');
+  function toggleDropdown(dropdownId) {
+      const dropdown = document.getElementById(dropdownId);
+      const arrow = dropdown.previousElementSibling.querySelector('.bi-chevron-down');
+
+      if (dropdown.classList.contains('hidden')) {
+          dropdown.classList.remove('hidden');
+          arrow.classList.add('rotate-180');
       } else {
-          sidebar.classList.add('-translate-x-full');
+          dropdown.classList.add('hidden');
+          arrow.classList.remove('rotate-180');
       }
-  });
+  }
 
   function showLogoutModal() {
       document.getElementById('logoutModal').classList.remove('hidden');
@@ -208,10 +266,8 @@
   }
 
   function confirmLogout() {
-      // Implement logout logic here
       console.log('Logout confirmed');
       hideLogoutModal();
-
       window.location.href = "{% url 'logout' %}";
   }
-</script>
+  </script>

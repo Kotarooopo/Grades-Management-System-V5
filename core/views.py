@@ -127,11 +127,6 @@ def login(request):
 
 
 
-@login_required(login_url='login')
-@allowed_users(allowed_roles=['administrator'])
-def profile(request):
-    return render(request, 'admin-profile.html')
-
 def logoutUser(request):
     logout(request)
     return redirect('login')
@@ -144,7 +139,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import AdministratorForm, PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
-@login_required
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
 def profile(request):
     admin = request.user.administrator
@@ -216,21 +211,24 @@ def teacher_profile(request):
                 new_password = change_form.cleaned_data['new_password']
                 
                 if not request.user.check_password(current_password):
-                    messages.error(request, 'Current password is incorrect')
+                    return JsonResponse({'status': 'error', 'message': 'Current password is incorrect'})
                 else:
                     user = request.user
                     user.set_password(new_password)
                     user.save()
                     update_session_auth_hash(request, user)  # Important!
-                    messages.success(request, 'Your password was successfully updated!')
-                    return redirect('teacher-profile')  # Redirect to the profile page
+                    return JsonResponse({'status': 'success', 'message': 'Your password was successfully updated!'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Invalid form data'})
+                    
         else:
             form = TeacherForm(request.POST, request.FILES, instance=teacher)
             change_form = PasswordChangeForm()
             if form.is_valid():
                 form.save()
-                messages.success(request, 'Profile updated successfully!')
-                return redirect('teacher-profile')  # Redirect to the profile page
+                return JsonResponse({'status': 'success', 'message': 'Profile updated successfully!'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'There was an issue updating the profile'})
     else:
         form = TeacherForm(instance=teacher)
         change_form = PasswordChangeForm()

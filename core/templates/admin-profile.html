@@ -131,10 +131,11 @@
                     <div class="bg-white rounded-lg p-4">
                         <h2 class="text-lg font-bold mb-4">Confirm Save Changes</h2>
                         <p class="mb-4">Are you sure you want to save changes?</p>
-                        <div class="flex justify-end">
-                            <button class="bg-gray-500 text-white px-4 py-2 rounded-md mr-2" onclick="hideSaveChangesModal()">Cancel</button>
-                            <button class="bg-green-700 text-white px-4 py-2 rounded-md" onclick="confirmSaveChanges()">Save Changes</button>
+                        <div class="flex justify-end gap-2">
+                            <button type="button" id="cancelButton" class="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-md font-medium w-24" onclick="hideSaveChangesModal()">Cancel</button>
+                            <button class="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md font-semibold w-24" onclick="confirmSaveChanges()">Save</button>
                         </div>
+                        
                     </div>
                 </div>
             </form>
@@ -153,9 +154,9 @@
                     <div class="bg-white rounded-lg p-4">
                         <h2 class="text-lg font-bold mb-4">Confirm Save Changes</h2>
                         <p class="mb-4">Are you sure you want to save changes?</p>
-                        <div class="flex justify-end">
-                            <button class="bg-gray-500 text-white px-4 py-2 rounded-md mr-2" onclick="hidePassChangesModal()">Cancel</button>
-                            <button class="bg-green-700 text-white px-4 py-2 rounded-md" onclick="confirmPassChanges()">Save Changes</button>
+                        <div class="flex justify-end gap-2">
+                            <button type="button" id="cancelButton" class="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-md font-medium w-24" onclick="hidePassChangesModal()">Cancel</button>
+                            <button class="bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md font-semibold w-24" onclick="confirmPassChanges()">Save</button>
                         </div>
                     </div>
                 </div>
@@ -168,7 +169,13 @@
 
 
     <!-- Savechanges Modal -->
-    <script>
+<script>
+
+document.getElementById("cancelButton").addEventListener("click", function () {
+        // Close modal or perform cancel action as needed
+        // e.g., hiding a modal:
+        document.getElementById("profileForm").reset();
+    });
 // Function to show the save changes modal
 function showSaveChangesModal() {
     document.getElementById('saveChangesModal').classList.remove('hidden');
