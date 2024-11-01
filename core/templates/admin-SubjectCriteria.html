@@ -45,7 +45,7 @@
                     </thead>
                     <tbody>
                         {% for subject in subjects %}
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" >
                             <td class="px-6 py-4">{{ subject.name }}</td>
                             <td class="px-6 py-4">
                                 {% for criterion in subject.subjectcriterion_set.all %}

@@ -43,7 +43,7 @@
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td class="px-6 py-4">{{ class.grade_level }}</td>
                             <td class="px-6 py-4">{{ class.section }}</td>
-                            <td class="px-6 py-4">{{ class.teacher.Lastname|default:"No Teacher Assigned" }}</td>
+                            <th class="px-6 py-4">{{ class.teacher.Lastname|default:"No Teacher Assigned" }}, {{ class.teacher.Firstname}} {{ class.teacher.Middle_Initial}}</th>
                             <td class="px-6 py-4">{{ class.subject.name|default:"No Subject" }}</td>
                         </tr>
                         {% empty %}
