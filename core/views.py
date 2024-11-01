@@ -1405,12 +1405,15 @@ def admin_GradeReport(request):
 
 
 
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import render
 from django.contrib import messages
 from .models import SchoolYear, GradingPeriod
+from django.views.decorators.csrf import csrf_exempt
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
+@csrf_exempt  # Use this only if you're making POST requests without CSRF tokens (e.g., via AJAX)
 def admin_GradingPeriod(request):
     current_school_year = SchoolYear.objects.filter(is_active=True).first()
     grading_periods = GradingPeriod.objects.filter(school_year=current_school_year).order_by('period') if current_school_year else []
@@ -1419,17 +1422,24 @@ def admin_GradingPeriod(request):
         if 'add_grading_period' in request.POST:
             period = request.POST.get('period')
             is_current = request.POST.get('is_current') == 'True'
-            
+
             if current_school_year:
+                # Check for duplicates
+                existing_period = GradingPeriod.objects.filter(school_year=current_school_year, period=period).first()
+                if existing_period:
+                    return JsonResponse({'status': 'error', 'message': 'Grading Period already exists.'}, status=400)
+                
+                # Create new grading period
                 GradingPeriod.objects.create(
                     school_year=current_school_year,
                     period=period,
                     is_current=is_current
                 )
-                messages.success(request, 'Grading Period added successfully.')
-            else:
-                messages.error(request, 'No active school year found.')
+                return JsonResponse({'status': 'success', 'message': 'Grading Period added successfully.'})
 
+            return JsonResponse({'status': 'error', 'message': 'No active school year found.'}, status=400)
+
+        # Handling other POST actions like edit and delete
         elif 'edit_grading_period' in request.POST:
             grading_period_id = request.POST.get('edit_id')
             is_current = request.POST.get('is_current') == 'True'
@@ -1437,20 +1447,19 @@ def admin_GradingPeriod(request):
             grading_period = GradingPeriod.objects.get(id=grading_period_id)
             grading_period.is_current = is_current
             grading_period.save()
-            messages.success(request, 'Grading Period updated successfully.')
+            return JsonResponse({'status': 'success', 'message': 'Grading Period updated successfully.'})
 
         elif 'delete_grading_period' in request.POST:
             grading_period_id = request.POST.get('delete_id')
             GradingPeriod.objects.filter(id=grading_period_id).delete()
-            messages.success(request, 'Grading Period deleted successfully.')
-
-        return redirect('admin-GradingPeriod')
+            return JsonResponse({'status': 'success', 'message': 'Grading Period deleted successfully.'})
 
     context = {
         'current_school_year': current_school_year,
         'grading_periods': grading_periods,
     }
     return render(request, 'admin-GradingPeriod.html', context)
+
 
 
 from django.shortcuts import render, get_object_or_404, redirect

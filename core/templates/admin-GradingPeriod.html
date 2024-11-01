@@ -243,4 +243,28 @@
     });
 </script>
 
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    const formData = new FormData(this);
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message); // Show the alert with the response message
+        if (data.status === 'success') {
+            // Optionally, you can refresh the page or update the UI
+            location.reload(); // Reload the page or update your UI accordingly
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
+</script>
+
 {% endblock %}
