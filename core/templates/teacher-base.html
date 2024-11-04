@@ -124,10 +124,13 @@
                       </div>
                   </div>
                   <div id="submenu1" class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden" id="submenu1">
-                    <a href="{% url 'teacher-myClassAdvisory' %}" class="flex items-center"> <!-- Moved 'a' tag here -->
+                    <a href="{% url 'teacher-myClassAdvisory' %}" class="flex items-center">
                         <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Class Advisory</h1>
+
                     </a>
-                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Report Grade</h1>
+                    <a href="{% url 'teacher-SummaryGrade' %}" class="flex items-center">
+                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Summary Grade</h1>
+                    </a>
                   </div>
   
                   <!-- Logout -->
@@ -137,6 +140,7 @@
                       </svg>
                       <span class="text-[15px] ml-4 text-gray-200 font-bold">Logout</span>
                   </div>
+                  
               </nav>
           </aside>
           <main class="ml-64 px-4 py-6 w-full flex-2 overflow-y-auto">

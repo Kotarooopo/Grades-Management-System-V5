@@ -1,4 +1,3 @@
-
 {% extends 'teacher-base.html' %}
 
 {% block content %}
@@ -20,7 +19,7 @@
         <div class="card-header">
             <div class="card-header text-center">
                 <h3 class="text-lg font-medium text-gray-900">
-                    My Class Advisory
+                    My Class Summary
                 </h3>
                 <h4 class=" text-gray-900 mb-4">
                     School Year: {{ current_school_year.year }}
@@ -28,7 +27,7 @@
             </div>
         </div>
         <div class="flex flex-col items-end space-y-2">
-            <a href="{% url 'teacher-prevClassAdvisory' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+            <a href="#" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                 Previous Classes  
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                     <path fill-rule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
@@ -47,7 +46,6 @@
                         <th scope="col" class="px-6 py-3">Total Students</th>
                         <th scope="col" class="px-6 py-3">Status</th>
                         <th scope="col" class="px-6 py-3">Action</th>
-                        <th scope="col" class="px-6 py-3">Grade Calculation</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,22 +64,11 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <a 
-                                        href="{% url 'teacher-myClassAdvisory' %}?class={{ advisory.id }}" 
+                                        href="{% url 'teacher-QuarterSummary' %}?class={{ advisory.id }}" 
                                         class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
                                     >
-                                        View List
+                                        Summary
                                     </a>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <a 
-                                        href="#" 
-                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
-                                        data-modal-toggle="gradingPeriodModal"
-                                        data-id="{{ advisory.id }}"
-                                    >
-                                        Calculate
-                                    </a>
-                                    
                                 </td>
                             </tr>
                         {% endfor %}
@@ -98,8 +85,7 @@
 </div>
 
 <div id="gradingPeriodModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md">
-        
+    <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md"> 
         <h3 class="text-lg font-medium text-gray-900 mb-4">Select Grading Period that want to Calculate</h3>
         <form id="gradingPeriodForm">
             <div class="mb-4">

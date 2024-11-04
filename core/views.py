@@ -1522,14 +1522,10 @@ def admin_class(request):
         When(grade_level='Grade 9', then=2),
         When(grade_level='Grade 10', then=3),
     )
-    
-    
     current_classes = Class.objects.filter(school_year=current_school_year).order_by(grade_order, 'section')
-    
     active_school_years = SchoolYear.objects.filter(is_active=True)
     teachers = Teacher.objects.all()
     subjects = Subject.objects.all()
-
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'add':
@@ -1558,9 +1554,7 @@ def admin_class(request):
             class_instance.delete()
             messages.success(request, 'Class deleted successfully.')
         return redirect('admin-class')
-
     form = AddClassForm()
-
     context = {
         'form': form,
         'current_classes': current_classes,
@@ -1647,9 +1641,100 @@ def teacher_myClassAdvisory(request):
     }
     return render(request, 'teacher-ClassAdvisory.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['teacher'])
+def teacher_SummaryGrades(request):
+    teacher = request.user.teacher
+    
+    # Get the current school year
+    current_school_year = SchoolYear.objects.filter(is_active=True).first()
+
+    # Query all advisory classes for the teacher in the current school year
+    current_advisories = Class.objects.filter(
+        teacher=teacher,
+        school_year=current_school_year
+    ).select_related('subject', 'school_year').annotate(
+        student_count=Count('enrollments')
+    )
+
+    # Query grading periods for the current school year only
+    grading_periods = GradingPeriod.objects.filter(school_year=current_school_year)
+
+    # Handle the class selection
+    selected_class_id = request.GET.get('class')
+    if selected_class_id:
+        selected_class = get_object_or_404(Class, id=selected_class_id, teacher=teacher)
+        request.session['selected_class_id'] = selected_class.id
+        return redirect('teacher-QuarterSummary')
+
+    context = {
+        'current_advisories': current_advisories,
+        'grading_periods': grading_periods,
+        'current_school_year': current_school_year,
+    }
+
+    return render(request, 'teacher-SummaryGrade.html', context)
 
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['teacher'])
+def teacher_QuarterSummary(request):
+    class_id = request.GET.get('class')
+    selected_class = get_object_or_404(Class, id=class_id) if class_id else None
+    
+    if not selected_class:
+        messages.error(request, "Please select a class.")
+        return render(request, 'teacher/quarter_summary.html', {'selected_class': None})
 
+    # Get all enrollments for the selected class
+    enrollments = Enrollment.objects.filter(class_obj=selected_class).select_related('student')
+    
+    # Get all grading periods for the current school year
+    grading_periods = GradingPeriod.objects.filter(
+        school_year=selected_class.school_year
+    ).order_by('period')
+
+    # Create a list to store student grade data
+    students_data = []
+
+    for enrollment in enrollments:
+        student_grades = {
+            'student_name': enrollment.student.get_full_name(),
+            'grades': {},
+            'final_grade': Decimal('0.00'),
+            'remarks': ''
+        }
+
+        # Get grades for each quarter
+        total_grade = Decimal('0.00')
+        grade_count = 0
+
+        for period in grading_periods:
+            try:
+                grade = Grade.objects.get(
+                    enrollment=enrollment,
+                    grading_period=period
+                )
+                student_grades['grades'][period.period] = grade.quarterly_grade
+                total_grade += grade.quarterly_grade
+                grade_count += 1
+            except Grade.DoesNotExist:
+                student_grades['grades'][period.period] = None
+
+        # Calculate final grade if there are any grades
+        if grade_count > 0:
+            student_grades['final_grade'] = (total_grade / grade_count).quantize(Decimal('0.01'))
+            student_grades['remarks'] = 'PASSED' if student_grades['final_grade'] >= 75 else 'FAILED'
+
+        students_data.append(student_grades)
+
+    context = {
+        'selected_class': selected_class,
+        'students_data': students_data,
+        'grading_periods': grading_periods,
+    }
+
+    return render(request, 'teacher-QuarterSummary.html', context)
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required

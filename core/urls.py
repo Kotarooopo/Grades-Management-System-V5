@@ -31,6 +31,8 @@ urlpatterns = [
     path('teacher-myClassAdvisory/myGradeCalculation', views.teacher_gradeCalculate, name = 'teacher-mygradeCalculate'),
     path('remove-student/', views.remove_student, name='remove-student'),
     path('upload-grades/', views.upload_grades, name='upload-grades'),
+    path('teacher-SummaryGrade', views.teacher_SummaryGrades, name='teacher-SummaryGrade'),
+    path('teacher-SummaryGrade/teacher-QuarterSummary', views.teacher_QuarterSummary, name='teacher-QuarterSummary'),
 
 
     path('student-dashboard/', views.student_dashboard, name='student-dashboard'),
@@ -53,6 +55,7 @@ urlpatterns = [
     path('teachers/change-password/', views.change_teacher_password, name='change_teacher_password'),
     path('delete-student/', views.delete_student, name='delete_student'),
     path('delete-teacher/', views.delete_teacher, name='delete_teacher'),
+   
     #path('export-report-card/', views.export_report_card, name='export-report-card'),
 
 
