@@ -1254,6 +1254,7 @@ def admin_GradeReport(request):
     students = Student.objects.all()
     school_years = SchoolYear.objects.all().order_by('-year')
     logo_path = 'static/core/image/logo.png'
+    logo_dep =  'core/static/core/image/logo-dep.png'
 
     if not school_years.exists():
         return render(request, 'admin-GradeReport.html', {'error': 'No school years found.'})
@@ -1366,6 +1367,7 @@ def admin_GradeReport(request):
                     'grade_section': grade_section
                 },
                 'logo_path': logo_path,
+                'logo_dep': logo_dep,
             }
 
 
@@ -1397,6 +1399,7 @@ def admin_GradeReport(request):
     context = {
         'report_cards': report_cards,
         'logo_path': logo_path,
+        'logo_dep': logo_dep,
     }
 
     return render(request, 'admin-GradeReport.html', context)
