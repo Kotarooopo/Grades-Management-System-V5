@@ -21,9 +21,6 @@
                 <h3 class="text-lg font-medium text-gray-900">
                     My Previous Class Summary
                 </h3>
-                <h4 class=" text-gray-900 mb-4">
-                    Previous School Year: 
-                </h4>
             </div>
         </div>
         <div class="flex flex-col items-start space-y-2 mb-4">
@@ -51,10 +48,8 @@
                         <th scope="col" class="px-6 py-3">Action</th>
                     </tr>
                 </thead>
-                <tbody>
-                    
-                            
-                            {% for class in classes %}
+                <tbody>    
+                        {% for class in classes %}
                             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                 <td class="px-6 py-4">{{ class.school_year.year }}</td>
                                 <td class="px-6 py-4">{{ class.subject.name }}</td>

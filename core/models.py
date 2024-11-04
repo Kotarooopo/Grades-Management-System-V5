@@ -4,8 +4,7 @@ import os
 import uuid
 from PIL import Image
 from django.db import IntegrityError
-from django.conf import settings
-    
+from django.conf import settings 
 import logging
 
 from django.core.exceptions import ValidationError
@@ -69,17 +68,14 @@ class Administrator(models.Model):
     Middle_Initial = models.CharField(max_length=10, null=True, blank=True)
     Gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
     Phone_Number = models.CharField(max_length=11, null=True, blank=True)
-
     profile_picture = models.ImageField(upload_to=user_directory_path, default='media/default_profile.png', blank=True)
-    
+
     def save(self, *args, **kwargs):
         if self.profile_picture:
             resize_image(self.profile_picture)
         super().save(*args, **kwargs)
-
     def __str__(self):
         return f"{self.Firstname} {self.Lastname}"
-    
     #new
     def create_school_year(self, year):
         return SchoolYear.objects.create(year=year)
@@ -95,11 +91,9 @@ class Administrator(models.Model):
             teacher=teacher,
             school_year=school_year
         )
-
     def assign_teacher_to_class(self, teacher, class_obj):
         class_obj.teacher = teacher
         class_obj.save()
-
     @property
     def email(self):
         return self.user.email
@@ -112,7 +106,6 @@ class Class(models.Model):
         ('Grade 9', 'Grade 9'),
         ('Grade 10', 'Grade 10'),
     ]
-
     school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE, related_name='classes')
     grade_level = models.CharField(max_length=50, choices=GradeLvl_Choices)
     section = models.CharField(max_length=50)
@@ -121,12 +114,10 @@ class Class(models.Model):
 
     class Meta:
         unique_together = ('school_year', 'grade_level', 'section', 'subject')
-
     def __str__(self):
         subject_name = self.subject.name if self.subject else "No subject"
         teacher_name = self.teacher.Lastname if self.teacher else "No Teacher Assigned"
         return f"({self.school_year.year}) {self.grade_level} {self.section} - Teacher {teacher_name} - Class {subject_name}"
-
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
@@ -188,7 +179,6 @@ class Enrollment(models.Model):
     def save(self, *args, **kwargs):
         self.clean()  # This will raise ValidationError if the clean method fails
         super().save(*args, **kwargs)
-
     pass
 
 
