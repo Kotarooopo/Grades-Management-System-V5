@@ -1,3 +1,4 @@
+<!-- ReportCard.html -->
 {% load static %}
 {% load static tailwind_tags %}
 {% load custom_filters %}
@@ -28,28 +29,60 @@
             text-align: center;
             word-wrap: break-word;
         }
+        .header {
+            text-align: center;
+            margin: 20px 0;
+            width: 100%;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Distributes space between items */
+            margin: 0 auto;
+            width: 100%;
+        }
+        .logo {
+            width: 80px;  /* Increased logo size */
+            height: 80px; /* Increased logo size */
+            object-fit: contain;
+        }
         .header, .grading-scale {
             text-align: center;
             margin: 0.5em 0;
             line-height: 0%;
         }
+        .header-text {
+            flex: 1;
+            text-align: center;
+            margin: 0 20px; /* Adjusted margin */
+            line-height: 1.4;  /* Adjusted line height */
+        }
         .school-name {
             font-size: 12pt;
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            padding: 0;
         }
         .department {
             font-size: 10pt;
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
+            margin: 5px 0;
+            padding: 0;
         }
         .location {
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
+            margin: 5px 0;
+            padding: 0;
         }
         .report-title {
-            font-size: 12pt;
+            font-size: 14pt;  /* Increased font size */
             font-weight: bold;
+            margin: 10px 0 5px 0;
+            padding: 0;
         }
         .student-info {
             display: flex;
@@ -66,27 +99,24 @@
             background-color: #f0f0f0;
             font-weight: bold;
         }
-        .grading-scale {
-            font-size: 8pt;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="header-content">
-            <img src="{% static 'core/images/logo.png' %}" alt="Logo" class="logo">
+            <img src="{{logo_path}}" alt="Logo" class="logo">
             <div class="header-text">
                 <p class="school-name">Initao National Comprehensive High School</p>
                 <p class="department">Junior High School Department</p>
-                <p class="location">Initao Misamis Oriental</p>
-                <p class="report-title">Student Report Card</p>
+                <p class="location">Initao Misamis Oriental</p> 
+            </div>
+            <div>
+                <img src="{{logo_path}}" alt="Right Logo" class="logo">
+                <p class="report-title">Report Card</p>
                 <p>School Year: {{ report_card.school_year.year }}</p>
             </div>
-            <img src="" alt="Right Logo" class="logo right-logo">
         </div>
     </div>
-    
 
     <div class="student-info">
         <div><span>Name:</span> {{ report_card.student.get_full_name }}</div>

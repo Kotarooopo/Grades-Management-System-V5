@@ -1253,7 +1253,7 @@ def admin_GradeReport(request):
 
     students = Student.objects.all()
     school_years = SchoolYear.objects.all().order_by('-year')
-    logo_url = request.build_absolute_uri(static('core/image/logo.png'))
+    logo_path = 'static/core/image/logo.png'
 
     if not school_years.exists():
         return render(request, 'admin-GradeReport.html', {'error': 'No school years found.'})
@@ -1364,8 +1364,10 @@ def admin_GradeReport(request):
                     'grading_periods': grading_periods,
                     'general_average': general_average,
                     'grade_section': grade_section
-                }
+                },
+                'logo_path': logo_path,
             }
+
 
             # Create the HTTP response
             response = HttpResponse(content_type='application/pdf')
@@ -1394,7 +1396,7 @@ def admin_GradeReport(request):
 
     context = {
         'report_cards': report_cards,
-        'logo_url': logo_url,
+        'logo_path': logo_path,
     }
 
     return render(request, 'admin-GradeReport.html', context)
