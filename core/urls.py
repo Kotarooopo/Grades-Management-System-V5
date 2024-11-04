@@ -33,6 +33,7 @@ urlpatterns = [
     path('upload-grades/', views.upload_grades, name='upload-grades'),
     path('teacher-SummaryGrade', views.teacher_SummaryGrades, name='teacher-SummaryGrade'),
     path('teacher-SummaryGrade/teacher-QuarterSummary', views.teacher_QuarterSummary, name='teacher-QuarterSummary'),
+    path('teacher-prevSummaryGrade', views.teacher_prevSummaryGrade, name='teacher-prevSummaryGrade'),
 
 
     path('student-dashboard/', views.student_dashboard, name='student-dashboard'),

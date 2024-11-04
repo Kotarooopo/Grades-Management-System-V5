@@ -1736,6 +1736,33 @@ def teacher_QuarterSummary(request):
 
     return render(request, 'teacher-QuarterSummary.html', context)
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['teacher'])
+def teacher_prevSummaryGrade(request):
+    previous_school_years = SchoolYear.objects.filter(is_active=False).order_by('-year')
+    
+    # Create a dictionary to store classes grouped by school year
+    grouped_classes = {}
+    
+    for school_year in previous_school_years:
+        # Get classes for current school year
+        year_classes = Class.objects.filter(
+            teacher=request.user.teacher,
+            school_year=school_year
+        ).select_related('school_year', 'subject').annotate(
+            student_count=Count('enrollments')
+        ).order_by('subject__name')
+        
+        # Add to dictionary only if classes exist
+        if year_classes.exists():
+            grouped_classes[school_year] = year_classes
+
+    context = {
+        'grouped_classes': grouped_classes,
+    }
+
+    return render(request, 'teacher-prevSummaryGrade.html', context)
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Class, SchoolYear, GradingPeriod

@@ -19,23 +19,26 @@
         <div class="card-header">
             <div class="card-header text-center">
                 <h3 class="text-lg font-medium text-gray-900">
-                    My Class Summary
+                    My Previous Class Summary
                 </h3>
                 <h4 class=" text-gray-900 mb-4">
-                    School Year: {{ current_school_year.year }}
+                    Previous School Year: 
                 </h4>
             </div>
         </div>
-        <div class="flex flex-col items-end space-y-2">
-            <a href="{% url 'teacher-prevSummaryGrade' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
-                Previous Classes  
+        <div class="flex flex-col items-start space-y-2 mb-4">
+            <a href="{% url 'teacher-SummaryGrade' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
-                    <path fill-rule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
-                    <path fill-rule="evenodd" d="M19.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06L17.69 12l-6.97-6.97a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
-                </svg>                                
+                    <path fill-rule="evenodd" d="M10.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L12.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M4.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L6.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                </svg>
+                Current Classes
             </a>
         </div>
         <div class="card-body">
+            {% if grouped_classes %}
+                {% for school_year, classes in grouped_classes.items %}
+                <h4 class="text-lg font-medium text-gray-900 mt-6 mb-4">School Year: {{ school_year.year }}</h4>
             <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
@@ -49,40 +52,42 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if current_advisories.exists %}
-                        {% for advisory in current_advisories %}
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" >
-                                <td class="px-6 py-4">{{ advisory.school_year.year }}</td>
-                                <td class="px-6 py-4">{{ advisory.subject.name }}</td>
-                                <td class="px-6 py-4">{{ advisory.grade_level }}</td>
-                                <td class="px-6 py-4">{{ advisory.section }}</td>
-                                <td class="px-6 py-4">{{ advisory.student_count }}</td>
+                    
+                            
+                            {% for class in classes %}
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <td class="px-6 py-4">{{ class.school_year.year }}</td>
+                                <td class="px-6 py-4">{{ class.subject.name }}</td>
+                                <td class="px-6 py-4">{{ class.grade_level }}</td>
+                                <td class="px-6 py-4">{{ class.section }}</td>
+                                <td class="px-6 py-4">{{ class.student_count }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Current
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Previous
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <a 
-                                        href="{% url 'teacher-QuarterSummary' %}?class={{ advisory.id }}" 
-                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
-                                    >
+                                    <a href="{% url 'teacher-QuarterSummary' %}?class={{ class.id }}" 
+                                       class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md">
                                         Summary
                                     </a>
                                 </td>
                             </tr>
+                            {% endfor %}
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="8" class="px-6 py-4 text-center">No current advisory class assigned.</td>
+                            <td colspan="7" class="px-6 py-4 text-center">No previous classes found.</td>
                         </tr>
                     {% endif %}
                 </tbody>
-                
             </table>
         </div>
+
     </div>
 </div>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('gradingPeriodModal');
