@@ -1681,6 +1681,12 @@ def teacher_SummaryGrades(request):
     return render(request, 'teacher-SummaryGrade.html', context)
 
 
+from django.http import HttpResponse
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+from django.shortcuts import get_object_or_404
+from decimal import Decimal
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
 def teacher_QuarterSummary(request):
@@ -1689,7 +1695,7 @@ def teacher_QuarterSummary(request):
     
     if not selected_class:
         messages.error(request, "Please select a class.")
-        return render(request, 'teacher/quarter_summary.html', {'selected_class': None})
+        return render(request, 'quarter_summary.html', {'selected_class': None})
 
     # Get all enrollments for the selected class
     enrollments = Enrollment.objects.filter(class_obj=selected_class).select_related('student')
@@ -1733,6 +1739,26 @@ def teacher_QuarterSummary(request):
 
         students_data.append(student_grades)
 
+    # If export is requested (PDF)
+    if request.GET.get('export') == 'pdf':
+        template = get_template('quarter_summary_pdf.html')
+        context = {
+            'selected_class': selected_class,
+            'students_data': students_data,
+            'grading_periods': grading_periods,
+        }
+        html_content = template.render(context)
+
+        # Generate PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="quarter_summary.pdf"'  # Change 'inline' to 'attachment'
+        pisa_status = pisa.CreatePDF(html_content, dest=response)
+
+        if pisa_status.err:
+            return HttpResponse('Error generating PDF', status=500)
+        return response
+
+    # Render the normal page if not exporting
     context = {
         'selected_class': selected_class,
         'students_data': students_data,
@@ -1740,6 +1766,7 @@ def teacher_QuarterSummary(request):
     }
 
     return render(request, 'teacher-QuarterSummary.html', context)
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .remarks-passed {
+            color: green;
+        }
+        .remarks-failed {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-text"></div>
+            <img src="{{logo_path}}" alt="Logo" class="logo"></div>
+            
+                <p class="school-name">Initao National Comprehensive High School</p>
+                <p class="department">Junior High School Department</p>
+                <p class="location">Initao Misamis Oriental</p> 
+            <div>
+                <img src="{{logo_dep}}" alt="Right Logo" class="logo">
+                <p class="report-title">Quarterly Grade Summary</p>
+                <p>School Year: {{ report_card.school_year.year }}</p>
+            </div>
+        </div>
+    </div>
+<h2></h2>
+<h3>{{ selected_class.grade_level }} {{ selected_class.section }} - {{ selected_class.subject.name }}</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Learners Names</th>
+            <th>1st Quarter</th>
+            <th>2nd Quarter</th>
+            <th>3rd Quarter</th>
+            <th>4th Quarter</th>
+            <th>Final Grade</th>
+            <th>Remarks</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for student in students_data %}
+        <tr>
+            <td>{{ student.student_name }}</td>
+            <td>{{ student.grades.1st|default:"-" }}</td>
+            <td>{{ student.grades.2nd|default:"-" }}</td>
+            <td>{{ student.grades.3rd|default:"-" }}</td>
+            <td>{{ student.grades.4th|default:"-" }}</td>
+            <td>{{ student.final_grade|default:"-" }}</td>
+            <td class="{% if student.remarks == 'PASSED' %}remarks-passed{% else %}remarks-failed{% endif %}">
+                {{ student.remarks }}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No students enrolled in this class.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>
