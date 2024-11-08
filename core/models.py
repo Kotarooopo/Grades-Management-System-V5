@@ -111,6 +111,7 @@ class Class(models.Model):
     section = models.CharField(max_length=50)
     teacher = models.ForeignKey('Teacher', on_delete=models.CASCADE, null=True, blank=True,)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='classes', null=True, blank=True)
+    hide_scores = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('school_year', 'grade_level', 'section', 'subject')
@@ -118,9 +119,14 @@ class Class(models.Model):
         subject_name = self.subject.name if self.subject else "No subject"
         teacher_name = self.teacher.Lastname if self.teacher else "No Teacher Assigned"
         return f"({self.school_year.year}) {self.grade_level} {self.section} - Teacher {teacher_name} - Class {subject_name}"
+    
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+    def toggle_score_visibility(self):
+        self.hide_scores = not self.hide_scores
+        self.save()
     
 
 
@@ -271,6 +277,29 @@ class Teacher(models.Model):
                 initial_grade = total_weighted_score * 100  # Convert back to percentage
                 final_grade = self.convert_to_final_grade(initial_grade)
 
+        else:
+            raise ValueError("This teacher is not assigned to this class.")
+        
+    def hide_class_scores(self, class_obj):
+        """Hide scores for a specific class"""
+        if class_obj in self.classes.all():
+            class_obj.hide_scores = True
+            class_obj.save()
+        else:
+            raise ValueError("This teacher is not assigned to this class.")
+
+    def show_class_scores(self, class_obj):
+        """Show scores for a specific class"""
+        if class_obj in self.classes.all():
+            class_obj.hide_scores = False
+            class_obj.save()
+        else:
+            raise ValueError("This teacher is not assigned to this class.")
+
+    def toggle_class_scores(self, class_obj):
+        """Toggle score visibility for a specific class"""
+        if class_obj in self.classes.all():
+            class_obj.toggle_score_visibility()
         else:
             raise ValueError("This teacher is not assigned to this class.")
 
@@ -504,6 +533,18 @@ class Score(models.Model):
         percentage = (self.score / self.activity.max_score) * 100
         weightage = self.activity.subject_criterion.weightage
         return Decimal((percentage * weightage) / 100).quantize(Decimal('0.01'))
+    
+    def is_visible_to_student(self, student):
+        """Check if the score should be visible to the student"""
+        if student != self.enrollment.student:
+            return False
+        return not self.enrollment.class_obj.hide_scores
+
+    def get_display_score(self, student):
+        """Get the score value based on visibility settings"""
+        if self.is_visible_to_student(student):
+            return self.score
+        return None
 
     @transaction.atomic
     def save(self, *args, **kwargs):

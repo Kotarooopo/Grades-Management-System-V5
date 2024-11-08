@@ -56,7 +56,7 @@ urlpatterns = [
     path('teachers/change-password/', views.change_teacher_password, name='change_teacher_password'),
     path('delete-student/', views.delete_student, name='delete_student'),
     path('delete-teacher/', views.delete_teacher, name='delete_teacher'),
-   
+    path('api/class/<int:class_id>/toggle-scores/', views.toggle_scores, name='toggle_scores'),
     #path('export-report-card/', views.export_report_card, name='export-report-card'),
 
 

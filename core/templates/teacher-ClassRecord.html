@@ -76,6 +76,7 @@
                     </div>
                 </div>
                 
+                
                 <div class="flex flex-col items-end space-y-2">
                     <button id="activity-dropdownButton" data-dropdown-toggle="activity-dropdown" type="button" class="shadow-md items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                         Activity Action
@@ -101,9 +102,25 @@
                         </svg>
                         Add Score
                     </button> -->
+                    <div class="flex items-center space-x-4">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" 
+                                   id="scoreToggle" 
+                                   class="sr-only peer" 
+                                   {% if not selected_class.hide_scores %}checked{% endif %}>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 
+                                        peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full 
+                                        peer dark:bg-gray-700 peer-checked:after:translate-x-full 
+                                        peer-checked:after:border-white after:content-[''] after:absolute 
+                                        after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 
+                                        after:border after:rounded-full after:h-5 after:w-5 after:transition-all 
+                                        dark:border-gray-600 peer-checked:bg-green-600"></div>
+                            <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                Show Scores
+                            </span>
+                        </label>
+                    </div>
                 </div>
-                
-                
             </div>
             
 
@@ -469,7 +486,30 @@
     </div>
 </div>
 
-
+<script>
+    document.getElementById('scoreToggle').addEventListener('change', function() {
+        const classId = '{{ selected_class.id }}';
+        fetch(`/api/class/${classId}/toggle-scores/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Refresh the page to update the scores display
+                location.reload();
+            } else {
+                console.error('Failed to toggle score visibility:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+    </script>
 
 <!-- Delete Activity -->
 <script>

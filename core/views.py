@@ -2101,9 +2101,14 @@ def teacher_myClassRecord(request):
             # Fetch scores for each enrollment
             for enrollment in enrollments:
                 enrollment.scores = Score.objects.filter(enrollment=enrollment).select_related('activity')
-                for score in enrollment.scores:
-                    score.enrollment_id = enrollment.id
-                    score.activity_id = score.activity.id
+                # If scores are hidden and user is not the teacher, mask the scores
+                if selected_class.hide_scores and not request.user.teacher == selected_class.teacher:
+                    for score in enrollment.scores:
+                        score.score = "Hidden"
+                else:
+                    for score in enrollment.scores:
+                        score.enrollment_id = enrollment.id
+                        score.activity_id = score.activity.id
 
             # Fetch subject criteria for the class subject
             subject_criteria = SubjectCriterion.objects.filter(subject=selected_class.subject)
@@ -2252,7 +2257,8 @@ def teacher_myClassRecord(request):
         'subject_criteria': subject_criteria,
         'grading_periods': current_grading_periods,
         'activities': Activity.objects.filter(class_obj=selected_class) if selected_class else [],
-        'students': Student.objects.filter(enrollments__class_obj=selected_class) if selected_class else []
+        'students': Student.objects.filter(enrollments__class_obj=selected_class) if selected_class else [],
+        'hide_scores': selected_class.hide_scores if selected_class else False
     }
 
     return render(request, 'teacher-ClassRecord.html', context)
@@ -2882,7 +2888,11 @@ def student_scorelist(request):
         messages.error(request, "You are not enrolled in this class.")
         return redirect('student-SubjectList')
 
-    activities = Activity.objects.filter(class_obj=class_obj, subject_criterion__subject=subject, grading_period=grading_period)
+    activities = Activity.objects.filter(
+        class_obj=class_obj, 
+        subject_criterion__subject=subject, 
+        grading_period=grading_period
+    )
     scores = Score.objects.filter(enrollment=enrollment, activity__in=activities)
 
     criteria = GradingCriterion.objects.all()
@@ -2890,12 +2900,18 @@ def student_scorelist(request):
     score_data = []
     for activity in activities:
         score = scores.filter(activity=activity).first()
+        # Only show score if the class doesn't have hidden scores
+        displayed_score = None
+        if score and not class_obj.hide_scores:
+            displayed_score = score.score
+            
         score_data.append({
             'activity_name': activity.name,
             'date': activity.date_created,
             'max_score': activity.max_score,
-            'score': score.score if score else None,
-            'criteria': activity.subject_criterion.grading_criterion.criteria_type
+            'score': displayed_score,
+            'criteria': activity.subject_criterion.grading_criterion.criteria_type,
+            'scores_hidden': class_obj.hide_scores
         })
 
     context = {
@@ -2905,6 +2921,7 @@ def student_scorelist(request):
         'grading_period': grading_period.period,
         'score_data': score_data,
         'criteria': criteria,
+        'scores_hidden': class_obj.hide_scores
     }
     return render(request, 'student-ScoreList.html', context)
 
@@ -3134,7 +3151,28 @@ def upload_grades(request):
 
 
 
-
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['teacher'])
+@require_POST
+def toggle_scores(request, class_id):
+    try:
+        class_obj = get_object_or_404(Class, id=class_id, teacher=request.user.teacher)
+        class_obj.toggle_score_visibility()
+        return JsonResponse({
+            'success': True, 
+            'hide_scores': class_obj.hide_scores,
+            'message': f"Scores are now {'hidden' if class_obj.hide_scores else 'visible'}"
+        })
+    except Class.DoesNotExist:
+        return JsonResponse({
+            'success': False, 
+            'error': 'Class not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'error': str(e)
+        }, status=500)
 
 
 
