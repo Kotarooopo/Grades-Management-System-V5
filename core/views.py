@@ -520,10 +520,208 @@ def calculate_initial_grade(enrollment, grading_period):
 
 
 
+# # views.py
+# import json
+# from django.shortcuts import render
+# from django.http import JsonResponse
+# from .models import Enrollment, Grade, Activity, Score
+# import json
+# from decimal import Decimal
+
+# def decimal_default(obj):
+#     if isinstance(obj, Decimal):
+#         return float(obj)  # Convert Decimal to float
+#     raise TypeError("Type not serializable")
+
+# @login_required(login_url='login')
+# @allowed_users(allowed_roles=['student'])
+# def student_dashboard(request):
+#     student = request.user.student
+#     current_enrollments = Enrollment.objects.filter(
+#         student=student,
+#         class_obj__school_year__is_active=True
+#     ).select_related('class_obj', 'class_obj__subject', 'class_obj__school_year')
+
+#     # Get the active school year
+#     active_school_year = current_enrollments.first().class_obj.school_year if current_enrollments else None
+
+#     # Fetch notifications for each subject (teacher's uploaded grade)
+#     grade_notifications = []
+#     for enrollment in current_enrollments:
+#         subject = enrollment.class_obj.subject
+#         teacher = enrollment.class_obj.teacher
+#         grading_periods = Grade.objects.filter(
+#             enrollment=enrollment,
+#             grading_period__school_year=active_school_year
+#         ).values('grading_period__period', 'grading_period__id')
+
+#         for period in grading_periods:
+#             grade_notifications.append({
+#                 'teacher': f"{teacher.Firstname} {teacher.Lastname}",  # Use first and last name
+#                 'subject': subject.name,
+#                 'grading_period': period['grading_period__period'],
+#             })
+#     grade_notifications = grade_notifications[:10]
+
+#     # Fetch the grades for each subject by grading period
+#     grade_trends = {}
+#     for enrollment in current_enrollments:
+#         subject = enrollment.class_obj.subject
+#         grades = Grade.objects.filter(
+#             enrollment=enrollment,
+#             grading_period__school_year=active_school_year
+#         ).order_by('grading_period__period')
+
+#         # Add grades for each grading period
+#         for grade in grades:
+#             if subject.name not in grade_trends:
+#                 grade_trends[subject.name] = {'periods': []}
+#             grade_trends[subject.name]['periods'].append({
+#                 'period': grade.grading_period.period,
+#                 'grade': grade.quarterly_grade
+#             })
+
+#     # Calculate activity completion
+#     total_activities = Activity.objects.filter(
+#         class_obj__in=current_enrollments.values('class_obj')
+#     ).count()
+    
+#     completed_activities = Score.objects.filter(
+#         enrollment__in=current_enrollments,
+#         score__gt=0
+#     ).count()
+
+#     completion_rate = (completed_activities / total_activities * 100) if total_activities > 0 else 0
+#     context = {
+#         'student': student,
+#         'grade_trends': json.dumps(grade_trends, default=decimal_default),  # Use custom serializer
+#         'grade_notifications': grade_notifications,
+#         'completion_rate': round(completion_rate, 1),
+#         'total_activities': total_activities,
+#         'completed_activities': completed_activities,
+#         'active_school_year': active_school_year,
+#     }
+    
+#     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+#         return JsonResponse(context)
+#     return render(request, 'student-dashboard.html', context)
+
+import json
+from django.db.models import Max
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Enrollment, Grade, Activity, Score, Subject
+from decimal import Decimal
+
+def decimal_default(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)  # Convert Decimal to float
+    raise TypeError("Type not serializable")
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['student'])
 def student_dashboard(request):
-    return render(request, 'student-dashboard.html')
+    student = request.user.student
+    current_enrollments = Enrollment.objects.filter(
+        student=student,
+        class_obj__school_year__is_active=True
+    ).select_related('class_obj', 'class_obj__subject', 'class_obj__school_year')
+
+    # Get the active school year
+    active_school_year = current_enrollments.first().class_obj.school_year if current_enrollments else None
+
+    # Fetch the grades for each subject by grading period
+    grade_trends = {}
+    for enrollment in current_enrollments:
+        subject = enrollment.class_obj.subject
+        grades = Grade.objects.filter(
+            enrollment=enrollment,
+            grading_period__school_year=active_school_year
+        ).order_by('grading_period__period')
+
+        # Add grades for each grading period
+        if subject.name not in grade_trends:
+            grade_trends[subject.name] = {'periods': []}
+        for grade in grades:
+            grade_trends[subject.name]['periods'].append({
+                'period': grade.grading_period.period,
+                'grade': grade.quarterly_grade
+            })
+
+    # Calculate activity completion for each subject
+    subject_activities = {}
+    for subject in Subject.objects.all():
+        total_activities = Activity.objects.filter(
+            class_obj__in=current_enrollments.filter(class_obj__subject=subject).values('class_obj')
+        ).count()
+        completed_activities = Score.objects.filter(
+            enrollment__in=current_enrollments.filter(class_obj__subject=subject),
+            score__gt=0
+        ).count()
+        completion_rate = (completed_activities / total_activities * 100) if total_activities > 0 else 0
+        subject_activities[subject.name] = {
+            'total_activities': total_activities,
+            'completed_activities': completed_activities,
+            'completion_rate': round(completion_rate, 1)
+        }
+
+    # Calculate overall activity completion
+    total_activities = sum(data['total_activities'] for data in subject_activities.values())
+    completed_activities = sum(data['completed_activities'] for data in subject_activities.values())
+    overall_completion_rate = (completed_activities / total_activities * 100) if total_activities > 0 else 0
+
+# Fetch notifications for each subject (teacher's uploaded grade)
+    grade_notifications = []
+
+    # Iterate over all the current enrollments
+    for enrollment in current_enrollments:
+        subject = enrollment.class_obj.subject
+        teacher = enrollment.class_obj.teacher
+        
+        # Get all grading periods associated with the current enrollment
+        grading_periods = Grade.objects.filter(
+            enrollment=enrollment,
+            grading_period__school_year=active_school_year
+        ).values('grading_period__period', 'grading_period__id')
+
+        for period in grading_periods:
+            grade_notifications.append({
+                'teacher': f"{teacher.Firstname} {teacher.Lastname}",  # Teacher's name
+                'subject': subject.name,  # Subject name
+                'grading_period': period['grading_period__period'],  # Grading period name
+                'grading_period_id': period['grading_period__id'],  # Grading period ID for sorting
+            })
+
+    # Sort the notifications by the 'grading_period_id' to ensure latest grades are on top
+    # Reverse the order so that the latest grading period (highest ID) comes first
+    grade_notifications = sorted(grade_notifications, key=lambda x: x['grading_period_id'], reverse=True)
+
+    # Slice to get the latest 10 notifications
+    grade_notifications = grade_notifications[:10]
+
+
+
+
+
+
+    context = {
+        'student': student,
+        'grade_trends': json.dumps(grade_trends, default=decimal_default),  # Use custom serializer
+        'grade_notifications': grade_notifications,
+        'subject_activities': subject_activities,
+        'overall_completion_rate': round(overall_completion_rate, 1),
+        'total_activities': total_activities,
+        'completed_activities': completed_activities,
+        'active_school_year': active_school_year,
+    }
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse(context)
+    return render(request, 'student-dashboard.html', context)
+
+
+
+
 
 
 
