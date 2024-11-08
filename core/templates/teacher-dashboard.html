@@ -11,7 +11,60 @@
     </div>
 </div>
 
-<div class="max-w-10xl bg-white rounded-xl shadow-md overflow-hidden  mt-6">
+<div class="flex justify-start space-x-4 mt-6">
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-1xl">
+        <form method="get" action="{% url 'teacher-dashboard' %}">
+            <div class="flex justify-between items-center mb-4">
+                <h5 class="text-xl font-medium text-gray-900">Top 10 Students</h5>
+                <div class="flex space-x-2">
+                    <!-- Section Dropdown -->
+                    <select name="section" onchange="this.form.submit()" class="text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-32">
+                        {% for section in section_choices %}
+                            <option value="{{ section }}" {% if section == selected_section %}selected{% endif %}>{{ section }}</option>
+                        {% endfor %}
+                    </select>
+                    <!-- Grading Period Dropdown for Current School Year -->
+                    <select name="grading_period" onchange="this.form.submit()" class="text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-32">
+                        <option value="">All Periods</option>
+                        {% for period in grading_periods %}
+                            <option value="{{ period.id }}" {% if period.id|stringformat:"s" == selected_grading_period %}selected{% endif %}>{{ period }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+        <!-- Table of Top Students -->
+        <div class="space-y-2">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Rank</th>
+                        <th scope="col" class="px-6 py-3">Name</th>
+                        <th scope="col" class="px-6 py-3">Initial Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if top_students %}
+                        {% for student in top_students %}
+                            <tr class="bg-white border-b">
+                                <td class="px-6 py-4">{{ forloop.counter }}</td>
+                                <th scope="row" class="px-6 py-4 font-medium text-gray-900">{{ student.student.Lastname }}, {{ student.student.Firstname }}</th>
+                                <td class="px-6 py-4">{{ student.grade|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr class="bg-white border-b">
+                            <td colspan="3" class="px-6 py-4 text-center">No data available</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="max-w-10xl bg-white rounded-xl shadow-md overflow-hidden mt-6">
     <div class="p-8">
         <div class="flex justify-between items-center mb-4">
             <div>
@@ -26,75 +79,17 @@
     </div>
 </div>
 
-<div class="flex justify-start space-x-4 mt-6"> 
-    <!-- Container for the first stats card -->
-    <!-- Calendar -->
-    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-md">
+<!-- Responsive grid layout for 3 aligned cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+    <!-- First Card: Calendar -->
+    <div class="bg-white rounded-lg shadow-md p-6 w-full">
         <div id="calendar" class="grid grid-cols-7 gap-2 text-center text-gray-700">
             <!-- Calendar content will be inserted here -->
         </div>
     </div>
 
-
-
-    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-1xl">
-        <form method="get" action="{% url 'teacher-dashboard' %}">
-            <div class="flex justify-between items-center mb-4">
-                <h5 class="text-xl font-medium text-gray-900">Top 5 Students</h5>
-                <div class="flex space-x-2">
-                    <select name="section" onchange="this.form.submit()" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 text-center inline-flex items-center dark:hover:text-white bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-32">
-                        {% for section in section_choices %}
-                            <option value="{{ section }}" {% if section == selected_section %}selected{% endif %}>{{ section }}</option>
-                        {% endfor %}
-                    </select>
-                    <select name="grading_period" onchange="this.form.submit()" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 text-center inline-flex items-center dark:hover:text-white bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-32">
-                        <option value="">All Periods</option>
-                        {% for period in grading_periods %}
-                            <option value="{{ period.id }}" {% if period == selected_grading_period %}selected{% endif %}>{{ period }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-        </form>
-        <div class="space-y-2">
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col" class="px-6 py-3">Rank</th>
-                        <th scope="col" class="px-6 py-3">Name</th>
-                        <th scope="col" class="px-6 py-3">Initial Grade</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if top_students %}
-                        {% for student in top_students %}
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <td class="px-6 py-4">{{ forloop.counter }}</td>
-                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                    {{ student.student.Lastname }}, {{ student.student.Firstname }}
-                                </th>
-                                <td class="px-6 py-4">
-                                    {{ student.grade|floatformat:2 }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td colspan="3" class="px-6 py-4 text-center">
-                                No data available
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-
-
-<div class="flex justify-start space-x-4 mt-6"> 
-    <div class="bg-white rounded-lg shadow-md p-4 w-full max-w-xs">
+    <!-- Second Card: Total Students Overview -->
+    <div class="bg-white rounded-lg shadow-md p-4 w-full">
         <div class="flex justify-between items-center mb-2">
             <h5 class="text-lg font-medium text-gray-900">Total Students</h5>
         </div>
@@ -124,6 +119,7 @@
         </div>
     </div>
 </div>
+
 
 
 <script>

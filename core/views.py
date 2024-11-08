@@ -402,7 +402,7 @@ def get_top_students(teacher, section, grading_period=None, school_year=None, li
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
-from .models import Class, Enrollment, SubjectCriterion, Activity, Score, GradingPeriod, SchoolYear
+from .models import Class, Enrollment, GradingPeriod, SchoolYear
 import json
 
 @login_required(login_url='login')
@@ -410,17 +410,23 @@ import json
 def teacher_dashboard(request):
     teacher = request.user.teacher
     current_school_year = SchoolYear.objects.filter(is_active=True).first()
+    
+    active_school_year = SchoolYear.objects.filter(is_active=True).first()
 
     # Filter classes based on the current school year
     classes = Class.objects.filter(teacher=teacher, school_year=current_school_year)
-    class_data = classes.annotate(student_count=Count('enrollments__student')).values('section', 'student_count')
+    class_data = (
+        classes.values('section')
+        .annotate(student_count=Count('enrollments__student', distinct=True))
+        .order_by('section')
+    )
 
     sections = [class_info['section'] for class_info in class_data]
     student_counts = [class_info['student_count'] for class_info in class_data]
 
     selected_section = request.GET.get('section', sections[0] if sections else None)
     
-    grading_periods = GradingPeriod.objects.all().order_by('id')
+    grading_periods = GradingPeriod.objects.filter(school_year=active_school_year) if active_school_year else GradingPeriod.objects.none()
     first_grading = grading_periods.first()
     selected_grading_period_id = request.GET.get('grading_period', first_grading.id if first_grading else None)
     
@@ -429,12 +435,22 @@ def teacher_dashboard(request):
     else:
         selected_grading_period = first_grading
 
-    top_students = get_top_students(teacher, selected_section, selected_grading_period, current_school_year, limit=5) if selected_section else []
+    # Fetch the top 10 students for the selected section and grading period
+    top_students = get_top_students(
+        teacher,
+        selected_section,
+        selected_grading_period,
+        current_school_year,
+        limit=10  # Limit to top 10
+    ) if selected_section else []
 
     # Get all enrollments for the teacher's classes
-    all_enrollments = Enrollment.objects.filter(class_obj__teacher=teacher, class_obj__school_year=current_school_year).select_related('student', 'class_obj')
+    all_enrollments = Enrollment.objects.filter(
+        class_obj__teacher=teacher,
+        class_obj__school_year=current_school_year
+    ).select_related('student', 'class_obj')
 
-    total_students = all_enrollments.count()
+    total_students = all_enrollments.values('student').distinct().count()
     passing_students = 0
     failing_students = 0
 
@@ -452,7 +468,7 @@ def teacher_dashboard(request):
         'section_choices': sections,
         'selected_section': selected_section,
         'grading_periods': grading_periods,
-        'selected_grading_period': selected_grading_period,
+        'selected_grading_period': request.GET.get('grading_period', ''),
         'top_students': top_students,
         'passing_students': passing_students,
         'failing_students': failing_students,
@@ -460,6 +476,8 @@ def teacher_dashboard(request):
     }
 
     return render(request, 'teacher-dashboard.html', context)
+
+
 
 
 def calculate_initial_grade(enrollment, grading_period):
