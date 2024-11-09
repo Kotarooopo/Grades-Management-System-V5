@@ -1,3 +1,5 @@
+<!-- teacher-profile.html -->
+
 {% extends 'teacher-base.html' %}
 
 {% block content %}
@@ -94,7 +96,7 @@
                             </div>
                         {% endif %}
                     </div>
-                    <label for="{{ form.profile_picture.id_for_label }}" class="cursor-pointer bg-green-700 text-white py-2 px-4 rounded-md inline-block">
+                    <label for="{{ form.profile_picture.id_for_label }}" class="cursor-pointer bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md inline-block font-semibold"  >
                         Upload New Image
                     </label>
                     <input type="file" id="{{ form.profile_picture.id_for_label }}" name="{{ form.profile_picture.name }}" class="hidden" accept="image/*" onchange="updateFileName(this)">

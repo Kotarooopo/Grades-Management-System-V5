@@ -41,7 +41,7 @@
                 </thead>
                 <tbody>
                     {% for score in result.criteria_scores %}
-                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
                             <td class="px-6 py-4">{{ score.criterion.grading_criterion.get_criteria_type_display }}</td>
                             <td class="px-6 py-4">{{ score.criterion.weightage }}%</td>
                             
@@ -53,12 +53,15 @@
                             <td class="px-6 py-4">{{ score.percentage|floatformat:2 }}%</td>
                         </tr>
                     {% endfor %}
+                    
                 </tbody>
+                
             </table>
-            
             <div class="mt-4 text-right">
                 <p class="text-lg font-medium">Initial Grade: {{ result.initial_grade|floatformat:2 }}</p>
             </div>
+            
+            
         </div>
     </div>
 </div>

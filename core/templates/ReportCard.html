@@ -17,47 +17,45 @@
             font-size: 9pt;
             line-height: 1.2;
             color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-        th, td {
-            padding: 3px;
-            border: 0.5px solid #000;
-            text-align: center;
-            word-wrap: break-word;
+            margin: 0;
+            padding: 0;
         }
         .header {
-            text-align: center;
-            margin: 20px 0;
             width: 100%;
+            margin: 20px auto;
+            padding: 0;
         }
         
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between; /* Distributes space between items */
-            margin: 0 auto;
+        .content-wrapper {
             width: 100%;
+            display: table;
+            table-layout: fixed;
         }
+        
+        .logo-cell {
+            display: table-cell;
+            width: 80px;
+            vertical-align: middle;
+            padding: 10px;
+        }
+        
+        .school-info-cell {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+        }
+        
         .logo {
-            width: 80px;  /* Increased logo size */
-            height: 80px; /* Increased logo size */
-            object-fit: contain;
+            width: 80px;
+            height: 80px;
+            display: block;
         }
-        .header, .grading-scale {
-            text-align: center;
-            margin: 0.5em 0;
-            line-height: 0%;
+        
+        .school-info {
+            margin: 0 auto;
+            padding: 0 20px;
         }
-        .header-text {
-            flex: 1;
-            text-align: center;
-            margin: 0 20px; /* Adjusted margin */
-            line-height: 1.4;  /* Adjusted line height */
-        }
+        
         .school-name {
             font-size: 12pt;
             font-weight: bold;
@@ -65,35 +63,41 @@
             margin: 0;
             padding: 0;
         }
-        .department {
+        
+        .department, .location {
             font-size: 10pt;
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
             margin: 5px 0;
             padding: 0;
         }
-        .location {
-            font-weight: bold;
-            font-family: 'Times New Roman', Times, serif;
-            margin: 5px 0;
-            padding: 0;
-        }
+
         .report-title {
-            font-size: 14pt;  /* Increased font size */
+            font-size: 14pt;
             font-weight: bold;
             margin: 10px 0 5px 0;
-            padding: 0;
+        }
+        
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 3px;
+            border: 0.5px solid #000;
+            text-align: center;
+            word-wrap: break-word;
         }
         .student-info {
             display: flex;
             justify-content: space-between;
             padding: 5px;
-            margin-bottom: 8px;
+            margin: 20px 0 8px 0;
             border: 0.5px solid #000;
             font-size: 9pt;
-        }
-        .info-row span {
-            font-weight: bold;
         }
         .grades-header, .final-row, .grading-scale-header {
             background-color: #f0f0f0;
@@ -102,19 +106,39 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-content">
-            <div class="header-text"></div>
-            <img src="{{logo_path}}" alt="Logo" class="logo"></div>
+    <div class="header" style="text-align: center;">
+        <table style="width: 100%; border-collapse: collapse; vertical-align: middle; border: none;">
+            <tr>
+                <td style="width: 20%; text-align: left; border: none;">
+                    <img src="{{ logo_path }}" alt="Left Logo" style="height: 150px; display: inline-block;">
+                </td>
+                <td style="width: 60%; text-align: center; border: none;">
+                    <div class="school-info" style="display: inline-block; text-align: center;">
+                        <p class="school-name" style="font-weight: bold; font-size: 20px;">Initao National Comprehensive High School</p>
+                        <p class="department" style="font-size: 16px;">Junior High School Department</p>
+                        <p class="location" style="font-size: 14px;">Initao Misamis Oriental</p>
+                        
+                    </div>
+                </td>
+                <td style="width: 20%; text-align: right; border: none;">
+                    <img src="{{ logo_dep }}" alt="Right Logo" style="height: 160px; display: inline-block;">
+                </td>
+
+                
+            </tr>
+        </table>
+    </div>
+
+    <div style="text-align: center;">
+        <p class="report-title" style="font-size: 18px; margin: 0;">Report Card</p>
+        <p style="font-size: 14px; margin: 0;">School Year: {{ report_card.school_year.year }}</p>
+    </div>
+    
+    
+    
+        <!-- School information -->
+        <div class="school-info">
             
-                <p class="school-name">Initao National Comprehensive High School</p>
-                <p class="department">Junior High School Department</p>
-                <p class="location">Initao Misamis Oriental</p> 
-            <div>
-                <img src="{{logo_dep}}" alt="Right Logo" class="logo">
-                <p class="report-title">Report Card</p>
-                <p>School Year: {{ report_card.school_year.year }}</p>
-            </div>
         </div>
     </div>
 

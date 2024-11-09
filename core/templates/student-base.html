@@ -67,8 +67,8 @@
                     <img class="w-10 h-10 rounded-full cursor-pointer" src="{{ request.user.student.profile_picture.url }}" alt="Rounded avatar" id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
                 </div>
             {% else %}
-                <div class="relative w-10 h-10 overflow-hidden bg-green-700 rounded-full dark:bg-gray-600 flex items-center justify-center cursor-pointer" id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
-                    <span class="text-white text-xl">{{ request.user.student.Firstname|first|upper }}</span>
+                <div class="relative w-10 h-10 overflow-hidden flex items-center justify-center cursor-pointer" id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
+                    <img class="h-full w-full object-cover" src="{% static '/core/image/logo.png' %}" alt="default avatar">
                 </div>
             {% endif %}
 

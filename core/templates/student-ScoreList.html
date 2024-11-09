@@ -31,7 +31,7 @@
             </thead>
             <tbody>
                 {% for item in score_data %}
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700" data-criteria="{{ item.criteria }}">
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" data-criteria="{{ item.criteria }}">
                         <td class="px-6 py-4">{{ item.activity_name }}</td>
                         <td class="px-6 py-4">{{ item.date|date:"Y-m-d" }}</td>
                         <td class="px-6 py-4">{{ item.max_score }}</td>

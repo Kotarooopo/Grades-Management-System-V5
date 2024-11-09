@@ -257,6 +257,9 @@ def student_profile(request):
     student = request.user.student
 
     if request.method == 'POST':
+        # Check if request is AJAX
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
         if 'current_password' in request.POST:
             change_form = PasswordChangeForm(request.POST)
             form = StudentForm(instance=student)
@@ -265,21 +268,33 @@ def student_profile(request):
                 new_password = change_form.cleaned_data['new_password']
                 
                 if not request.user.check_password(current_password):
+                    if is_ajax:
+                        return JsonResponse({'status': 'error', 'message': 'Current password is incorrect'})
                     messages.error(request, 'Current password is incorrect')
                 else:
                     user = request.user
                     user.set_password(new_password)
                     user.save()
-                    update_session_auth_hash(request, user)  # Important!
+                    update_session_auth_hash(request, user)
+                    if is_ajax:
+                        return JsonResponse({'status': 'success', 'message': 'Your password was successfully updated!'})
                     messages.success(request, 'Your password was successfully updated!')
-                    return redirect('student-profile')  # Redirect to the profile page
+                    return redirect('student-profile')
+            else:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': 'Invalid form data'})
         else:
             form = StudentForm(request.POST, request.FILES, instance=student)
             change_form = PasswordChangeForm()
             if form.is_valid():
                 form.save()
+                if is_ajax:
+                    return JsonResponse({'status': 'success', 'message': 'Profile updated successfully!'})
                 messages.success(request, 'Profile updated successfully!')
-                return redirect('student-profile')  # Redirect to the profile page
+                return redirect('student-profile')
+            else:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': 'There was an issue updating the profile'})
     else:
         form = StudentForm(instance=student)
         change_form = PasswordChangeForm()
@@ -1455,15 +1470,13 @@ from django.http import HttpResponse, FileResponse
 import io
 from django.templatetags.static import static
 from django.contrib.sites.shortcuts import get_current_site
-
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['administrator'])
 def admin_GradeReport(request):
-
     students = Student.objects.all()
     school_years = SchoolYear.objects.all().order_by('-year')
     logo_path = 'static/core/image/logo.png'
-    logo_dep =  'core/static/core/image/logo-dep.png'
+    logo_dep = 'core/static/core/image/logo-dep.png'
 
     if not school_years.exists():
         return render(request, 'admin-GradeReport.html', {'error': 'No school years found.'})
@@ -1477,6 +1490,8 @@ def admin_GradeReport(request):
             grading_periods = GradingPeriod.objects.filter(school_year=school_year).order_by('period')
 
             grades_data = {}
+            subjects_with_final_grades = []  # Track subjects with valid final grades
+
             for subject in subjects:
                 grades_data[subject.name] = {'quarterly_grades': {}}
                 for period in grading_periods:
@@ -1487,17 +1502,19 @@ def admin_GradeReport(request):
                     ).first()
                     grades_data[subject.name]['quarterly_grades'][period.period] = grade.quarterly_grade if grade else None
 
-                # Calculate final grade
+                # Calculate final grade only if there are quarterly grades
                 quarterly_grades = [grade for grade in grades_data[subject.name]['quarterly_grades'].values() if grade is not None]
                 if quarterly_grades:
                     final_grade = round(sum(quarterly_grades) / len(quarterly_grades), 2)
                     grades_data[subject.name]['final_grade'] = final_grade
                     grades_data[subject.name]['remarks'] = 'Passed' if final_grade >= 75 else 'Failed'
+                    subjects_with_final_grades.append(final_grade)  # Add to list of valid final grades
                 else:
                     grades_data[subject.name]['final_grade'] = None
                     grades_data[subject.name]['remarks'] = None
 
-            general_average = round(sum(subject['final_grade'] for subject in grades_data.values() if subject['final_grade'] is not None) / len(grades_data), 2) if grades_data else None
+            # Calculate general average only for subjects with final grades
+            general_average = round(sum(subjects_with_final_grades) / len(subjects_with_final_grades), 2) if subjects_with_final_grades else None
 
             grade_section = enrollments.first().class_obj.grade_level + ' - ' + enrollments.first().class_obj.section if enrollments.exists() else 'N/A'
 
@@ -1510,19 +1527,15 @@ def admin_GradeReport(request):
                 'grade_section': grade_section
             })
 
-    # Check if the export request is made
+    # PDF export section remains the same
     if request.method == 'POST' and 'export' in request.POST:
         student_id = request.POST.get('student_id')
         school_year_id = request.POST.get('school_year_id')
 
-        
-
         try:
-            # Get the student and school year
             selected_student = Student.objects.get(user_id=student_id)
             selected_school_year = SchoolYear.objects.get(id=school_year_id)
             
-            # Get enrollments and grading periods
             selected_enrollments = Enrollment.objects.filter(
                 student=selected_student, 
                 class_obj__school_year=selected_school_year
@@ -1535,8 +1548,9 @@ def admin_GradeReport(request):
                 school_year=selected_school_year
             ).order_by('period')
             
-            # Prepare grades data
             grades_data = {}
+            subjects_with_final_grades = []  # Track subjects with valid final grades
+
             for enrollment in selected_enrollments:
                 subject = enrollment.class_obj.subject
                 grades_data[subject.name] = {'quarterly_grades': {}}
@@ -1548,24 +1562,21 @@ def admin_GradeReport(request):
                     ).first()
                     grades_data[subject.name]['quarterly_grades'][period.period] = grade.quarterly_grade if grade else None
 
-                # Calculate final grade
                 quarterly_grades = [grade for grade in grades_data[subject.name]['quarterly_grades'].values() if grade is not None]
                 if quarterly_grades:
                     final_grade = round(sum(quarterly_grades) / len(quarterly_grades), 2)
                     grades_data[subject.name]['final_grade'] = final_grade
                     grades_data[subject.name]['remarks'] = 'Passed' if final_grade >= 75 else 'Failed'
+                    subjects_with_final_grades.append(final_grade)  # Add to list of valid final grades
                 else:
                     grades_data[subject.name]['final_grade'] = None
                     grades_data[subject.name]['remarks'] = None
 
-            # Calculate general average
-            final_grades = [subject['final_grade'] for subject in grades_data.values() if subject['final_grade'] is not None]
-            general_average = round(sum(final_grades) / len(final_grades), 2) if final_grades else None
+            # Calculate general average only for subjects with final grades
+            general_average = round(sum(subjects_with_final_grades) / len(subjects_with_final_grades), 2) if subjects_with_final_grades else None
             
-            # Get grade and section
             grade_section = f"{selected_enrollments.first().class_obj.grade_level} - {selected_enrollments.first().class_obj.section}"
 
-            # Prepare context for PDF template
             context = {
                 'report_card': {
                     'student': selected_student,
@@ -1579,17 +1590,12 @@ def admin_GradeReport(request):
                 'logo_dep': logo_dep,
             }
 
-
-            # Create the HTTP response
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = f'attachment; filename="{selected_student.get_full_name()}_report_card.pdf"'
 
-
-            # Create the PDF using template
             template = get_template('ReportCard.html')
             html = template.render(context)
 
-            # Generate PDF
             pisa_status = pisa.CreatePDF(
                 html,
                 dest=response,
@@ -2828,6 +2834,9 @@ from django.contrib.auth.decorators import login_required
 from .decorators import allowed_users
 from .models import Class, Enrollment, SubjectCriterion, Score, Student, Activity, GradingPeriod, SchoolYear
 
+logo_path = 'static/core/image/logo.png'
+logo_dep = 'core/static/core/image/logo-dep.png'
+
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
 def teacher_gradeCalculate(request):
@@ -2925,6 +2934,8 @@ def teacher_gradeCalculate(request):
         'total_max_scores': total_max_scores,
         'grading_period': grading_period,
         'is_current_school_year': is_current_school_year,
+        'logo_path': logo_path,  
+        'logo_dep': logo_dep,
     }
 
     if request.GET.get('export') == 'pdf':

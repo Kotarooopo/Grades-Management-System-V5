@@ -96,13 +96,16 @@
                             <span class="font-semibold text-gray-900">{{ notification.grading_period }}-Grading</span> in the subject
                             <span class="font-semibold text-gray-900">{{ notification.subject }}</span>.
                         </p>
-                        <span class="text-xs text-green-400">New</span>
+                        {% if forloop.first %}
+                            <span class="text-xs text-green-400">New</span>
+                        {% endif %}
                     </a>
                 {% empty %}
                     <p class="text-sm text-gray-500">No notifications yet.</p>
                 {% endfor %}
             </div>
-        </div>        
+        </div>
+          
     </div>
 
     </div>
