@@ -25,7 +25,6 @@
                     </select>
                     <!-- Grading Period Dropdown for Current School Year -->
                     <select name="grading_period" onchange="this.form.submit()" class="text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-32">
-                        <option value="">All Periods</option>
                         {% for period in grading_periods %}
                             <option value="{{ period.id }}" {% if period.id|stringformat:"s" == selected_grading_period %}selected{% endif %}>{{ period }}</option>
                         {% endfor %}
