@@ -670,37 +670,30 @@ def student_dashboard(request):
     completed_activities = sum(data['completed_activities'] for data in subject_activities.values())
     overall_completion_rate = (completed_activities / total_activities * 100) if total_activities > 0 else 0
 
-# Fetch notifications for each subject (teacher's uploaded grade)
     grade_notifications = []
-
-    # Iterate over all the current enrollments
     for enrollment in current_enrollments:
         subject = enrollment.class_obj.subject
         teacher = enrollment.class_obj.teacher
-        
-        # Get all grading periods associated with the current enrollment
         grading_periods = Grade.objects.filter(
             enrollment=enrollment,
             grading_period__school_year=active_school_year
-        ).values('grading_period__period', 'grading_period__id')
+        ).values('grading_period__period', 'grading_period__id', 'created_at', 'updated_at')
 
         for period in grading_periods:
             grade_notifications.append({
-                'teacher': f"{teacher.Firstname} {teacher.Lastname}",  # Teacher's name
-                'subject': subject.name,  # Subject name
-                'grading_period': period['grading_period__period'],  # Grading period name
-                'grading_period_id': period['grading_period__id'],  # Grading period ID for sorting
+                'teacher': f"{teacher.Firstname} {teacher.Lastname}",
+                'subject': subject.name,
+                'grading_period': period['grading_period__period'],
+                'grading_period_id': period['grading_period__id'],
+                'created_at': period['created_at'],  # Add the creation timestamp
+                'updated_at': period['updated_at'],  # Add the update timestamp
             })
 
-    # Sort the notifications by the 'grading_period_id' to ensure latest grades are on top
-    # Reverse the order so that the latest grading period (highest ID) comes first
-    grade_notifications = sorted(grade_notifications, key=lambda x: x['grading_period_id'], reverse=True)
+    # Sort the notifications by the 'updated_at' or 'created_at' to prioritize the latest updates
+    grade_notifications = sorted(grade_notifications, key=lambda x: x['updated_at'], reverse=True)
 
     # Slice to get the latest 10 notifications
     grade_notifications = grade_notifications[:10]
-
-
-
 
 
 

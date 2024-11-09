@@ -569,6 +569,9 @@ class Grade(models.Model):
     grading_period = models.ForeignKey(GradingPeriod, on_delete=models.CASCADE)
     quarterly_grade = models.DecimalField(max_digits=5, decimal_places=2)
 
+    created_at = models.DateTimeField(auto_now_add=True) 
+    updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         unique_together = ('enrollment', 'grading_period')
 

@@ -76,7 +76,7 @@
             </div>
         </div>
     
-        <!-- Average Grade Card -->
+        <!-- Notification Grade Card -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-medium text-gray-500">Notifications</h3>
@@ -108,43 +108,52 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        var gradeTrends = JSON.parse('{{ grade_trends|escapejs }}');  // Deserialize JSON data from Django
+<script>
+    var gradeTrends = JSON.parse('{{ grade_trends|escapejs }}');  // Deserialize JSON data from Django
     
-        var ctx = document.getElementById('gradeTrendsChart').getContext('2d');
-        var gradeTrendsData = {
-            labels: ["1st Grading", "2nd Grading", "3rd Grading", "4th Grading"],
-            datasets: []
-        };
-    
-        // Iterate through the grade trends and populate datasets
-        for (const [subject, data] of Object.entries(gradeTrends)) {
-            var grades = data.periods.map(function(period) {
-                return period.grade;
-            });
-    
-            gradeTrendsData.datasets.push({
-                label: subject,
-                data: grades,
-                backgroundColor: 'rgba(21, 128, 61, 1)',  
-                borderColor: 'rgba(21, 128, 61, 1)', 
+    var ctx = document.getElementById('gradeTrendsChart').getContext('2d');
+    var gradeTrendsData = {
+        labels: ["1st Grading", "2nd Grading", "3rd Grading", "4th Grading"],
+        datasets: []
+    };
 
-                borderWidth: 1
-            });
+    // Function to determine color based on grade
+    function getColorBasedOnGrade(grade) {
+        if (grade < 74) return 'rgba(255, 0, 0, 1)';  // Red
+        else if (grade >= 75 && grade <= 85) return 'rgba(255, 205, 86, 1)';  // Yellow
+        else return 'rgba(21, 128, 61, 1)';  // Green
+    }
 
-        }
-    
-        var gradeTrendsChart = new Chart(ctx, {
-            type: 'bar',
-            data: gradeTrendsData,
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
+    // Iterate through the grade trends and populate datasets
+    for (const [subject, data] of Object.entries(gradeTrends)) {
+        var grades = data.periods.map(function(period) {
+            return period.grade;
+        });
+
+        // Generate colors based on grade values
+        var backgroundColors = grades.map(getColorBasedOnGrade);
+
+        gradeTrendsData.datasets.push({
+            label: subject,
+            data: grades,
+            backgroundColor: backgroundColors,  // Set background color dynamically
+            borderColor: backgroundColors,      // Match border color for consistency
+            borderWidth: 1
+        });
+    }
+
+    var gradeTrendsChart = new Chart(ctx, {
+        type: 'bar',
+        data: gradeTrendsData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
                 }
             }
-        });
-    </script>
+        }
+    });
+</script>
+
 {% endblock %}
