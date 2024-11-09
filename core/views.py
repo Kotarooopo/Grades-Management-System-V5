@@ -1902,6 +1902,9 @@ from django.template.loader import get_template
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 
+
+logo_path = 'static/core/image/logo.png'
+logo_dep = 'core/static/core/image/logo-dep.png'
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
 def teacher_QuarterSummary(request):
@@ -1961,6 +1964,9 @@ def teacher_QuarterSummary(request):
             'selected_class': selected_class,
             'students_data': students_data,
             'grading_periods': grading_periods,
+            'logo_path': logo_path,  
+            'logo_dep': logo_dep,
+            'school_year': selected_class.school_year,
         }
         html_content = template.render(context)
 
@@ -1978,6 +1984,8 @@ def teacher_QuarterSummary(request):
         'selected_class': selected_class,
         'students_data': students_data,
         'grading_periods': grading_periods,
+        'school_year': selected_class.school_year,
+        
     }
 
     return render(request, 'teacher-QuarterSummary.html', context)
