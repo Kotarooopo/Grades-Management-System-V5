@@ -10,7 +10,7 @@
             <h3 class="text-lg font-medium text-gray-900">
                 {{ grade_level }} - {{ section }}
             </h3>
-            <h4 class=" text-gray-900 mb-4">
+            <h4 class="text-gray-900 mb-4">
                 School Year: {{ current_school_year.year }}
             </h4>
         </div>
@@ -20,48 +20,51 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                     <path fill-rule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
                     <path fill-rule="evenodd" d="M19.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06L17.69 12l-6.97-6.97a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
-                </svg>                                
+                </svg>                                 
             </a>
         </div>
 
-        <table class="w-full stext-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                    <th scope="col" class="px-6 py-3">Subjects</th>
-                    <th scope="col" class="px-6 py-3">Teacher</th>
-                    <th scope="col" class="px-6 py-3">Action</th>
-                    <th scope="col" class="px-6 py-3">Initial Grade</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in subjects_and_teachers %}
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
-                    <td class="px-6 py-4">{{ item.subject }}</td>
-                    <td class="px-6 py-4 font-medium text-gray-400">{{ item.teacher }}</td>
-                    <td class="px-6 py-4">
-                        <button 
-                                    onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'ScoreList')"
-                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
-                                    >
-                                    View
-                        </button>
-                    </td>
-                    <td class="px-6 py-4">
-                        <button 
-                                    onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'InitialGrade')"
-                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
-                                    >
-                                    Initial Grade
-                        </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="px-6 py-4 text-center">No subjects found</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- Make the table responsive on smaller screens -->
+        <div class="overflow-x-auto mt-6">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Subjects</th>
+                        <th scope="col" class="px-6 py-3">Teacher</th>
+                        <th scope="col" class="px-6 py-3">Action</th>
+                        <th scope="col" class="px-6 py-3">Initial Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in subjects_and_teachers %}
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                        <td class="px-6 py-4">{{ item.subject }}</td>
+                        <td class="px-6 py-4 font-medium text-gray-400">{{ item.teacher }}</td>
+                        <td class="px-6 py-4">
+                            <button 
+                                        onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'ScoreList')"
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                        >
+                                        View
+                            </button>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button 
+                                        onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'InitialGrade')"
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                        >
+                                        Initial Grade
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center">No subjects found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -91,7 +94,6 @@
     </div>
 </div>
 
-
 <script>
     function openGradingPeriodModal(subjectId, classId, action) {
         document.getElementById('subject_id').value = subjectId;
@@ -107,6 +109,5 @@
         });
     });
 </script>
-    
 
 {% endblock %}

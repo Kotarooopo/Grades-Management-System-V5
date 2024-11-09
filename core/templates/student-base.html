@@ -14,32 +14,53 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
     />
-
     <style>
-      .cancel-button {
+        .cancel-button {
           background-color: #D1D5DB;
           color: #1F2937;
           transition: background-color 0.3s;
-      }
-      .cancel-button:hover {
+        }
+        .cancel-button:hover {
           background-color: #9CA3AF;
-      }
-      .logout-button {
+        }
+        .logout-button {
           background-color: #EF4444;
           color: white;
           transition: background-color 0.3s;
-      }
-      .logout-button:hover {
+        }
+        .logout-button:hover {
           background-color: #B91C1C;
-      }
-      .hover-bg-blue:hover {
+        }
+        .hover-bg-blue:hover {
           background-color: #007bff;
-      }
-      
-      .transition-transform {
+        }
+        .transition-transform {
           transition: transform 0.3s ease;
-      }
-  </style>
+        }
+    
+        /* Sidebar on large screens */
+        @media (min-width: 1024px) {
+          .sidebar {
+            position: static;
+            transform: translateX(0);
+          }
+          .main-content {
+            margin-left: 1rem;
+          }
+        }
+        @media (max-width: 1024px) {
+          .main-content {
+            margin-left: 0;
+            width: 100%;
+          }
+          .sidebar {
+            transform: translateX(-100%);
+          }
+          .sidebar.sidebar-open {
+            transform: translateX(0);
+          }
+        }
+      </style>
       
 </head>
 
@@ -87,8 +108,7 @@
       
       <div class="flex h-screen overflow-hidden">
           <!-- Sidebar -->
-          <aside id="sidebar" class="bg-green-700 text-white w-64 flex-shrink-0 overflow-y-auto transition-all duration-300 ease-in-out">
-  
+           <aside id="sidebar" class="sidebar bg-green-700 text-white w-64 lg:static fixed h-full flex-shrink-0 overflow-y-auto transition-all duration-300 ease-in-out">
               <nav>
                   <!-- Dashboard -->
                   <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white">
@@ -140,11 +160,10 @@
                 </div>
               </nav>
           </aside>
-          <main class="ml-64 px-4 py-6 w-full flex-2 overflow-y-auto">
-            <!-- Content goes here -->
+          <main class="main-content flex-1 p-4 lg:ml-64 overflow-y-auto">
             {% block content %}
             {% endblock %}
-          </main>
+        </main>
       </div>
   </div>
   
@@ -166,82 +185,93 @@
 </html>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const sidebarToggle = document.getElementById('sidebar-toggle');
-      const sidebar = document.getElementById('sidebar');
-      const allSidebarItems = document.querySelectorAll('#sidebar > nav > div, #submenu1 > a');
-      const currentPath = window.location.pathname;
-  
-      function setActiveTab(item) {
-          allSidebarItems.forEach(i => {
-              i.classList.remove('bg-blue-700');
-          });
-          item.classList.add('bg-blue-700');
-          item.classList.remove('hover:bg-blue-600');
-  
-          // If the active item is a submenu item, keep its parent dropdown open
-          const parentDropdown = item.closest('.hidden');
-          if (parentDropdown) {
-              parentDropdown.classList.remove('hidden');
-              const parentToggle = parentDropdown.previousElementSibling;
-              const arrow = parentToggle.querySelector('#dropdown-icon');
-              if (arrow) arrow.querySelector('i').classList.add('rotate-180');
-          }
-      }
-  
-      // Set initial active tab
-      allSidebarItems.forEach(item => {
-          const link = item.tagName === 'A' ? item : item.querySelector('a');
-          if (link && link.getAttribute('href') === currentPath) {
-              setActiveTab(item);
-          }
-      });
-  
-      // Add click listeners to all sidebar items
-      allSidebarItems.forEach(item => {
-          item.addEventListener('click', function(e) {
-              // If it's a submenu toggle, don't prevent default
-              if (this.getAttribute('onclick') && !this.closest('a')) {
-                  return;
-              }
-  
-              e.preventDefault();
-              e.stopPropagation(); // Prevent event bubbling
-              setActiveTab(this);
-  
-              // Navigate to the link
-              const link = this.tagName === 'A' ? this : this.querySelector('a');
-              if (link) {
-                  window.location.href = link.getAttribute('href');
-              }
-          });
-      });
-  
-      // Sidebar toggle for small screens
-      sidebarToggle?.addEventListener('click', (event) => {
-          event.stopPropagation();
-          sidebar.classList.toggle('-translate-x-full');
-      });
-  
-      // Close sidebar when clicking outside of it on small screens
-      document.addEventListener('click', (event) => {
-          if (window.innerWidth < 1024) {
-              const clickedOutsideSidebar = !sidebar.contains(event.target) && event.target !== sidebarToggle;
-              if (clickedOutsideSidebar && !sidebar.classList.contains('-translate-x-full')) {
-                  sidebar.classList.add('-translate-x-full');
-              }
-          }
-      });
-  
-      // Adjust sidebar visibility on window resize
-      window.addEventListener('resize', () => {
-          if (window.innerWidth >= 1024) {
-              sidebar.classList.remove('-translate-x-full');
-          } else {
-              sidebar.classList.add('-translate-x-full');
-          }
-      });
-  });
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const allSidebarItems = document.querySelectorAll('#sidebar > nav > div, #submenu1 > a');
+        const currentPath = window.location.pathname;
+
+        // Toggle sidebar function
+        function toggleSidebar() {
+            sidebar.classList.toggle('sidebar-open');
+        }
+
+        // Handle sidebar toggle button click
+        sidebarToggle?.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleSidebar();
+        });
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', (event) => {
+            if (window.innerWidth < 1024) {
+                const clickedOutsideSidebar = !sidebar.contains(event.target) && 
+                                           event.target !== sidebarToggle;
+                if (clickedOutsideSidebar && sidebar.classList.contains('sidebar-open')) {
+                    sidebar.classList.remove('sidebar-open');
+                }
+            }
+        });
+
+        // Handle window resize
+        function handleResize() {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.remove('sidebar-open');
+                mainContent.classList.add('lg:ml-64');
+            } else {
+                sidebar.classList.remove('sidebar-open');
+                mainContent.classList.remove('lg:ml-64');
+            }
+        }
+
+        // Initialize active tab function
+        function setActiveTab(item) {
+            allSidebarItems.forEach(i => {
+                i.classList.remove('bg-blue-700');
+            });
+            item.classList.add('bg-blue-700');
+            item.classList.remove('hover:bg-blue-600');
+
+            const parentDropdown = item.closest('.hidden');
+            if (parentDropdown) {
+                parentDropdown.classList.remove('hidden');
+                const parentToggle = parentDropdown.previousElementSibling;
+                const arrow = parentToggle.querySelector('#dropdown-icon');
+                if (arrow) arrow.querySelector('i').classList.add('rotate-180');
+            }
+        }
+
+        // Set initial active tab
+        allSidebarItems.forEach(item => {
+            const link = item.tagName === 'A' ? item : item.querySelector('a');
+            if (link && link.getAttribute('href') === currentPath) {
+                setActiveTab(item);
+            }
+        });
+
+        // Add click listeners to sidebar items
+        allSidebarItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.getAttribute('onclick') && !this.closest('a')) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab(this);
+
+                const link = this.tagName === 'A' ? this : this.querySelector('a');
+                if (link) {
+                    window.location.href = link.getAttribute('href');
+                }
+            });
+        });
+
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Initial check
+    });
   
   function toggleDropdown(dropdownId) {
       const dropdown = document.getElementById(dropdownId);
@@ -269,4 +299,19 @@
       hideLogoutModal();
       window.location.href = "{% url 'logout' %}";
   }
+
+  // Handle window resize
+  function handleResize() {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                mainContent.classList.add('lg:ml-64');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                mainContent.classList.remove('lg:ml-64');
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Initial check
   </script>
+
