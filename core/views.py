@@ -20,7 +20,7 @@ from django.views.decorators.http import require_GET
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from .models import User, Class  # Import your models
+from .models import User, Class  
 from django.http import JsonResponse
 
 @login_required(login_url='login')
@@ -50,9 +50,9 @@ def dashboard(request):
         }
 
     total_subjects = Subject.objects.count()
-    subjects = Subject.objects.all()  # Get all subjects
+    subjects = Subject.objects.all()  
 
-    # Get the current school year
+    
     current_school_year = SchoolYear.objects.filter(is_active=True).first()
 
     context = {
@@ -62,8 +62,8 @@ def dashboard(request):
         'total_users': total_users,
         'total_sections': total_sections,
         'total_subjects': total_subjects,
-        'subjects': subjects,  # Pass subjects to the template
-        'current_school_year': current_school_year,  # Add the current school year to the context
+        'subjects': subjects,  
+        'current_school_year': current_school_year, 
         'grade_sections': json.dumps(grade_sections),
         'grade_sections_with_percentage': grade_sections_with_percentage,
     }
