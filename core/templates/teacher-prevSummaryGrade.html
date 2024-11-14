@@ -32,7 +32,7 @@
                 Current Classes
             </a>
         </div>
-        <div class="card-body">
+        <div class="overflow-x-auto mt-6">
             {% if grouped_classes %}
                 {% for school_year, classes in grouped_classes.items %}
                 <h4 class="text-lg font-medium text-gray-900 mt-6 mb-4">School Year: {{ school_year.year }}</h4>
