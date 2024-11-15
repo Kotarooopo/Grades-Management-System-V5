@@ -18,23 +18,52 @@
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"></script>
     <!-- <script src="{% static 'js/obfuscated.min.js' %}"></script> -->
     <style>
-        .cancel-button {
-          background-color: #D1D5DB;
-          color: #1F2937;
-          transition: background-color 0.3s;
+      .cancel-button {
+        background-color: #D1D5DB;
+        color: #1F2937;
+        transition: background-color 0.3s;
+      }
+      .cancel-button:hover {
+        background-color: #9CA3AF;
+      }
+      .logout-button {
+        background-color: #EF4444;
+        color: white;
+        transition: background-color 0.3s;
+      }
+      .logout-button:hover {
+        background-color: #B91C1C;
+      }
+      .hover-bg-blue:hover {
+        background-color: #007bff;
+      }
+      .transition-transform {
+        transition: transform 0.3s ease;
+      }
+  
+      /* Sidebar on large screens */
+      @media (min-width: 1024px) {
+        .sidebar {
+          position: static;
+          transform: translateX(0);
         }
-        .cancel-button:hover {
-          background-color: #9CA3AF;
+        .main-content {
+          margin-left: 1rem;
         }
-        .logout-button {
-          background-color: #EF4444;
-          color: white;
-          transition: background-color 0.3s;
+      }
+      @media (max-width: 1024px) {
+        .main-content {
+          margin-left: 0;
+          width: 100%;
         }
-        .logout-button:hover {
-          background-color: #B91C1C;
+        .sidebar {
+          transform: translateX(-100%);
         }
-      </style>
+        .sidebar.sidebar-open {
+          transform: translateX(0);
+        }
+      }
+    </style>
 </head>
 
 <!-- <body oncontextmenu="return false;" class="bg-gray-100"></body> -->
@@ -93,8 +122,7 @@
       
       <div class="flex h-screen overflow-hidden">
           <!-- Sidebar -->
-          <aside id="sidebar" class="bg-green-700 text-white w-64 flex-shrink-0 overflow-y-auto transition-all duration-300 ease-in-out">
-  
+          <aside id="sidebar" class="sidebar bg-green-700 text-white w-64 lg:static fixed h-full flex-shrink-0 overflow-y-auto transition-all duration-300 ease-in-out">
               <nav>
                   <!-- Dashboard -->
                   <div id="dashboard-tab" data-url="{% url 'admin-dashboard' %}" class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white">
@@ -194,13 +222,10 @@
                   </div>
               </nav>
           </aside>
-          <div class="flex-1 flex flex-col overflow-hidden">
-            <main class="flex-1 overflow-x-hidden overflow-y-auto transition-all duration-300 ease-in-out p-4 sm:p-6 md:p-8 lg:p-10 pt-6 sm:pt-8 md:pt-10 lg:pt-12" id="main-content">
-                <!-- Content goes here -->
-                {% block content %}
-                {% endblock %}
-              </main>
-          </div>
+            <main class="main-content flex-1 p-4 lg:ml-64 overflow-y-auto">
+              {% block content %}
+              {% endblock %}
+          </main>
       </div>
   </div>
   
@@ -248,6 +273,20 @@ document.addEventListener('DOMContentLoaded', function() {
             if (arrow) arrow.classList.add('rotate-360');
         }
     }
+
+
+    // Toggle sidebar function
+    function toggleSidebar() {
+            sidebar.classList.toggle('sidebar-open');
+        }
+
+        // Handle sidebar toggle button click
+        sidebarToggle?.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleSidebar();
+        });
+
+        
 
     // Set initial active tab
     allSidebarItems.forEach(item => {
@@ -343,3 +382,4 @@ function confirmLogout() {
       transition: transform 0.3s ease;
   }
   </style>
+  

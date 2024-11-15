@@ -198,6 +198,7 @@ from django.contrib.auth import update_session_auth_hash
 
 
 @login_required
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
 def teacher_profile(request):
     teacher = request.user.teacher
@@ -252,6 +253,7 @@ from .forms import StudentForm, PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
 @login_required
+@login_required(login_url='login')
 @allowed_users(allowed_roles=['student'])
 def student_profile(request):
     student = request.user.student
