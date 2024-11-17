@@ -20,15 +20,16 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
 
-handler404 = 'core.views.custom_404_handler'
+
 
 urlpatterns = [
     path('', lambda request: redirect('login'), name='home'),
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
     path("__reload__/", include("django_browser_reload.urls")),
-   
-   
+
 ]
+
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

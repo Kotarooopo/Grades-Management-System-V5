@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 
 from django.contrib.auth.decorators import login_required
+from django.template import TemplateDoesNotExist
 
 from .models import *
     
@@ -3410,21 +3411,3 @@ from django.shortcuts import render
 
 def unauthorized_access(request):
     return render(request, 'unauthorized.html', status=403)
-
-
-from django.shortcuts import redirect
-from django.http import HttpResponseNotFound
-from django.template import loader
-
-def custom_404_handler(request, exception=None):
-    if request.user.is_authenticated:
-        # Check user type and redirect accordingly
-        if request.user.is_administrator:
-            return redirect('administrator-dashboard')
-        elif request.user.is_teacher:
-            return redirect('teacher-dashboard')
-        elif request.user.is_student:
-            return redirect('student-dashboard')
-
-    template = loader.get_template('unauthorized.html')
-    return HttpResponseNotFound(template.render({}, request))
