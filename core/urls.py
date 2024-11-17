@@ -60,6 +60,8 @@ urlpatterns = [
     #path('export-report-card/', views.export_report_card, name='export-report-card'),
 
 
+    path('unauthorized/', views.unauthorized_access, name='unauthorized'),
+
 
     
 

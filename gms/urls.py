@@ -20,6 +20,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
 
+handler404 = 'core.views.custom_404_handler'
+
 urlpatterns = [
     path('', lambda request: redirect('login'), name='home'),
     path('admin/', admin.site.urls),
