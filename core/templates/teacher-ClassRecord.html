@@ -42,9 +42,37 @@
         </div>
         
         <div class="card-body">
+            <div class="flex items-center space-x-4">
+                <form method="POST" enctype="multipart/form-data" id="import-form">
+                    {% csrf_token %}
+                    <input type="file" name="excel_file" accept=".xlsx, .xls" required id="excel-file-input" />
+                    <button type="submit" class="shadow-md flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-3 mb-2" id="import-button">
+                        Import Excel
+                    </button>
+                </form>
+                {% if selected_class %}
+                    <a href="{% url 'export_class_students' selected_class.id %}" 
+                       class="shadow-md flex items-center justify-center focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-3 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12l6-6m0 0l6 6m-6-6v12" />
+                        </svg>
+                        Export Excel
+                    </a>
+                {% else %}
+                    <button disabled 
+                            class="shadow-md flex items-center justify-center focus:outline-none text-white bg-gray-500 cursor-not-allowed font-medium rounded-lg text-sm px-6 py-3 mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 3.75L9 3.75M12 12V3.75m0 0L15 7.5M12 3.75L9 7.5" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 15.75v4.5a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 20.25v-4.5" />
+                        </svg>
+                        Export Excel
+                    </button>
+                {% endif %}
+                
+            </div>            
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center space-x-4">
-                    <button data-modal-target="add-modal" data-modal-toggle="add-modal" type="button" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    <button data-modal-target="add-modal" data-modal-toggle="add-modal" type="button" class="shadow-md flex items-center justify-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-3 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
@@ -486,6 +514,61 @@
         </div>
     </div>
 </div>
+
+<!-- Loading Spinner -->
+<div id="loading-spinner" class="hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" class="animate-spin h-5 w-5 mr-2 text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path fill="none" stroke="currentColor" stroke-width="2" d="M4 12l8 8 8-8"></path>
+    </svg>
+    <span>Processing...</span>
+</div>
+
+<!-- Message Container -->
+<div id="message-container"></div>
+
+<script>
+    document.getElementById('import-form').addEventListener('submit', function(event) {
+        event.preventDefault();  // Prevent the default form submission
+        const formData = new FormData(this);
+        const fileInput = document.getElementById('excel-file-input');
+        
+        if (fileInput.files.length === 0) {
+            alert("Please select an Excel file.");
+            return;
+        }
+
+        // Show loading spinner
+        document.getElementById('loading-spinner').classList.remove('hidden');
+        document.getElementById('import-button').disabled = true;
+
+        // AJAX request to submit the file
+        fetch("{% url 'import_students' %}", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide the spinner and enable the button
+            document.getElementById('loading-spinner').classList.add('hidden');
+            document.getElementById('import-button').disabled = false;
+
+            // Show success or error messages
+            const messageContainer = document.getElementById('message-container');
+            if (data.success) {
+                messageContainer.innerHTML = `<div class="text-green-600">${data.message}</div>`;
+            } else {
+                messageContainer.innerHTML = `<div class="text-red-600">${data.message}</div>`;
+            }
+        })
+        .catch(error => {
+            // Handle error
+            document.getElementById('loading-spinner').classList.add('hidden');
+            document.getElementById('import-button').disabled = false;
+            document.getElementById('message-container').innerHTML = `<div class="text-red-600">An error occurred while processing the file.</div>`;
+        });
+    });
+</script>
 
 <script>
     document.getElementById('scoreToggle').addEventListener('change', function() {

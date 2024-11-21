@@ -45,6 +45,7 @@ urlpatterns = [
     path('student-InitialGrade', views.student_InitialGrade, name='student-InitialGrade'),
     
     
+    
 
 
 
@@ -63,7 +64,8 @@ urlpatterns = [
     path('unauthorized/', views.unauthorized_access, name='unauthorized'),
 
 
-    
+    path('export-class-students/<int:class_id>/', views.export_class_students, name='export_class_students'),
+    path('import-students/', views.import_students, name='import_students'),
 
     
     

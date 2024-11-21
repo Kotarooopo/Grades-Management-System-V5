@@ -3411,3 +3411,87 @@ from django.shortcuts import render
 
 def unauthorized_access(request):
     return render(request, 'unauthorized.html', status=403)
+
+
+from django.http import HttpResponse
+import openpyxl
+from .models import Enrollment
+
+def export_class_students(request, class_id):
+    # Fetch the class and its enrollments
+    enrollments = Enrollment.objects.filter(class_obj_id=class_id).select_related('student')
+    
+    # Create a new Excel workbook and sheet
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Enrolled Students"
+    
+    # Write headers
+    ws.append(['Email', 'First Name', 'Last Name'])
+    
+    # Write student data
+    for enrollment in enrollments:
+        student = enrollment.student
+        ws.append([student.email, student.Firstname, student.Lastname])
+    
+    # Create the response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="class_{class_id}_students.xlsx"'
+    wb.save(response)
+    
+    return response
+
+
+
+
+import openpyxl
+from django.http import JsonResponse
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
+from .models import User, Student, Class, Enrollment
+
+def import_students(request):
+    # Get the selected class from the session
+    selected_class_id = request.session.get('selected_class_id')  # Assuming 'selected_class_id' is stored in the session
+    selected_class = None
+
+    if selected_class_id:
+        selected_class = get_object_or_404(Class, id=selected_class_id, teacher=request.user.teacher)
+    else:
+        return JsonResponse({'success': False, 'message': 'No class selected. Please select a class first.'})
+
+    if request.method == 'POST' and request.FILES['excel_file']:
+        excel_file = request.FILES['excel_file']
+        try:
+            # Load the Excel file
+            wb = openpyxl.load_workbook(excel_file)
+            sheet = wb.active
+
+            # Assuming the Excel file has columns for Email and Name
+            for row in sheet.iter_rows(min_row=2, values_only=True):  # Skipping header row
+                student_email = row[0]  # Assuming email is in the first column
+                student_name = row[1]  # Assuming name is in the second column
+
+                try:
+                    user = User.objects.get(email=student_email, is_student=True)
+                    student = user.student
+                    # Enroll the student in the class
+                    enrollment = Enrollment(class_obj=selected_class, student=student)
+                    enrollment.clean()  # Validate enrollment
+                    enrollment.save()
+                    messages.success(request, f"{student_name} has been enrolled in the class.")
+                except User.DoesNotExist:
+                    messages.error(request, f"No user found with email: {student_email}")
+                except Student.DoesNotExist:
+                    messages.error(request, f"{student_name} is not a registered student.")
+                except ValidationError as e:
+                    messages.error(request, e.message)
+
+            return JsonResponse({'success': True, 'message': 'Students have been successfully enrolled.'})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f"An error occurred: {str(e)}"})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request or no file uploaded.'})
+
