@@ -1,4 +1,3 @@
-<!-- ReportCard.html -->
 {% load static %}
 {% load static tailwind_tags %}
 {% load custom_filters %}
@@ -12,48 +11,52 @@
             size: A4;
             margin: 1cm;
         }
+        
         body {
             font-family: Arial, sans-serif;
             font-size: 9pt;
-            line-height: 1.2;
-            color: #333;
+            line-height: 1.3;
+            color: #2d3748;
             margin: 0;
             padding: 0;
         }
+        
         .header {
-            width: 100%;
-            margin: 20px auto;
-            padding: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #4a5568;
+            padding-bottom: 5px;
         }
         
-        .content-wrapper {
+        .header-table {
             width: 100%;
-            display: table;
+            border-collapse: collapse;
+            margin-bottom: 5px;
             table-layout: fixed;
         }
         
-        .logo-cell {
-            display: table-cell;
-            width: 80px;
+        .header-table td {
+            border: none;
             vertical-align: middle;
-            padding: 10px;
+            padding: 2px;
         }
         
-        .school-info-cell {
-            display: table-cell;
-            vertical-align: middle;
+        .logo-cell {
+            width: 20%;
             text-align: center;
         }
         
-        .logo {
-            width: 80px;
-            height: 80px;
-            display: block;
+        .school-info-cell {
+            width: 60%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: visible;
         }
         
-        .school-info {
-            margin: 0 auto;
-            padding: 0 20px;
+        .logo {
+            max-width: 20%;
+            height: auto;
+            display: inline-block;
+            transform: scale(0.2);
         }
         
         .school-name {
@@ -61,85 +64,151 @@
             font-weight: bold;
             font-family: 'Times New Roman', Times, serif;
             margin: 0;
-            padding: 0;
-        }
-        
-        .department, .location {
-            font-size: 10pt;
-            font-weight: bold;
-            font-family: 'Times New Roman', Times, serif;
-            margin: 5px 0;
-            padding: 0;
+            color: #1a365d;
+            white-space: nowrap;
+            display: inline-block;
+            overflow: visible;
+            text-overflow: clip;
+            line-height: 1;
         }
 
-        .report-title {
-            font-size: 14pt;
+        .department, .location {
+            font-size: 10pt;
+            font-family: 'Times New Roman', Times, serif;
             font-weight: bold;
-            margin: 10px 0 5px 0;
+            margin: 0;
+            color: #1a365d;
+            line-height: 1;
         }
         
-        /* Table styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 3px;
-            border: 0.5px solid #000;
+        .report-section {
             text-align: center;
-            word-wrap: break-word;
+            margin: 10px 0;
+            padding: 5px;
+            background-color: #f7fafc;
         }
+        
+        .report-title {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #2d3748;
+            margin: 0 0 3px 0;
+        }
+        
         .student-info {
             display: flex;
             justify-content: space-between;
             padding: 5px;
-            margin: 20px 0 8px 0;
-            border: 0.5px solid #000;
+            margin: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
             font-size: 9pt;
         }
-        .grades-header, .final-row, .grading-scale-header {
-            background-color: #f0f0f0;
+        
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 8pt;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .grades-table th {
+            background-color: #2d3748;
+            color: white;
+            padding: 5px;
+            font-size: 9pt;
             font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .grades-table td {
+            padding: 5px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .grades-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        
+        .grades-header, .final-row {
+            font-weight: bold;
+        }
+        
+        .grading-scale {
+            margin-top: 15px;
+            padding: 5px;
+            background-color: #f7fafc;
+            text-align: center;
+        }
+        
+        .grading-scale-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            font-size: 8pt;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .grading-scale-table th {
+            background-color: #2d3748;
+            color: white;
+            padding: 5px;
+            font-size: 9pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .grading-scale-table td {
+            padding: 5px;
+            border: 1px solid #e2e8f0;
+            background-color: #f7fafc;
+        }
+        
+        .footer {
+            margin-top: 15px;
+            padding-top: 5px;
+            font-size: 7pt;
+            text-align: center;
+            /* border-top: 1px solid #e2e8f0; */
+        }
+        
+        .footer img {
+            width: 150px;
+            height: auto;
+            margin-top: 5px;
+        }
+        
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header" style="text-align: center;">
-        <table style="width: 100%; border-collapse: collapse; vertical-align: middle; border: none;">
+    <div class="header">
+        <table class="header-table">
             <tr>
-                <td style="width: 20%; text-align: left; border: none;">
-                    <img src="{{ logo_path }}" alt="Left Logo" style="height: 150px; display: inline-block;">
+                <td class="logo-cell">
+                    <img src="{{ logo_path }}" alt="School Logo" class="logo">
                 </td>
-                <td style="width: 60%; text-align: center; border: none;">
-                    <div class="school-info" style="display: inline-block; text-align: center;">
-                        <p class="school-name" style="font-weight: bold; font-size: 20px;">Initao National Comprehensive High School</p>
-                        <p class="department" style="font-size: 16px;">Junior High School Department</p>
-                        <p class="location" style="font-size: 14px;">Initao Misamis Oriental</p>
-                        
-                    </div>
+                <td class="school-info-cell">
+                    <h1 class="school-name">Initao National Comprehensive High School</h1>
+                    <p class="department">Junior High School Department</p>
+                    <p class="location">Initao, Misamis Oriental</p>
                 </td>
-                <td style="width: 20%; text-align: right; border: none;">
-                    <img src="{{ logo_dep }}" alt="Right Logo" style="height: 160px; display: inline-block;">
+                <td class="logo-cell">
+                    <img src="{{ logo_dep }}" alt="Department Logo" class="logo">
                 </td>
-
-                
             </tr>
         </table>
     </div>
 
-    <div style="text-align: center;">
-        <p class="report-title" style="font-size: 18px; margin: 0;">Report Card</p>
-        <p style="font-size: 14px; margin: 0;">School Year: {{ report_card.school_year.year }}</p>
-    </div>
-    
-    
-    
-        <!-- School information -->
-        <div class="school-info">
-            
-        </div>
+    <div class="report-section">
+        <h2 class="report-title">Report Card</h2>
+        <p class="class-info">School Year: {{ report_card.school_year.year }}</p>
     </div>
 
     <div class="student-info">
@@ -148,7 +217,7 @@
         <div><span>Grade & Section:</span> {{ report_card.grade_section }}</div>
     </div>
 
-    <table>
+    <table class="grades-table">
         <thead>
             <tr class="grades-header">
                 <th style="width: 40%;">Learning Areas</th>
@@ -163,7 +232,7 @@
         <tbody>
             {% for subject, grades in report_card.grades_data.items %}
                 <tr>
-                    <td>{{ subject }}</td>
+                    <td style="text-align: left; padding-left: 10px;">{{ subject }}</td>
                     {% for period in report_card.grading_periods %}
                         <td>{{ grades.quarterly_grades|get_item:period.period|default_if_none:"-" }}</td>
                     {% endfor %}
@@ -180,23 +249,44 @@
     </table>
 
     <div class="grading-scale">
-        <p><strong>Grading Scale</strong></p>
-        <table>
+        <h3 class="report-title">Grading Scale</h3>
+        <table class="grading-scale-table">
             <thead>
-                <tr class="grading-scale-header">
-                    <th>Descriptors</th>
-                    <th>Grading Scale</th>
+                <tr>
+                    <th>Range</th>
                     <th>Remarks</th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Outstanding</td><td>90 - 100</td><td>Passed</td></tr>
-                <tr><td>Very Satisfactory</td><td>85 - 89</td><td>Passed</td></tr>
-                <tr><td>Satisfactory</td><td>80 - 84</td><td>Passed</td></tr>
-                <tr><td>Fairly Satisfactory</td><td>75 - 79</td><td>Passed</td></tr>
-                <tr><td>Did Not Meet Expectations</td><td>Below 75</td><td>Failed</td></tr>
+                <tr>
+                    <td>90 - 100</td>
+                    <td>Outstanding</td>
+                </tr>
+                <tr>
+                    <td>85 - 89</td>
+                    <td>Very Satisfactory</td>
+                </tr>
+                <tr>
+                    <td>80 - 84</td>
+                    <td>Satisfactory</td>
+                </tr>
+                <tr>
+                    <td>75 - 79</td>
+                    <td>Fairly Satisfactory</td>
+                </tr>
+                <tr>
+                    <td>Below 75</td>
+                    <td>Failed</td>
+                </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="footer">
+        <div class="barcode-container">
+            <img src="{{ barcode_exportpath }}" alt="Electronic Signature Barcode">
+            <p>Generated on {% now "F d, Y" %}</p>
+        </div>   
     </div>
 </body>
 </html>

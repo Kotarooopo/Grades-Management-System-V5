@@ -1481,6 +1481,9 @@ def admin_GradeReport(request):
     logo_path = 'static/core/image/logo.png'
     logo_dep = 'core/static/core/image/logo-dep.png'
 
+    
+
+
     if not school_years.exists():
         return render(request, 'admin-GradeReport.html', {'error': 'No school years found.'})
 
@@ -1535,6 +1538,8 @@ def admin_GradeReport(request):
         student_id = request.POST.get('student_id')
         school_year_id = request.POST.get('school_year_id')
 
+        
+
         try:
             selected_student = Student.objects.get(user_id=student_id)
             selected_school_year = SchoolYear.objects.get(id=school_year_id)
@@ -1580,6 +1585,23 @@ def admin_GradeReport(request):
             
             grade_section = f"{selected_enrollments.first().class_obj.grade_level} - {selected_enrollments.first().class_obj.section}"
 
+            admin_email = request.user.email
+
+            barcode_data = f"{admin_email}-{selected_school_year}"
+            barcode_path = f'static/gradecard-barcodes/admin_{admin_email}_barcode'
+            os.makedirs('static/gradecard-barcodes', exist_ok=True)
+            ean = Code128(barcode_data, writer=ImageWriter())
+            ean.writer.set_options({
+                'text': False,
+                'module_height': 10,  
+                'module_width': 0.2,
+                'foreground': '#1a365d',
+
+            })
+            ean.save(barcode_path)
+
+            barcode_exportpath = f'static/gradecard-barcodes/admin_{admin_email}_barcode.png'
+
             context = {
                 'report_card': {
                     'student': selected_student,
@@ -1591,6 +1613,7 @@ def admin_GradeReport(request):
                 },
                 'logo_path': logo_path,
                 'logo_dep': logo_dep,
+                'barcode_exportpath' : barcode_exportpath,
             }
 
             response = HttpResponse(content_type='application/pdf')
@@ -1913,6 +1936,24 @@ logo_dep = 'core/static/core/image/logo-dep.png'
 def teacher_QuarterSummary(request):
     class_id = request.GET.get('class')
     selected_class = get_object_or_404(Class, id=class_id) if class_id else None
+
+    teacher = request.user
+
+    # Generate barcode
+    barcode_data = f"{selected_class.teacher.user.email}-{selected_class.grade_level}-{selected_class.section}"
+    barcode_path = f'static/summary-barcodes/teacher_{teacher.email}_barcode'
+    os.makedirs('static/summary-barcodes', exist_ok=True)
+    ean = Code128(barcode_data, writer=ImageWriter())
+    ean.writer.set_options({
+        'text': False,
+        'module_height': 10,  
+        'module_width': 0.2,
+        'foreground': '#1a365d',
+
+    })
+    ean.save(barcode_path)
+
+    barcode_exportpath = f'static/summary-barcodes/teacher_{teacher.email}_barcode.png'
     
     if not selected_class:
         messages.error(request, "Please select a class.")
@@ -1970,6 +2011,8 @@ def teacher_QuarterSummary(request):
             'logo_path': logo_path,  
             'logo_dep': logo_dep,
             'school_year': selected_class.school_year,
+            'barcode_exportpath': barcode_exportpath,
+            
         }
         html_content = template.render(context)
 
@@ -2844,9 +2887,14 @@ from io import BytesIO
 from django.contrib.auth.decorators import login_required
 from .decorators import allowed_users
 from .models import Class, Enrollment, SubjectCriterion, Score, Student, Activity, GradingPeriod, SchoolYear
+import barcode
+from barcode.writer import ImageWriter
+import os
+from barcode import Code128
 
 logo_path = 'static/core/image/logo.png'
 logo_dep = 'core/static/core/image/logo-dep.png'
+
 
 @login_required(login_url='login')
 @allowed_users(allowed_roles=['teacher'])
@@ -2855,6 +2903,27 @@ def teacher_gradeCalculate(request):
     grading_period_id = request.GET.get('grading_period')
     selected_class = get_object_or_404(Class, id=class_id)
     grading_period = get_object_or_404(GradingPeriod, id=grading_period_id) if grading_period_id else None
+
+    teacher = request.user
+
+    # Generate barcode
+    barcode_data = f"{selected_class.teacher.user.email}-{selected_class.grade_level}-{selected_class.section}"
+    barcode_path = f'static/barcodes/teacher_{teacher.email}_barcode'
+    os.makedirs('static/barcodes', exist_ok=True)
+    ean = Code128(barcode_data, writer=ImageWriter())
+    ean.writer.set_options({
+        'text': False,
+        'module_height': 10,  
+        'module_width': 0.2,
+        'foreground': '#1a365d',
+
+    })
+    ean.save(barcode_path)
+
+    barcode_exportpath = f'static/barcodes/teacher_{teacher.email}_barcode.png'
+
+    
+
 
     enrollments = Enrollment.objects.filter(class_obj=selected_class).select_related('student')
     criteria = SubjectCriterion.objects.filter(subject=selected_class.subject).order_by('grading_criterion')
@@ -2938,6 +3007,8 @@ def teacher_gradeCalculate(request):
         for criterion in criteria
     }
 
+    
+
     context = {
         'selected_class': selected_class,
         'results': sorted_results,  # Use sorted_results to show ranks correctly
@@ -2947,6 +3018,8 @@ def teacher_gradeCalculate(request):
         'is_current_school_year': is_current_school_year,
         'logo_path': logo_path,  
         'logo_dep': logo_dep,
+        'barcode_path' : barcode_path,
+        'barcode_exportpath': barcode_exportpath,  # Add barcode to context
     }
 
     if request.GET.get('export') == 'pdf':
@@ -3173,6 +3246,8 @@ def student_reportCard(request):
         return render(request, 'student-ReportCard.html', {'error': 'No school years found.'})
 
     report_cards = []
+
+    
 
     for school_year in school_years:
         enrollments = Enrollment.objects.filter(student=student, class_obj__school_year=school_year)

@@ -209,6 +209,12 @@ class Teacher(models.Model):
             resize_image(self.profile_picture)
         super().save(*args, **kwargs)
 
+    def get_full_name(self):
+        """Returns the full name of the teacher."""
+        if self.Middle_Initial:
+            return f"{self.Firstname} {self.Middle_Initial}. {self.Lastname}"
+        return f"{self.Firstname} {self.Lastname}"
+
     def __str__(self):
         return f"{self.Firstname} {self.Lastname}"
     
