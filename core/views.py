@@ -417,6 +417,8 @@ def get_top_students(teacher, section, grading_period=None, school_year=None, li
     return sorted(student_grades, key=lambda x: x['grade'], reverse=True)[:limit]
 
 
+
+# views.py
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
@@ -433,6 +435,17 @@ def teacher_dashboard(request):
 
     # Filter classes based on the current school year
     classes = Class.objects.filter(teacher=teacher, school_year=current_school_year)
+    
+    # Create formatted section choices
+    section_choices = []
+    section_class_map = {}  # Map to store the actual Class object
+    
+    for class_obj in classes:
+        formatted_section = f"{class_obj.grade_level} - {class_obj.section} - {class_obj.subject}"
+        section_choices.append(formatted_section)
+        # Map formatted section to Class object for filtering
+        section_class_map[formatted_section] = class_obj
+
     class_data = (
         classes.values('section')
         .annotate(student_count=Count('enrollments__student', distinct=True))
@@ -442,7 +455,9 @@ def teacher_dashboard(request):
     sections = [class_info['section'] for class_info in class_data]
     student_counts = [class_info['student_count'] for class_info in class_data]
 
-    selected_section = request.GET.get('section', sections[0] if sections else None)
+    # Handle the selected section
+    selected_formatted_section = request.GET.get('section', section_choices[0] if section_choices else None)
+    selected_class = section_class_map.get(selected_formatted_section)
     
     grading_periods = GradingPeriod.objects.filter(school_year=active_school_year) if active_school_year else GradingPeriod.objects.none()
     first_grading = grading_periods.first()
@@ -453,16 +468,29 @@ def teacher_dashboard(request):
     else:
         selected_grading_period = first_grading
 
-    # Fetch the top 10 students for the selected section and grading period
-    top_students = get_top_students(
-        teacher,
-        selected_section,
-        selected_grading_period,
-        current_school_year,
-        limit=10  # Limit to top 10
-    ) if selected_section else []
+    # Get top 10 students for the specific class
+    top_students = []
+    if selected_class and selected_grading_period:
+        enrollments = Enrollment.objects.filter(
+            class_obj=selected_class
+        ).select_related('student')
+        
+        # Calculate grades for each enrollment
+        student_grades = []
+        for enrollment in enrollments:
+            initial_grade = calculate_initial_grade(enrollment, selected_grading_period)
+            if initial_grade is not None:  # Only include students with grades
+                student_grades.append({
+                    'student': enrollment.student,
+                    'grade': initial_grade,
+                    'class_info': selected_formatted_section
+                })
+        
+        # Sort by grade and get top 10
+        student_grades.sort(key=lambda x: x['grade'], reverse=True)
+        top_students = student_grades[:10]
 
-    # Get all enrollments for the teacher's classes
+    # Get all enrollments for overall statistics
     all_enrollments = Enrollment.objects.filter(
         class_obj__teacher=teacher,
         class_obj__school_year=current_school_year
@@ -483,8 +511,8 @@ def teacher_dashboard(request):
         'sections': json.dumps(sections),
         'student_counts': json.dumps(student_counts),
         'total_students': total_students,
-        'section_choices': sections,
-        'selected_section': selected_section,
+        'section_choices': section_choices,
+        'selected_section': selected_formatted_section,
         'grading_periods': grading_periods,
         'selected_grading_period': request.GET.get('grading_period', ''),
         'top_students': top_students,
@@ -494,8 +522,6 @@ def teacher_dashboard(request):
     }
 
     return render(request, 'teacher-dashboard.html', context)
-
-
 
 
 def calculate_initial_grade(enrollment, grading_period):

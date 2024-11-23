@@ -12,7 +12,14 @@
     <div class="mb-6">
         <form id="searchForm" class="flex items-center justify-center">
             <div class="relative w-full max-w-xl">
-                <input type="text" id="student-search" name="student-search" class="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Search by last name, first name, or email..." required>
+                <input 
+                    type="text" 
+                    id="student-search" 
+                    name="student-search" 
+                    class="w-full px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" 
+                    placeholder="Search by last name, first name, or email..."
+                    autocomplete="off"
+                >
                 <button type="submit" class="absolute right-0 top-0 mt-2 mr-2">
                     <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -139,7 +146,7 @@
     </div>
 </div>
 
-<script>
+<!-- <script>
     document.addEventListener('DOMContentLoaded', function() {
         const searchForm = document.getElementById('searchForm');
         const searchInput = document.getElementById('student-search');
@@ -188,6 +195,85 @@
             });
         });
     });
-</script>
+</script> -->
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('student-search');
+        const reportCardsContainer = document.getElementById('report-cards-container');
+        const noSearchMessage = document.getElementById('no-search-message');
+        const reportCards = document.querySelectorAll('.report-card');
+        const exportForms = document.querySelectorAll('.export-form');
+    
+        // Function to perform the search
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            // Hide everything if search is empty
+            if (searchTerm === '') {
+                reportCardsContainer.style.display = 'none';
+                noSearchMessage.style.display = 'block';
+                return;
+            }
+    
+            let isResultFound = false;
+            
+            reportCards.forEach((card, index) => {
+                const studentInfo = card.querySelector('.bg-gray-100 p:nth-child(1)').textContent.toLowerCase();
+                const studentEmail = card.querySelector('.bg-gray-100 p:nth-child(2)').textContent.toLowerCase();
+                const exportForm = exportForms[index];
+    
+                // Enhanced search logic for email and name
+                const isEmailSearch = searchTerm.includes('@');
+                const matchFound = isEmailSearch 
+                    ? studentEmail.includes(searchTerm)
+                    : (studentInfo.includes(searchTerm) || studentEmail.includes(searchTerm));
+    
+                if (matchFound) {
+                    card.style.display = 'block';
+                    if (exportForm) {
+                        exportForm.style.display = 'block';
+                    }
+                    isResultFound = true;
+                } else {
+                    card.style.display = 'none';
+                    if (exportForm) {
+                        exportForm.style.display = 'none';
+                    }
+                }
+            });
+    
+            // Show/hide containers based on search results
+            reportCardsContainer.style.display = isResultFound ? 'block' : 'none';
+            noSearchMessage.style.display = isResultFound ? 'none' : 'block';
+        }
+    
+        // Live search on input
+        searchInput.addEventListener('input', function(e) {
+            performSearch();
+        });
+    
+        // Handle form submission
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            performSearch();
+        });
+    
+        // Initially hide the report cards and show the message
+        reportCardsContainer.style.display = 'none';
+        noSearchMessage.style.display = 'block';
+    
+        // Handle export form submission
+        exportForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (this.closest('.report-card').style.display === 'none') {
+                    e.preventDefault();
+                    alert('Please search for a student first.');
+                    return false;
+                }
+            });
+        });
+    });
+    </script>
 {% endblock %}
