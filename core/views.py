@@ -1454,7 +1454,15 @@ from .forms import SchoolYearForm
 @allowed_users(allowed_roles=['administrator'])
 def manage_school_year(request):
     years = SchoolYear.objects.all().order_by('-year')
-    
+
+
+    sort_by = request.GET.get('sort', 'year')  
+    order = request.GET.get('order', 'desc')   
+
+    if order == 'asc':
+        sort_by = f'-{sort_by}'  
+    years = years.order_by(sort_by)
+
     if request.method == 'POST':
         if 'delete_id' in request.POST:
             # Handling delete action
@@ -1469,6 +1477,9 @@ def manage_school_year(request):
         year_id = request.POST.get('edit_id')
         form = SchoolYearForm(request.POST, instance=get_object_or_404(SchoolYear, id=year_id) if year_id else None)
 
+
+       
+
         if form.is_valid():
             form.save()
             if year_id:
@@ -1482,6 +1493,7 @@ def manage_school_year(request):
     context = {
         'years': years,
         'form': form,
+        'order': order,
     }
     return render(request, 'admin-SchoolYear.html', context)
 
@@ -1697,7 +1709,8 @@ def admin_GradingPeriod(request):
                 # Check for duplicates
                 existing_period = GradingPeriod.objects.filter(school_year=current_school_year, period=period).first()
                 if existing_period:
-                    return JsonResponse({'status': 'error', 'message': 'Grading Period already exists.'}, status=400)
+                    messages.error(request, 'Grading Period already exists.')
+                    #return JsonResponse({'status': 'error', 'message': 'Grading Period already exists.'}, status=400)
                 
                 # Create new grading period
                 GradingPeriod.objects.create(
@@ -1705,9 +1718,11 @@ def admin_GradingPeriod(request):
                     period=period,
                     is_current=is_current
                 )
-                return JsonResponse({'status': 'success', 'message': 'Grading Period added successfully.'})
-
-            return JsonResponse({'status': 'error', 'message': 'No active school year found.'}, status=400)
+                messages.success(request, 'Grading Period added successfully.')
+                #return JsonResponse({'status': 'success', 'message': 'Grading Period added successfully.'})
+            
+            messages.error(request, 'No active school year found.')
+            #return JsonResponse({'status': 'error', 'message': 'No active school year found.'}, status=400)
 
         # Handling other POST actions like edit and delete
         elif 'edit_grading_period' in request.POST:
@@ -1717,12 +1732,13 @@ def admin_GradingPeriod(request):
             grading_period = GradingPeriod.objects.get(id=grading_period_id)
             grading_period.is_current = is_current
             grading_period.save()
-            return JsonResponse({'status': 'success', 'message': 'Grading Period updated successfully.'})
+            messages.success(request, 'Grading Period updated successfully.')
+            #return JsonResponse({'status': 'success', 'message': 'Grading Period updated successfully.'})
 
         elif 'delete_grading_period' in request.POST:
             grading_period_id = request.POST.get('delete_id')
             GradingPeriod.objects.filter(id=grading_period_id).delete()
-            return JsonResponse({'status': 'success', 'message': 'Grading Period deleted successfully.'})
+            messages.success(request, 'Grading Period deleted successfully.')
 
     context = {
         'current_school_year': current_school_year,
@@ -2374,7 +2390,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Class, Student, Enrollment, Score, Activity, SubjectCriterion, User, GradingPeriod
+from .models import Class, Student, Enrollment, Score, Activity, SubjectCriterion, User, GradingPeriod, SchoolYear
 from .decorators import allowed_users
 from django.db import transaction
 import json
@@ -2387,6 +2403,8 @@ def teacher_myClassRecord(request):
     enrollments = []
     subject_criteria = []
     current_grading_periods = []
+    
+
 
     if selected_class_id:
         try:
@@ -2409,31 +2427,34 @@ def teacher_myClassRecord(request):
             subject_criteria = SubjectCriterion.objects.filter(subject=selected_class.subject)
 
 
+            current_school_year = SchoolYear.objects.filter(is_active=True).first()
+            is_current_school_year = selected_class.school_year == current_school_year
+
+
             current_grading_periods = GradingPeriod.objects.filter(school_year=selected_class.school_year)
 
             all_students = Student.objects.all().order_by('Lastname', 'Firstname')
             enrolled_students = set(enrollment.student for enrollment in enrollments)
 
+
+
             if request.method == 'POST':
                 if 'student_email' in request.POST:
                     student_email = request.POST.get('student_email')
-                    if student_email:
-                        try:
-                            user = User.objects.get(email=student_email, is_student=True)
-                            student = user.student
-                            if student not in enrolled_students:
-                                enrollment = Enrollment(class_obj=selected_class, student=student)
-                                enrollment.clean()  # Manually call the clean method to trigger validation
-                                enrollment.save()
-                                messages.success(request, f"{student} has been added to the class.")
-                            else:
-                                messages.warning(request, f"{student} is already in this class.")
-                        except User.DoesNotExist:
-                            messages.error(request, f"No student found with email: {student_email}")
-                        except Student.DoesNotExist:
-                            messages.error(request, f"User with email {student_email} is not registered as a student.")
-                        except ValidationError as e:
-                            messages.error(request, e.message)
+                    try:
+                        user = User.objects.get(email=student_email, is_student=True)
+                        student = user.student
+                        if not Enrollment.objects.filter(class_obj=selected_class, student=student).exists():
+                            enrollment = Enrollment(class_obj=selected_class, student=student)
+                            enrollment.clean()  # Validation
+                            enrollment.save()
+                            messages.success(request, f"{student} has been added to the class.")
+                        else:
+                            messages.warning(request, f"{student} is already in this class.")
+                    except User.DoesNotExist:
+                        messages.error(request, f"No student found with email: {student_email}")
+                    except ValidationError as e:
+                        messages.error(request, e.messages[0])
 
                 elif 'add_activity' in request.POST:
                     criterion_id = request.POST.get('subject_criterion')
@@ -2553,7 +2574,8 @@ def teacher_myClassRecord(request):
         'grading_periods': current_grading_periods,
         'activities': Activity.objects.filter(class_obj=selected_class) if selected_class else [],
         'students': Student.objects.filter(enrollments__class_obj=selected_class) if selected_class else [],
-        'hide_scores': selected_class.hide_scores if selected_class else False
+        'hide_scores': selected_class.hide_scores if selected_class else False,
+        'is_current_school_year': is_current_school_year,
     }
 
     return render(request, 'teacher-ClassRecord.html', context)

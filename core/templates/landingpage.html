@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern School Webpage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom animations for card scrolling */
+    @keyframes scrollRight {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+    @keyframes scrollLeft {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
+    }
+    /* Apply scrolling animation */
+    .animate-scroll-right {
+      animation: scrollRight 20s linear infinite;
+    }
+    .animate-scroll-left {
+      animation: scrollLeft 20s linear infinite;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-green-600 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <a href="#" class="text-2xl font-bold">My School</a>
+        <ul class="flex space-x-6">
+          <li><a href="#" class="hover:text-gray-300">Home</a></li>
+          <li><a href="#" class="hover:text-gray-300">About Us</a></li>
+          <li><a href="#subjects" class="hover:text-gray-300">Subjects</a></li>
+          <li><a href="#sections" class="hover:text-gray-300">Sections</a></li>
+          <li><a href="#contact" class="hover:text-gray-300">Contact Us</a></li>
+        </ul>
+        <button class="bg-white text-green-600 px-4 py-2 rounded shadow hover:bg-green-700 hover:text-white transition">
+          Login
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Subjects Section -->
+  <section id="subjects" class="py-16 bg-gray-100">
+    <h2 class="text-3xl font-bold text-center mb-8">Subjects</h2>
+    <div class="relative overflow-hidden">
+      <div class="flex space-x-6 animate-scroll-right">
+        <!-- Repeating Subject Cards -->
+        <div class="bg-white shadow-md rounded-lg p-6 flex-none w-64 text-center">
+          <h3 class="font-semibold text-lg mb-4">Mathematics</h3>
+          <p class="text-gray-500">Learn the magic of numbers!</p>
+        </div>
+        <div class="bg-white shadow-md rounded-lg p-6 flex-none w-64 text-center">
+          <h3 class="font-semibold text-lg mb-4">Science</h3>
+          <p class="text-gray-500">Explore the wonders of the universe!</p>
+        </div>
+        <div class="bg-white shadow-md rounded-lg p-6 flex-none w-64 text-center">
+          <h3 class="font-semibold text-lg mb-4">History</h3>
+          <p class="text-gray-500">Dive into the past and learn from it!</p>
+        </div>
+        <div class="bg-white shadow-md rounded-lg p-6 flex-none w-64 text-center">
+          <h3 class="font-semibold text-lg mb-4">English</h3>
+          <p class="text-gray-500">Master the art of communication!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sections Section -->
+  <section id="sections" class="py-16 bg-gray-200">
+    <h2 class="text-3xl font-bold text-center mb-8">Sections</h2>
+    <div class="relative overflow-hidden">
+      <div class="flex space-x-6 animate-scroll-left">
+        <!-- Repeating Section Cards -->
+        <div class="bg-white shadow-md rounded-lg p-6 flex-none w-64 text-center">
+          <h3 class="font-semibold text-lg mb-4">Section A</h3>
+          <p class="text-gray-500">Grade 1 - Morning</p>
+        </div>
+        <div class="bg-white shadow-md rounded-lg p-6 flex-none w-64 text-center">
+          <h3 class="font-semibold text-lg mb-4">Section B</h3>
+          <p class="text-gray-500">Grade 2 - Afternoon</p>
+        </div>
+        <div class="bg-white shadow-md rounded-lg p-6 flex-none w-64 text-center">
+          <h3 class="font-semibold text-lg mb-4">Section C</h3>
+          <p class="text-gray-500">Grade 3 - Morning</p>
+        </div>
+        <div class="bg-white shadow-md rounded-lg p-6 flex-none w-64 text-center">
+          <h3 class="font-semibold text-lg mb-4">Section D</h3>
+          <p class="text-gray-500">Grade 4 - Afternoon</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="py-16 bg-gray-100">
+    <h2 class="text-3xl font-bold text-center mb-8">Contact Us</h2>
+    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-8">
+      <form>
+        <div class="grid grid-cols-1 gap-6">
+          <input type="text" class="border-gray-300 rounded-lg p-4 w-full" placeholder="Your Name">
+          <input type="email" class="border-gray-300 rounded-lg p-4 w-full" placeholder="Your Email">
+          <textarea class="border-gray-300 rounded-lg p-4 w-full" rows="4" placeholder="Your Message"></textarea>
+          <button class="bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition">
+            Submit
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- JavaScript to Clone Cards for Infinite Loop -->
+  <script>
+    function cloneCards(selector) {
+      const container = document.querySelector(selector);
+      const cards = Array.from(container.children);
+      cards.forEach(card => {
+        const clone = card.cloneNode(true);
+        container.appendChild(clone);
+      });
+    }
+
+    // Clone cards for subjects and sections
+    cloneCards('.animate-scroll-right');
+    cloneCards('.animate-scroll-left');
+  </script>
+
+</body>
+</html>

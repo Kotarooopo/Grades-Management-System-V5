@@ -65,7 +65,7 @@ class Administrator(models.Model):
     user = models.OneToOneField('User', on_delete=models.CASCADE, primary_key=True)
     Firstname = models.CharField(max_length=200, null=True)
     Lastname = models.CharField(max_length=200, null=True)
-    Middle_Initial = models.CharField(max_length=10, null=True, blank=True)
+    Middle_Initial = models.CharField(max_length=100, null=True, blank=True)
     Gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
     Phone_Number = models.CharField(max_length=11, null=True, blank=True)
     profile_picture = models.ImageField(upload_to=user_directory_path, default='media/default_profile.png', blank=True)
@@ -198,7 +198,7 @@ class Teacher(models.Model):
     user = models.OneToOneField('User', on_delete=models.CASCADE, primary_key=True)
     Firstname = models.CharField(max_length=200, null=True)
     Lastname = models.CharField(max_length=200, null=True)
-    Middle_Initial = models.CharField(max_length=10, null=True, blank=True)
+    Middle_Initial = models.CharField(max_length=100, null=True, blank=True)
     Gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
     Phone_Number = models.CharField(max_length=11, null=True, blank=True)
 
@@ -323,7 +323,7 @@ class Student(models.Model):
     user = models.OneToOneField('User', on_delete=models.CASCADE, primary_key=True)
     Firstname = models.CharField(max_length=200, null=True)
     Lastname = models.CharField(max_length=200, null=True)
-    Middle_Initial = models.CharField(max_length=10, null=True, blank=True)
+    Middle_Initial = models.CharField(max_length=100, null=True, blank=True)
     Gender = models.CharField(max_length=10, choices=GENDER_CHOICES, null=True, blank=True)
     Phone_Number = models.CharField(max_length=11, null=True, blank=True)
 

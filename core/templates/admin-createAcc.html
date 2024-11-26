@@ -32,15 +32,33 @@
             <div class="md:col-span-1 space-y-6">
                 <div>
                     <label for="{{ form.first_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First name</label>
-                    <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="John" required />
+                    <input 
+                        type="text" 
+                        name="{{ form.first_name.name }}" 
+                        id="{{ form.first_name.id_for_label }}" 
+                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                        style="text-transform: capitalize;" 
+                        placeholder="John" 
+                        oninput="capitalizeFirstLetter(this)" 
+                        required 
+                    />
                 </div>
                 <div>
                     <label for="{{ form.middle_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Middle name</label>
-                    <input type="text" name="{{ form.middle_name.name }}" id="{{ form.middle_name.id_for_label }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="M." />
+                    <input type="text" name="{{ form.middle_name.name }}" id="{{ form.middle_name.id_for_label }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
+                    style="text-transform: capitalize;" 
+                    placeholder="Mendoza" 
+                    oninput="capitalizeFirstLetter(this)"  
+                    />
                 </div>
                 <div>
                     <label for="{{ form.last_name.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last name</label>
-                    <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Doe" required />
+                    <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    style="text-transform: capitalize;" 
+                    placeholder="Doe" required 
+                    oninput="capitalizeFirstLetter(this)"
+                    />
+                    
                 </div>
                 <div>
                     <label for="{{ form.gender.id_for_label }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Gender</label>
@@ -95,6 +113,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+</script>
+
+<script>
+    function capitalizeFirstLetter(input) {
+        // Split the input value by spaces to account for multiple words (e.g., "john doe")
+        const words = input.value.split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)
+        );
+        // Re-join the words and update the input value
+        input.value = words.join(' ');
+    }
 </script>
 
 {% endblock %}

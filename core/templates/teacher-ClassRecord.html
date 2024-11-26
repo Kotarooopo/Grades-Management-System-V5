@@ -48,7 +48,8 @@
             <div class="flex items-center space-x-4">
                 <!-- Import Button -->
                  
-                <button id="open-import-modal" class="shadow-md flex items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-3 mb-2">
+                <button id="open-import-modal" class="shadow-md flex items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-6 py-3 mb-2 {% if not is_current_school_year %}opacity-50 cursor-not-allowed{% endif %}" {% if not is_current_school_year %}disabled{% endif %}>
+                    
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2 transform rotate-180">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12l6-6m0 0l6 6m-6-6v12" />
                     </svg>
@@ -84,12 +85,19 @@
             </div>            
             <div class="flex items-center justify-between mb-6">
                 <div class="flex items-center space-x-4">
-                    <button data-modal-target="add-modal" data-modal-toggle="add-modal" type="button" class="shadow-md flex items-center justify-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-3 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    <button data-modal-target="add-modal" data-modal-toggle="add-modal" 
+                            type="button" 
+                            class="shadow-md flex items-center justify-center focus:outline-none text-white bg-green-700 hover:bg-green-800 
+                                focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-6 py-3 mb-2 
+                                dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 
+                                {% if not is_current_school_year %}opacity-50 cursor-not-allowed{% endif %}" 
+                            {% if not is_current_school_year %}disabled{% endif %}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                         Add Student
                     </button>
+
                     <div class="flex items-center">
                         <form class="max-w-sm">
                             <select id="grading_period" class="mb-1 ml-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -118,7 +126,7 @@
                 
                 
                 <div class="flex flex-col items-end space-y-2">
-                    <button id="activity-dropdownButton" data-dropdown-toggle="activity-dropdown" type="button" class="shadow-md items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    <button id="activity-dropdownButton" data-dropdown-toggle="activity-dropdown" type="button" class="shadow-md items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 {% if not is_current_school_year %}opacity-50 cursor-not-allowed{% endif %}" {% if not is_current_school_year %}disabled{% endif %}>
                         Activity Action
                     </button>
                     
@@ -203,11 +211,24 @@
                 <form id="addStudentForm" class="space-y-4" method="post">
                     {% csrf_token %}
                     <div class="mb-4">
-                        <label for="student-email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Add Student Via Registered Email</label>
-                        <input type="email" id="student-email" name="student_email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Enter student email..." required>
+                        <label for="student-email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Add Student Via Registered Email
+                        </label>
+                        <input 
+                            type="email" 
+                            id="student-email" 
+                            name="student_email" 
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
+                            placeholder="Enter student email..." 
+                            required>
                     </div>
                     <div class="flex justify-end">
-                        <button type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Add Student</button>
+                        <button 
+                            type="submit" 
+                            id="addStudentButton" 
+                            class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+                            Add Student
+                        </button>
                     </div>
                 </form>
             </div>
@@ -1018,6 +1039,13 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
     
 
-
+    <script>
+        // Prevent multiple submissions
+        document.getElementById("addStudentForm").addEventListener("submit", function(event) {
+            const submitButton = document.getElementById("addStudentButton");
+            submitButton.disabled = true; // Disable the button after submission
+            submitButton.innerText = "Processing..."; // Optionally show feedback
+        });
+    </script>
 
 {% endblock %}
