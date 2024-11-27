@@ -68,6 +68,6 @@ urlpatterns = [
     path('import-students/', views.import_students, name='import_students'),
 
     
-    
+    path('landingpage/', views.landingpage, name = 'landingpage'),
     
 ]

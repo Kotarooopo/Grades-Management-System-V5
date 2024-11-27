@@ -3618,3 +3618,7 @@ def import_students(request):
 
     return JsonResponse({'success': False, 'message': 'Invalid request or no file uploaded.'})
 
+
+
+def landingpage(request):
+        return render(request, 'landingpage.html')
