@@ -3621,4 +3621,12 @@ def import_students(request):
 
 
 def landingpage(request):
-        return render(request, 'landingpage.html')
+    
+        background_image = static('core/image/test1.jpg')
+
+        context = {
+        'background_image' : background_image,
+        }
+        return render(request, 'landingpage.html', context)
+
+
