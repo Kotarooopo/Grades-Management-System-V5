@@ -18,7 +18,7 @@ class SessionTimeoutMiddleware:
             last_activity = request.session.get('last_activity')
 
             if last_activity:
-                last_activity_time = request.session.get(last_activity, '%Y-%m-%d %H:%M:%S')
+                last_activity_time = datetime.strptime(last_activity, '%Y-%m-%d %H:%M:%S')
 
                 if datetime.now() - last_activity_time > SESSION_TIMEOUT:
                     logout(request)
