@@ -45,7 +45,78 @@
         animation: move-right 1s ease-out;
     }
 </style>
-  
+<style>
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        /* Navbar */
+        .md\:flex {
+            display: none;
+        }
+        
+        /* Home Section */
+        #home h2 {
+            font-size: 2.5rem;
+            line-height: 1.2;
+        }
+        #home p {
+            font-size: 1.1rem;
+        }
+        #home .flex-col {
+            padding: 1rem;
+        }
+        
+        /* Section Headings */
+        h2 {
+            font-size: 2.5rem;
+            text-align: center;
+        }
+        
+        /* Grid Layouts */
+        .grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        /* Sections Padding */
+        section {
+            padding: 2rem 1rem;
+        }
+        
+        /* Contact Section */
+        #contact .max-w-4xl {
+            padding: 1rem;
+        }
+        #contact .grid {
+            grid-template-columns: 1fr;
+        }
+        
+        /* Subjects and Sections Cards */
+        .bg-white {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+    }
+    
+    /* Responsive Typography */
+    body {
+        font-size: 16px;
+    }
+    
+    @media (max-width: 480px) {
+        body {
+            font-size: 14px;
+        }
+        
+        h2 {
+            font-size: 2rem;
+        }
+        
+        .text-xl {
+            font-size: 1rem;
+        }
+    }
+</style>
+</head>
 </head>
 
 <body class="bg-gray-100 font-sans">
@@ -155,7 +226,7 @@
               </svg>
               <span>Contact</span>
           </a>
-          <a href="#login" class="block py-3 px-4 bg-green-600 text-white rounded-lg text-center hover:bg-green-700 transition-colors">
+          <a href="{% url 'login' %}" class="block py-3 px-4 bg-green-600 text-white rounded-lg text-center hover:bg-green-700 transition-colors">
               Login
           </a>
       </div>
