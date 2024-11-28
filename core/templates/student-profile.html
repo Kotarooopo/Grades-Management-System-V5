@@ -90,8 +90,31 @@
         
             <form method="post" action="{% url 'student-profile' %}" enctype="multipart/form-data">
                 {% csrf_token %}
-                
+
                 <div class="mb-6 text-center">
+                    <div class="mb-4 flex justify-center">
+                        <img
+                            id="previewImage"
+                            class="rounded-full h-24 w-24 object-cover"
+                            src="{% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static '/core/image/logo.png' %}{% endif %}"
+                            alt="Profile Picture"
+                        >
+                    </div>
+                    <label for="{{ form.profile_picture.id_for_label }}" class="cursor-pointer bg-green-700 hover:bg-green-800 text-white py-2 px-4 rounded-md inline-block font-semibold">
+                        Upload New Image
+                    </label>
+                    <input
+                        type="file"
+                        id="{{ form.profile_picture.id_for_label }}"
+                        name="{{ form.profile_picture.name }}"
+                        class="hidden"
+                        accept="image/*"
+                        onchange="previewProfileImage(event)"
+                    >
+                    <p id="fileName" class="mt-2 text-sm text-gray-600"></p>
+                </div>
+                
+                <!-- <div class="mb-6 text-center">
                     <div class="mb-4 flex justify-center">
                         {% if student.profile_picture %}
                             <img class="rounded-full h-24 w-24 object-cover"
@@ -108,7 +131,7 @@
                     </label>
                     <input type="file" id="{{ form.profile_picture.id_for_label }}" name="{{ form.profile_picture.name }}" class="hidden" accept="image/*" onchange="updateFileName(this)">
                     <p id="fileName" class="mt-2 text-sm text-gray-600"></p>
-                </div>
+                </div> -->
         
                 <div class="mb-4">
                     <label class="block text-gray-700">First Name</label>
@@ -313,6 +336,22 @@
     window.onresize = toggleProfileVisibility;
 </script>
 
+<script>
+    function previewProfileImage(event) {
+    const file = event.target.files[0]; // Get the selected file
+    if (file) {
+        const reader = new FileReader(); // Create a FileReader to read the file
 
+        reader.onload = function (e) {
+            const previewImage = document.getElementById('previewImage');
+            previewImage.src = e.target.result; // Set the image source to the file's data URL
+        };
+
+        reader.readAsDataURL(file); // Read the file as a data URL
+        document.getElementById('fileName').textContent = `Selected File: ${file.name}`;
+    }
+}
+
+</script>
 {% endblock %}
 

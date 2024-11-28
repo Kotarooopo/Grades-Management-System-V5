@@ -70,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    'core.middleware.SessionTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = 'gms.urls'
@@ -169,3 +170,8 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
+SESSION_COOKIE_AGE = 120
+
+SESION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SESION_EXPIRE_AT_BROWSER_CLOSE = True

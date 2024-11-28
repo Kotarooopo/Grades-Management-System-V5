@@ -315,3 +315,33 @@
         handleResize(); // Initial check
   </script>
 
+<script type="text/javascript">
+  let timeout = 2 * 60 * 1000;
+  let warningTime = 1 * 60 * 1000;
+
+  let timer;
+  let warningTimer;
+
+
+  document.onmousemove = document.onkeypress = function() {
+    clearTimeout(timer)
+    clearTimeout(warningTimer)
+
+    warningTimer = setTimeout(function(){
+      alert('Your session will expire in 1 minute due to inactivity!');
+    }, warningTime);
+
+    timer = setTimeout(function(){
+      window.location.href = '/logout/';
+    }, timeout);
+  };
+
+  timer = setTimeout(function(){
+    window.location.href = '/logout/';
+  }, timeout);
+
+  warningTimer = setTimeout(function(){
+      alert('Your session will expire in 1 minute due to inactivity!');
+    }, warningTime);
+
+</script>
