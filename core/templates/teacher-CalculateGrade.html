@@ -16,15 +16,11 @@
     {% endif %}
 
     <div class="card">
-        <div class="card-header">
+        <div class="text-center mb-6">
             {% if selected_class %}
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    My Class Record for {{ selected_class.grade_level }} {{ selected_class.section }} - {{ selected_class.subject.name }} - {{ grading_period.period }} Grading
-                </h3>
+            <h1 class="text-2xl font-bold text-gray-800">My Class Record for {{ selected_class.grade_level }} {{ selected_class.section }} - {{ selected_class.subject.name }} - {{ grading_period.period }} Grading</h1>
             {% else %}
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    No class selected
-                </h3>
+            <h1 class="text-2xl font-bold text-gray-800">No class selected</h1>
             {% endif %}
         </div>
         <div class="flex justify-end space-x-4 mb-4">
@@ -66,7 +62,7 @@
                 <tbody>
                     {% for result in results %}
                         {% for score in result.criteria_scores %}
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 ">
                                 {% if forloop.first %}
                                     <td rowspan="{{ result.criteria_scores|length }}" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {{ result.student.get_full_name }}

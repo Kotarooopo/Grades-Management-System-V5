@@ -16,15 +16,11 @@
     {% endif %}
 
     <div class="card">
-        <div class="card-header">
+        <div class="text-center mb-6">
             {% if selected_class %}
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    My Class Quarterly Grade Summary for {{ selected_class.grade_level }} {{ selected_class.section }} - {{ selected_class.subject.name }}
-                </h3>
+            <h1 class="text-2xl font-bold text-gray-800">My Class Quarterly Grade Summary for {{ selected_class.grade_level }} {{ selected_class.section }} - {{ selected_class.subject.name }}</h1>
             {% else %}
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    No class selected
-                </h3>
+            <h1 class="text-2xl font-bold text-gray-800">No class selected</h1>
             {% endif %}
         </div>
         <div class="flex justify-end space-x-4 mb-4">
