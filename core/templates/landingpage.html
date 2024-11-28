@@ -29,6 +29,23 @@
       }
     }
   </style>
+   <style>
+    @keyframes move-left {
+        0% { transform: translateX(-100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes move-right {
+        0% { transform: translateX(100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+    .animate-move-left {
+        animation: move-left 1s ease-out;
+    }
+    .animate-move-right {
+        animation: move-right 1s ease-out;
+    }
+</style>
+  
 </head>
 
 <body class="bg-gray-100 font-sans">
@@ -330,363 +347,134 @@ p { font-size: 1rem; }
   }
 </style>
 
-<section id="subjects" class="py-20 bg-gradient-to-br from-gray-100 to-gray-200">
-  <div class="container mx-auto px-6 lg:px-24">
-      <h2 class="text-4xl font-extrabold text-center text-green-800 mb-12 tracking-tight">
-          Our Academic Subjects
-      </h2>
+<section class="py-20 bg-gradient-to-br from-gray-100 to-gray-200">
+    <div class="container mx-auto px-6 lg:px-24">
+        <h2 class="text-4xl font-extrabold text-center text-green-800 mb-12 tracking-tight">
+            Our Academic Subjects
+        </h2>
 
-      <div class="flex justify-center items-center">
-          <div class="flex space-x-6 animate-[move-right_2s_ease-in-out]">
-              <!-- Mathematics Card -->
-              <div class="bg-white group rounded-2xl shadow-xl overflow-hidden transform transition duration-300 hover:-translate-y-4 hover:shadow-2xl w-80">
-                  <div class="p-8">
-                      <div class="flex items-center mb-4">
-                          <div class="bg-green-100 text-green-600 rounded-full p-4 mr-4">
-                              <i class="fas fa-calculator text-3xl"></i>
-                          </div>
-                          <h3 class="text-2xl font-bold text-gray-800">Mathematics</h3>
-                      </div>
-                      <p class="text-gray-600 mb-6">
-                          Dive deep into the world of numbers, patterns, and logical reasoning. From algebra to calculus, we nurture analytical thinking.
-                      </p>
-                      <div class="flex items-center justify-between">
-                          <span class="text-green-600 font-semibold">Explore More</span>
-                          <i class="fas fa-arrow-right text-green-600 transform transition group-hover:translate-x-2"></i>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- Science Card -->
-              <div class="bg-white group rounded-2xl shadow-xl overflow-hidden transform transition duration-300 hover:-translate-y-4 hover:shadow-2xl w-80">
-                  <div class="p-8">
-                      <div class="flex items-center mb-4">
-                          <div class="bg-blue-100 text-blue-600 rounded-full p-4 mr-4">
-                              <i class="fas fa-flask text-3xl"></i>
-                          </div>
-                          <h3 class="text-2xl font-bold text-gray-800">Science</h3>
-                      </div>
-                      <p class="text-gray-600 mb-6">
-                          Uncover the mysteries of the natural world through experimental learning, critical thinking, and hands-on scientific exploration.
-                      </p>
-                      <div class="flex items-center justify-between">
-                          <span class="text-blue-600 font-semibold">Explore More</span>
-                          <i class="fas fa-arrow-right text-blue-600 transform transition group-hover:translate-x-2"></i>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- History Card -->
-              <div class="bg-white group rounded-2xl shadow-xl overflow-hidden transform transition duration-300 hover:-translate-y-4 hover:shadow-2xl w-80">
-                  <div class="p-8">
-                      <div class="flex items-center mb-4">
-                          <div class="bg-purple-100 text-purple-600 rounded-full p-4 mr-4">
-                              <i class="fas fa-landmark text-3xl"></i>
-                          </div>
-                          <h3 class="text-2xl font-bold text-gray-800">History</h3>
-                      </div>
-                      <p class="text-gray-600 mb-6">
-                          Journey through time, understanding the complex tapestry of human civilization, culture, and the events that have shaped our world.
-                      </p>
-                      <div class="flex items-center justify-between">
-                          <span class="text-purple-600 font-semibold">Explore More</span>
-                          <i class="fas fa-arrow-right text-purple-600 transform transition group-hover:translate-x-2"></i>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-
-      
-  </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-move-left">
+            {% for subject in subjects %}
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="p-6 flex flex-col items-center text-center h-full">
+                    <div class="w-24 h-24 rounded-full mb-4 flex items-center justify-center 
+                        {% if forloop.first %}bg-red-100
+                        {% elif forloop.first|add:1 %}bg-blue-100
+                        {% elif forloop.first|add:2 %}bg-green-100
+                        {% elif forloop.first|add:3 %}bg-purple-100
+                        {% else %}bg-yellow-100{% endif %}">
+                        <i class="fas 
+                        {% if subject.name == 'Mathematics' %}fa-calculator text-red-600
+                        {% elif subject.name == 'Science' %}fa-flask text-blue-600
+                        {% elif subject.name == 'History' %}fa-landmark text-green-600
+                        {% else %}fa-book text-purple-600{% endif %} 
+                        text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">{{ subject.name }}</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">
+                        {% if subject.name == 'Mathematics' %}
+                        Dive deep into the world of numbers, patterns, and logical reasoning. From algebra to calculus, we nurture analytical thinking.
+                        {% elif subject.name == 'Science' %}
+                        Uncover the mysteries of the natural world through experimental learning, critical thinking, and hands-on scientific exploration.
+                        {% elif subject.name == 'History' %}
+                        Journey through time, understanding the complex tapestry of human civilization, culture, and the events that have shaped our world.
+                        {% else %}
+                        Explore the depths of {{ subject.name }} with our comprehensive and engaging curriculum.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </section>
 
-<style>
-  /* Original Animation */
-  @keyframes move-right {
-      0% { transform: translateX(-100%); opacity: 0; }
-      100% { transform: translateX(0); opacity: 1; }
-  }
-
-  .animate-\[move-right_2s_ease-in-out\] {
-      animation: move-right 2s ease-in-out;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-      .flex {
-          flex-direction: column;
-          align-items: center;
-      }
-      .space-x-6 > * {
-          margin-bottom: 1.5rem;
-          margin-right: 0;
-      }
-  }
-</style>
-
-  <!-- Sections Section -->
-  <section id="sections" class="py-20 bg-white">
+<section class="py-20 bg-white">
     <div class="container mx-auto px-6 lg:px-24">
         <h2 class="text-4xl font-extrabold text-center text-green-800 mb-12 tracking-tight">
             Our School Sections
         </h2>
 
-        <div class="flex justify-center items-center">
-            <div class="flex space-x-6 animate-[move-left_2s_ease-in-out]">
-                <!-- Section A Card -->
-                <div class="bg-white group rounded-2xl shadow-xl overflow-hidden transform transition duration-300 hover:-translate-y-4 hover:shadow-2xl w-80">
-                    <div class="p-8">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-green-100 text-green-600 rounded-full p-4 mr-4">
-                                <i class="fas fa-users text-3xl"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800">Section A</h3>
-                        </div>
-                        <p class="text-gray-600 mb-6">
-                            A dynamic learning environment dedicated to academic excellence, personal growth, and holistic development of students.
-                        </p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-green-600 font-semibold">Learn More</span>
-                            <i class="fas fa-arrow-right text-green-600 transform transition group-hover:translate-x-2"></i>
-                        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-move-right">
+            {% for section in sections %}
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="p-6 flex flex-col items-center text-center h-full">
+                    <div class="w-24 h-24 rounded-full mb-4 flex items-center justify-center 
+                        {% if forloop.first %}bg-indigo-100
+                        {% elif forloop.first|add:1 %}bg-pink-100
+                        {% elif forloop.first|add:2 %}bg-teal-100
+                        {% elif forloop.first|add:3 %}bg-orange-100
+                        {% else %}bg-cyan-100{% endif %}">
+                        <i class="fas fa-users 
+                            {% if forloop.first %}text-indigo-600
+                            {% elif forloop.first|add:1 %}text-pink-600
+                            {% elif forloop.first|add:2 %}text-teal-600
+                            {% elif forloop.first|add:3 %}text-orange-600
+                            {% else %}text-cyan-600{% endif %} 
+                            text-4xl"></i>
                     </div>
-                </div>
-
-                <!-- Section B Card -->
-                <div class="bg-white group rounded-2xl shadow-xl overflow-hidden transform transition duration-300 hover:-translate-y-4 hover:shadow-2xl w-80">
-                    <div class="p-8">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-blue-100 text-blue-600 rounded-full p-4 mr-4">
-                                <i class="fas fa-graduation-cap text-3xl"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800">Section B</h3>
-                        </div>
-                        <p class="text-gray-600 mb-6">
-                            A creative hub that nurtures innovation, critical thinking, and encourages students to explore their unique potential.
-                        </p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-blue-600 font-semibold">Learn More</span>
-                            <i class="fas fa-arrow-right text-blue-600 transform transition group-hover:translate-x-2"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section C Card -->
-                <div class="bg-white group rounded-2xl shadow-xl overflow-hidden transform transition duration-300 hover:-translate-y-4 hover:shadow-2xl w-80">
-                    <div class="p-8">
-                        <div class="flex items-center mb-4">
-                            <div class="bg-purple-100 text-purple-600 rounded-full p-4 mr-4">
-                                <i class="fas fa-book-open text-3xl"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-800">Section C</h3>
-                        </div>
-                        <p class="text-gray-600 mb-6">
-                            A supportive learning community that promotes personal growth, leadership skills, and academic achievement.
-                        </p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-purple-600 font-semibold">Learn More</span>
-                            <i class="fas fa-arrow-right text-purple-600 transform transition group-hover:translate-x-2"></i>
-                        </div>
-                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Section {{ section }}</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">
+                        A dynamic learning environment dedicated to academic excellence, personal growth, and holistic development of students in Section {{ section }}.
+                    </p>
                 </div>
             </div>
+            {% endfor %}
         </div>
-
-        
     </div>
 </section>
 
-<style>
-    /* Original Animation */
-    @keyframes move-left {
-        0% { transform: translateX(100%); opacity: 0; }
-        100% { transform: translateX(0); opacity: 1; }
-    }
-
-    .animate-\[move-left_2s_ease-in-out\] {
-        animation: move-left 2s ease-in-out;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .flex {
-            flex-direction: column;
-            align-items: center;
-        }
-        .space-x-6 > * {
-            margin-bottom: 1.5rem;
-            margin-right: 0;
-        }
-    }
-</style>
-
-<section id="contact" class="py-20 bg-gradient-to-br from-gray-100 to-gray-200">
-  <div class="container mx-auto px-6 lg:px-24">
-      <div class="max-w-6xl mx-auto">
-          <!-- Animated Section Header -->
-          <div class="text-center mb-12 animate-fade-in-down">
-              <h2 class="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight transform transition duration-500 hover:scale-105">
-                  Contact Initao National Comprehensive High School
-              </h2>
-              <p class="text-xl text-gray-600 max-w-2xl mx-auto transform transition duration-500 hover:scale-[1.02]">
-                  Have questions or need more information? We're here to help.
-              </p>
+<section class="py-20 bg-gradient-to-br from-gray-100 to-gray-200">
+    <div class="container mx-auto px-6 lg:px-24">
+      <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-12 transform transition duration-500 hover:scale-[1.01]">
+        <div class="text-center mb-10">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+            Contact Initao National Comprehensive High School
+          </h2>
+          <p class="text-xl text-gray-600">Connect with us for any inquiries</p>
+        </div>
+  
+        <div class="grid md:grid-cols-3 gap-8">
+          <!-- Location -->
+          <div class="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Address</h3>
+            <p class="text-gray-600">Poblacion, Initao, Misamis Oriental 9022 Initao, Philippines</p>
           </div>
-
-          <div class="grid md:grid-cols-2 gap-12 items-center">
-              <!-- Contact Information with Hover Animations -->
-              <div class="bg-white p-8 rounded-2xl shadow-xl space-y-6 transform transition duration-500 hover:scale-[1.02] hover:shadow-2xl">
-                  <div class="flex items-center space-x-4 animate-slide-in-left">
-                      <i class="fas fa-map-marker-alt text-3xl text-green-600 animate-bounce-slow"></i>
-                      <div>
-                          <h3 class="font-semibold text-gray-800">Address</h3>
-                          <p class="text-gray-600">Initao, Misamis Oriental, Philippines</p>
-                      </div>
-                  </div>
-                  <div class="flex items-center space-x-4 animate-slide-in-left delay-100">
-                      <i class="fas fa-phone text-3xl text-green-600 animate-bounce-slow"></i>
-                      <div>
-                          <h3 class="font-semibold text-gray-800">Phone</h3>
-                          <p class="text-gray-600">(088) 123-4567</p>
-                      </div>
-                  </div>
-                  <div class="flex items-center space-x-4 animate-slide-in-left delay-200">
-                      <i class="fas fa-envelope text-3xl text-green-600 animate-bounce-slow"></i>
-                      <div>
-                          <h3 class="font-semibold text-gray-800">Email</h3>
-                          <p class="text-gray-600">contact@initaohs.edu.ph</p>
-                      </div>
-                  </div>
-                  <div class="flex space-x-4 pt-4 animate-fade-in-up">
-                      <a href="#" class="text-gray-500 hover:text-blue-500 transition transform hover:scale-125"><i class="fab fa-facebook text-2xl"></i></a>
-                      <a href="#" class="text-gray-500 hover:text-blue-400 transition transform hover:scale-125"><i class="fab fa-twitter text-2xl"></i></a>
-                      <a href="#" class="text-gray-500 hover:text-green-600 transition transform hover:scale-125"><i class="fab fa-instagram text-2xl"></i></a>
-                  </div>
-              </div>
-
-              <!-- Contact Form with Animated Interactions -->
-              <form id="contactForm" class="bg-white p-8 rounded-2xl shadow-xl space-y-6 animate-slide-in-right">
-                  <div class="grid md:grid-cols-2 gap-4">
-                      <div>
-                          <label for="firstName" class="block text-gray-700 mb-2">First Name</label>
-                          <input type="text" id="firstName" name="firstName" required
-                              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 transition duration-300 focus:animate-pulse"
-                              placeholder="Your first name">
-                      </div>
-                      <div>
-                          <label for="lastName" class="block text-gray-700 mb-2">Last Name</label>
-                          <input type="text" id="lastName" name="lastName" required
-                              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 transition duration-300 focus:animate-pulse"
-                              placeholder="Your last name">
-                      </div>
-                  </div>
-                  <div>
-                      <label for="email" class="block text-gray-700 mb-2">Email Address</label>
-                      <input type="email" id="email" name="email" required
-                          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 transition duration-300 focus:animate-pulse"
-                          placeholder="you@example.com">
-                  </div>
-                  <div>
-                      <label for="phone" class="block text-gray-700 mb-2">Phone Number</label>
-                      <input type="tel" id="phone" name="phone"
-                          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 transition duration-300 focus:animate-pulse"
-                          placeholder="(Optional) Your contact number">
-                  </div>
-                  <div>
-                      <label for="message" class="block text-gray-700 mb-2">Your Message</label>
-                      <textarea id="message" name="message" rows="4" required
-                          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 transition duration-300 focus:animate-pulse"
-                          placeholder="How can we help you today?"></textarea>
-                  </div>
-                  <div>
-                      <button type="submit" 
-                          class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-300 
-                                 transform hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-green-500/50 animate-pulse-slow">
-                          Send Message
-                      </button>
-                  </div>
-              </form>
+  
+          <!-- Phone -->
+          <div class="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h3m-3-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Phone</h3>
+            <p class="text-gray-600">(088) 555 2007</p>
           </div>
+  
+          <!-- Email -->
+          <div class="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Email</h3>
+            <p class="text-gray-600">contact@initaohs.edu.ph</p>
+          </div>
+        </div>
+  
+        <!-- Social Media Icons -->
+        <div class="flex justify-center space-x-6 mt-12">
+          <a href="https://www.facebook.com/INCHSOfficial" class="text-gray-500 hover:text-blue-600 transition transform hover:scale-125">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm3 8h-1.35c-.538 0-.65.221-.65.778v1.222h2l-.209 2h-1.791v7h-3v-7h-2v-2h2v-2.308c0-1.769.931-2.692 3.029-2.692h1.971v3z"/>
+            </svg>
+          </a>
+        </div>
       </div>
-  </div>
-</section>
-
-<script>
-    document.getElementById('contactForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const form = this;
-        form.classList.add('animate-shake');
-        setTimeout(() => {
-            form.classList.remove('animate-shake');
-            alert('Thank you for your message! We will get back to you soon.');
-        }, 500);
-    });
-  </script>
-
-<style>
-  /* Custom animations */
-  @keyframes fade-in-down {
-      0% { opacity: 0; transform: translateY(-20px); }
-      100% { opacity: 1; transform: translateY(0); }
-  }
-  .animate-fade-in-down {
-      animation: fade-in-down 0.7s ease-out;
-  }
-
-  @keyframes fade-in-up {
-      0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
-  }
-  .animate-fade-in-up {
-      animation: fade-in-up 0.7s ease-out;
-  }
-
-  @keyframes slide-in-left {
-      0% { opacity: 0; transform: translateX(-50px); }
-      100% { opacity: 1; transform: translateX(0); }
-  }
-  .animate-slide-in-left {
-      animation: slide-in-left 0.7s ease-out;
-  }
-
-  @keyframes slide-in-right {
-      0% { opacity: 0; transform: translateX(50px); }
-      100% { opacity: 1; transform: translateX(0); }
-  }
-  .animate-slide-in-right {
-      animation: slide-in-right 0.7s ease-out;
-  }
-
-  @keyframes bounce-slow {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-  }
-  .animate-bounce-slow {
-      animation: bounce-slow 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-slow {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-  }
-
-  @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-      20%, 40%, 60%, 80% { transform: translateX(5px); }
-  }
-  .animate-shake {
-      animation: shake 0.5s ease-in-out;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-      .grid-cols-2 {
-          grid-template-columns: 1fr;
-      }
-  }
+    </div>
+  </section>
 </style>
   <!-- Footer -->
   <footer class="bg-green-600 text-white text-center py-4">

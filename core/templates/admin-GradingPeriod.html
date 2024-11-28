@@ -13,10 +13,11 @@
     </div>
     {% endif %}
     <div class="card">
-        <div class="card-header">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Manage Grading Period</h3>
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Manage Grading Period</h1>
             <h3 class="text-lg font-medium text-gray-900 mb-4">School Year: {{ current_school_year.year|default:"No active school year" }}</h3>
         </div>
+        
         <div class="card-body">
             <button data-modal-target="authentication-modal" data-modal-toggle="authentication-modal" type="button" class="flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">

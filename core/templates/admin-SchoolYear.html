@@ -26,9 +26,11 @@
     {% endif %}
     <form method="POST" enctype="multipart/form-data">
         <div class="card">
-            <div class="card-header">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Manage School Year</h3>
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Manage School Year</h1>
             </div>
+            
+
             <div class="card-body">
                 <button data-modal-target="authentication-modal" data-modal-toggle="authentication-modal" type="button" class="flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
@@ -36,8 +38,21 @@
                     </svg>
                     Insert
                 </button>
-        
-                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <div class="flex justify-between items-center mb-4"> 
+                    <form class="flex items-center w-64 max-w-2xl ml-0" id="searchForm">   
+                        <label for="simple-search" class="sr-only">Search</label>
+                        <div class="relative w-80">
+                            <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search..." required />
+                            <button type="submit" class="absolute top-0 end-0 h-full p-2.5 text-sm font-medium text-white bg-green-700 rounded-e-lg border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                </svg>
+                                <span class="sr-only">Search</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <table id="school-year-table" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
                             <th scope="col" class="px-6 py-3">
@@ -263,6 +278,31 @@ $(document).ready(function() {
 </script>
 
 
+<script>
+    // Get the search input and table elements
+    const searchInput = document.getElementById('simple-search');
+    const table = document.getElementById('school-year-table');
+    const rows = table.querySelectorAll('tbody tr');
+
+    // Add an input event listener for live filtering
+    searchInput.addEventListener('input', function () {
+        const filter = searchInput.value.toLowerCase();
+        rows.forEach(row => {
+            const cells = row.getElementsByTagName('td');
+            let match = false;
+
+            // Check if any cell in the row matches the filter
+            Array.from(cells).forEach(cell => {
+                if (cell.textContent.toLowerCase().includes(filter)) {
+                    match = true;
+                }
+            });
+
+            // Show or hide the row based on the match result
+            row.style.display = match ? '' : 'none';
+        });
+    });
+</script>
 
 
 {% endblock %}

@@ -3620,13 +3620,24 @@ def import_students(request):
 
 
 
-def landingpage(request):
-    
-        background_image = static('core/image/test1.jpg')
+from django.shortcuts import render
+from django.contrib.staticfiles.storage import staticfiles_storage
+from .models import Subject, Class
 
-        context = {
-        'background_image' : background_image,
-        }
-        return render(request, 'landingpage.html', context)
+def landingpage(request):
+    # Fetch unique subjects from the database
+    subjects = Subject.objects.all()
+    
+    # Fetch unique sections from the database
+    sections = Class.objects.values_list('section', flat=True).distinct()
+    
+    background_image = staticfiles_storage.url('core/image/test1.jpg')
+
+    context = {
+        'background_image': background_image,
+        'subjects': subjects,
+        'sections': sections
+    }
+    return render(request, 'landingpage.html', context)
 
 
