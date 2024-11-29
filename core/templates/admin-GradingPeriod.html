@@ -241,12 +241,45 @@
                 document.getElementById('delete_id').value = id;
             });
         });
+
+        // Add form submission handler for edit modal
+        const editForm = document.querySelector('#edit-modal form');
+        editForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.alert(data.message);
+                    
+                    // Close the edit modal
+                    const modal = this.closest('[aria-hidden="true"]');
+                    if (modal) {
+                        modal.classList.add('hidden');
+                    }
+                    
+                    // Reload the page
+                    location.reload();
+                } else {
+                    window.alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.alert('An error occurred while processing your request.');
+            });
+        });
     });
 </script>
 
 <script>
-    document.querySelector('form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent the default form submission
+document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault();
 
     const formData = new FormData(this);
     fetch(this.action, {
@@ -255,14 +288,26 @@
     })
     .then(response => response.json())
     .then(data => {
-        alert(data.message); // Show the alert with the response message
         if (data.status === 'success') {
-            // Optionally, you can refresh the page or update the UI
-            location.reload(); // Reload the page or update your UI accordingly
+            // Use window.alert() instead of just alert()
+            window.alert(data.message);
+            
+            // Close the modal
+            const modal = this.closest('[aria-hidden="true"]');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            
+            // Reload the page or update the UI
+            location.reload();
+        } else {
+            // Also use window.alert() for error messages
+            window.alert(data.message);
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        window.alert('An error occurred while processing your request.');
     });
 });
 
