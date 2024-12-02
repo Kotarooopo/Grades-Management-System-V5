@@ -1,0 +1,653 @@
+{% extends 'admin-base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+<style>
+    .hover-red-override:hover {
+  background-color: #c53030 !important; /* Equivalent to Tailwind's bg-red-700 */
+  color: white !important;
+}
+
+</style>
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Student Account List</h1>
+    </div>
+    
+    <div class="flex justify-between items-center mb-4"> 
+        <form class="flex items-center w-64 max-w-2xl ml-0" id="searchForm">   
+            <label for="simple-search" class="sr-only">Search</label>
+            <div class="relative w-full">
+                <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search student name..." required />
+                <button type="submit" class="absolute top-0 end-0 h-full p-2.5 text-sm font-medium text-white bg-green-700 rounded-e-lg border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                    <span class="sr-only">Search</span>
+                </button>
+            </div>
+        </form>
+    </div>
+    
+
+    <div class="overflow-x-auto mt-6">
+    
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3">Profile Picture</th>
+                <th scope="col" class="px-6 py-3">
+                    <a href="?sort=user__email&order={% if sort_by == 'user__email' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                        Email Address
+                        {% if sort_by == 'user__email' %}
+                            {% if order == 'asc' %}
+                                ▲
+                            {% else %}
+                                ▼
+                            {% endif %}
+                        {% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="px-6 py-3">
+                    <a href="?sort=Lastname&order={% if sort_by == 'Lastname' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                        Full Name
+                        {% if sort_by == 'Lastname' %}
+                            {% if order == 'asc' %}
+                                ▲
+                            {% else %}
+                                ▼
+                            {% endif %}
+                        {% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="px-6 py-3">Role</th>
+                <th scope="col" class="px-6 py-3">
+                    <a href="?sort=Gender&order={% if sort_by == 'Gender' and order == 'asc' %}desc{% else %}asc{% endif %}">
+                        Gender
+                        {% if sort_by == 'Gender' %}
+                            {% if order == 'asc' %}
+                                ▲
+                            {% else %}
+                                ▼
+                            {% endif %}
+                        {% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="px-6 py-3">Phone Number</th>
+                <th scope="col" class="px-6 py-3">Status</th>
+                <th scope="col" class="px-6 py-3">Action</th>
+            </tr>
+        </thead>
+        
+        <tbody>
+            {% if students %}
+                {% for student in students %}
+                    {% if not student.user.is_updating_role %}  <!-- Check if the student is not updating their role -->
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" 
+                        data-id="{{ student.user.id }}">
+                        <td class="px-6 py-4">
+                            {% if student.profile_picture %}
+                                <img src="{{ student.profile_picture.url }}" alt="{{ student.Firstname }}'s profile" class="w-10 h-10 rounded-full">
+                            {% else %}
+                                <div class="w-10 h-10 rounded-full bg-green-700 flex items-center justify-center text-white text-3xl">
+                                    {{ student.Firstname|first }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            {{ student.email }}
+                        </td>
+                        <th class="px-6 py-4">
+                            {{ student.Lastname }}, {{ student.Firstname }} {{student.Middle_Initial}}
+                        </th>
+                        <td class="px-6 py-4">
+                            {% if student.user.is_student %}
+                                Student
+                            {% else %}
+                                <!-- Optionally, you can leave this blank or add a comment -->
+                                <!-- No display for non-student roles -->
+                            {% endif %}
+                        </td>                    
+                        <td class="px-6 py-4">{{ student.Gender }}</td>
+                        <td class="px-6 py-4">{{ student.Phone_Number }}</td>
+                        <td class="px-6 py-4">
+                            {% if student.user.is_active %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <button 
+                                class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md edit-btn"
+                                data-id="{{ student.user.id }}" 
+                                data-email="{{ student.email }}" 
+                                data-firstname="{{ student.Firstname }}" 
+                                data-middle="{{ student.Middle_Initial }}" 
+                                data-lastname="{{ student.Lastname }}" 
+                                data-phone="{{ student.Phone_Number }}" 
+                                data-gender="{{ student.Gender }}" 
+                                data-role="{% if student.user.is_student %}Student{% elif student.user.is_teacher %}Teacher{% elif student.user.is_administrator %}Administrator{% else %}Unknown Role{% endif %}"  
+                                data-status="{{ student.user.is_active|yesno:'Active,Inactive' }}">
+                                Edit
+                            </button>
+                            <button type="button" class="font-medium text-red-600 border border-red-600 py-1 px-3 rounded-md hover-red-override delete-btn" data-modal-target="delete-modal" data-modal-toggle="delete-modal" data-id="{{ student.user.id }}"> Delete </button>
+                
+                            
+                        </td>       
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">No students found.</td>
+                </tr>
+            {% endif %}
+        </tbody>           
+    </table>    
+    
+    
+</div>
+</div>
+
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" tabindex="-1" aria-hidden="true" class="hidden fixed inset-0 z-50 flex items-center justify-center w-full h-full bg-transparent">
+    <div class="relative p-4 w-full max-w-md">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="flex items-center justify-between p-4 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Confirm Delete</h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="delete-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <div class="p-4 text-center">
+                <svg aria-hidden="true" class="mx-auto mb-4 w-14 h-14 text-gray-400 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="mb-4">Are you sure you want to delete this student account?</p>
+                <input type="hidden" id="delete_id">
+                <button type="button" id="confirm-delete-btn" class="text-white bg-red-700 hover:bg-red-800 rounded-lg text-sm px-5 py-2.5">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Student Details Modal -->
+<div id="edit-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed inset-0 z-50 flex justify-center items-center w-full h-[calc(100%-1rem)] max-h-full bg-gray-900 bg-opacity-50">
+    <div class="relative p-6 w-full max-w-2xl max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow-lg dark:bg-gray-800">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    Student Information
+                </h3>
+                <button id="close-modal" type="button" class="text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-2 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                    <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex">
+                <button id="edit-tab" class="w-full py-3 text-sm font-medium text-blue-600 bg-gray-100 rounded-t-lg focus:outline-none">Edit</button>
+                <button id="change-password-tab" class="w-full py-3 text-sm font-medium text-gray-500 bg-white rounded-t-lg hover:text-gray-600 hover:bg-gray-50 focus:outline-none">Change Password</button>
+            </div>            
+
+            <!-- Modal body - Edit Form -->
+            <div id="edit-content" class="p-6 space-y-6">
+                <form id="student-details-form" method="post" action="{% url 'student-list' %}">
+                    <input type="hidden" id="student-id" name="user" value="">
+                    <div class="flex items-center space-x-6 mb-4">
+                        <div class="flex-grow">
+                            <div class="mb-3">
+                                <label for="student-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email:</label>
+                                <input id="student-email" name="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" type="email" required>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label for="student-Firstname" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Firstname:</label>
+                                    <input id="student-Firstname" name="Firstname" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" type="text" required>
+                                </div>
+                                <div>
+                                    <label for="student-Middle-Initial" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Middle Name:</label>
+                                    <input id="student-Middle-Initial" name="Middle-Initial" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" type="text">
+                                </div>
+                                <div>
+                                    <label for="student-Lastname" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Lastname:</label>
+                                    <input id="student-Lastname" name="Lastname" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" type="text" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role:</label>
+                            <select id="role" name="role" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="Student">Student</option>
+                                <option value="Teacher">Teacher</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="student-gender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Gender:</label>
+                            <select id="student-gender" name="gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="student-phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number:</label>
+                            <input id="student-phone" name="phone_number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" type="tel">
+                        </div>
+                        <div>
+                            <label for="student-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status:</label>
+                            <select id="student-status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Change Password Form -->
+            <div id="change-password-content" class="hidden p-6">
+                <form class="space-y-4" action="{% url 'student-list' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="edit_id" id="edit_id">
+                    <div>
+                        <label for="change_pass" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Student Email</label>
+                        <input type="text" name="email" id="change_pass" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" readonly>
+                    </div>
+                    <div>
+                        <label for="new_pass" class="block text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label>
+                        <input type="password" name="new_password" id="new_pass" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                    </div>
+                    <div>
+                        <label for="confirm_pass" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
+                        <input type="password" name="confirm_password" id="confirm_pass" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="flex justify-end items-center p-6 border-t border-gray-200 rounded-b dark:border-gray-600">
+                <button id="update-student-btn" type="submit" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2">Update</button>
+                <button id="change-pass-btn" type="button" class="hidden text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2">Change Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script> 
+    document.addEventListener('DOMContentLoaded', function () {
+        const editButtons = document.querySelectorAll('.edit-btn');
+        const editModal = document.getElementById('edit-modal');
+        const studentEmailInput = document.getElementById('student-email');
+        const studentFirstnameInput = document.getElementById('student-Firstname');
+        const studentMiddleInput = document.getElementById('student-Middle-Initial');
+        const studentLastnameInput = document.getElementById('student-Lastname');
+        const studentPhoneInput = document.getElementById('student-phone');
+        const studentGenderSelect = document.getElementById('student-gender');
+        const studentRoleSelect = document.getElementById('role');
+        const studentStatusSelect = document.getElementById('student-status');
+        const studentIdInput = document.getElementById('student-id');
+        const closeModalButton = document.getElementById('close-modal');
+    
+        const editTabButton = document.getElementById('edit-tab');
+        const changePasswordTabButton = document.getElementById('change-password-tab');
+        const editContent = document.getElementById('edit-content');
+        const changePasswordContent = document.getElementById('change-password-content');
+        const updateStudentButton = document.getElementById('update-student-btn');
+        const changePasswordButton = document.getElementById('change-pass-btn');
+        const studentForm = document.getElementById('student-details-form');
+
+        const changePasswordForm = document.querySelector('#change-password-content form');
+        const newPasswordInput = document.getElementById('new_pass');
+        const confirmPasswordInput = document.getElementById('confirm_pass');
+    
+        // Edit button click handler
+        editButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                // Get data from button attributes
+                const id = button.getAttribute('data-id');
+                const email = button.getAttribute('data-email');
+                const firstname = button.getAttribute('data-firstname');
+                const middle = button.getAttribute('data-middle');
+                const lastname = button.getAttribute('data-lastname');
+                const phone = button.getAttribute('data-phone');
+                const gender = button.getAttribute('data-gender');
+                const role = button.getAttribute('data-role');
+                const status = button.getAttribute('data-status');
+    
+                // Populate modal fields
+                studentIdInput.value = id;
+                studentEmailInput.value = email;
+                studentFirstnameInput.value = firstname;
+                studentMiddleInput.value = middle;
+                studentLastnameInput.value = lastname;
+                studentPhoneInput.value = phone;
+                studentGenderSelect.value = gender;
+                studentRoleSelect.value = role; // Keep the role value to determine visibility
+                studentStatusSelect.value = status;
+    
+                console.log('Student ID:', id);
+    
+                // Show or hide the role dropdown based on the role being updated
+                if (role === 'specificRoleValue') { // Replace 'specificRoleValue' with the actual role value that triggers this behavior
+                    studentRoleSelect.classList.add('hidden'); // Hide the role dropdown
+                } else {
+                    studentRoleSelect.classList.remove('hidden'); // Show the role dropdown
+                }
+    
+                // Reset to Edit tab
+                showEditContent();
+    
+                // Show the modal
+                editModal.classList.remove('hidden');
+            });
+        });
+    
+        // Close modal handler
+        closeModalButton.addEventListener('click', function () {
+            editModal.classList.add('hidden');
+        });
+    
+        // Close modal when clicking outside
+        editModal.addEventListener('click', function (event) {
+            if (event.target === editModal) {
+                editModal.classList.add('hidden');
+            }
+        });
+    
+        // Tab switching functionality
+        editTabButton.addEventListener('click', showEditContent);
+        changePasswordTabButton.addEventListener('click', showChangePasswordContent);
+    
+        function showEditContent() {
+            editContent.classList.remove('hidden');
+            changePasswordContent.classList.add('hidden');
+            editTabButton.classList.add('bg-gray-100', 'text-blue-600');
+            changePasswordTabButton.classList.remove('bg-gray-100', 'text-blue-600');
+            changePasswordTabButton.classList.add('bg-white', 'text-gray-500');
+            updateStudentButton.classList.remove('hidden');
+            changePasswordButton.classList.add('hidden');
+    
+            // Apply active styles to Edit tab
+            editTabButton.classList.add('bg-blue-200', 'text-blue-600');
+            editTabButton.classList.remove('text-gray-500', 'hover:text-gray-600', 'hover:bg-gray-50');
+    
+            // Remove active styles from Change Password tab
+            changePasswordTabButton.classList.remove('bg-blue-200', 'text-blue-600');
+            changePasswordTabButton.classList.add('text-gray-500', 'hover:text-gray-600', 'hover:bg-gray-50');
+        }
+    
+        function showChangePasswordContent() {
+            document.getElementById('change_pass').value = studentEmailInput.value;
+            editContent.classList.add('hidden');
+            changePasswordContent.classList.remove('hidden');
+            changePasswordTabButton.classList.add('bg-gray-100', 'text-blue-600');
+            editTabButton.classList.remove('bg-gray-100', 'text-blue-600');
+            editTabButton.classList.add('bg-white', 'text-gray-500');
+            updateStudentButton.classList.add('hidden');
+            changePasswordButton.classList.remove('hidden');
+    
+            // Apply active styles to Change Password tab
+            changePasswordTabButton.classList.add('bg-gray-100', 'text-blue-600');
+            changePasswordTabButton.classList.remove('text-gray-500', 'hover:text-gray-600', 'hover:bg-gray-50');
+    
+            // Remove active styles from Edit tab
+            editTabButton.classList.remove('bg-gray-100', 'text-blue-600');
+            editTabButton.classList.add('text-gray-500', 'hover:text-gray-600', 'hover:bg-gray-50');
+        }
+    
+        // Update button handler with AJAX submission
+        updateStudentButton.addEventListener('click', function () {
+            if (studentForm.checkValidity()) {
+                // Create a new FormData object from the form
+                const formData = new FormData(studentForm);
+    
+                // Send AJAX request to update student
+                fetch('{% url "student-list" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Server response:', data);
+                    if (data.status === 'success') {
+                        alert('Student updated successfully');
+                        // Close the modal and refresh the page or update the table
+                        editModal.classList.add('hidden');
+                        location.reload();
+                    } else {
+                        alert('Error updating student: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the student: ' + error.message);
+                });
+            } else {
+                studentForm.reportValidity(); // Show validation messages
+            }
+        });
+    
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        // Prevent default form submission
+        studentForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+        });
+    
+        // Change password button handler
+        changePasswordButton.addEventListener('click', function () {
+            if (newPasswordInput.value !== confirmPasswordInput.value) {
+                alert('New password and confirmation do not match.');
+                return;
+            }
+
+            const formData = new FormData(changePasswordForm);
+
+            fetch('{% url "change_student_password" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Password changed successfully');
+                    editModal.classList.add('hidden');
+                    // Optionally refresh the page or update the UI
+                } else {
+                    alert('Error changing password: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while changing the password: ' + error.message);
+            });
+        });
+        
+    });
+</script>
+    
+<script>
+    // Add this script after your existing script
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('searchForm');
+    const searchInput = document.getElementById('simple-search');
+    const tableBody = document.querySelector('tbody');
+    const originalRows = Array.from(tableBody.querySelectorAll('tr')); // Store original table rows
+    
+    // Function to filter table rows based on search input
+    function filterTable(searchQuery) {
+        searchQuery = searchQuery.toLowerCase();
+        
+        originalRows.forEach(row => {
+            // Get the text content of name column (index 2 - Full Name column)
+            const fullName = row.querySelector('th:nth-child(3)').textContent.toLowerCase();
+            const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            
+            // Show/hide row based on whether it matches the search query
+            if (fullName.includes(searchQuery) || email.includes(searchQuery)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Show "No results found" message if no matches
+        const visibleRows = originalRows.filter(row => row.style.display !== 'none');
+        if (visibleRows.length === 0) {
+            let noResultsRow = tableBody.querySelector('.no-results');
+            if (!noResultsRow) {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.className = 'no-results';
+                noResultsRow.innerHTML = `
+                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                        No students found matching "${searchQuery}"
+                    </td>
+                `;
+                tableBody.appendChild(noResultsRow);
+            }
+        } else {
+            const noResultsRow = tableBody.querySelector('.no-results');
+            if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+    }
+    
+    // Handle form submission
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        filterTable(searchInput.value);
+    });
+    
+    // Optional: Real-time search as user types
+    searchInput.addEventListener('input', function() {
+        filterTable(this.value);
+    });
+    
+    // Clear search when input is cleared
+    searchInput.addEventListener('change', function() {
+        if (this.value === '') {
+            filterTable('');
+        }
+    });
+});
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Open the delete modal
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const userId = btn.getAttribute('data-id');
+                document.getElementById('delete_id').value = userId;
+                const modal = document.getElementById('delete-modal');
+                modal.classList.remove('hidden');
+                modal.classList.add('bg-opacity-50'); // Add background overlay effect
+            });
+        });
+    
+        // Confirm delete action and close modal
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+            const userId = document.getElementById('delete_id').value;
+    
+            fetch('/delete-student/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                },
+                body: JSON.stringify({ 'user_id': userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    clearModalContent();
+                    closeDeleteModal(); // Close modal after deletion
+    
+                    // Redirect to the student list page
+                    window.location.href = '/student-list/';
+                } else {
+                    alert('Error deleting student');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    
+        // Close delete modal when clicking cancel or outside the modal
+        function closeDeleteModal() {
+            const modal = document.getElementById('delete-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('bg-opacity-50'); // Remove background overlay effect
+        }
+    
+        document.getElementById('cancel-delete-btn').addEventListener('click', closeDeleteModal);
+    
+        document.getElementById('delete-modal').addEventListener('click', (event) => {
+            if (event.target === document.getElementById('delete-modal')) {
+                closeDeleteModal();
+            }
+        });
+    
+        function clearModalContent() {
+            document.getElementById('delete_id').value = '';
+        }
+    });
+    </script>
+    
+    
+    
+
+
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'student-base.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="card-body">
+        <div class="card-header text-center">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                Previous Classes
+            </h3>
+        </div>
+        <div class="flex flex-col items-start space-y-2 mb-4">
+            <a href="{% url 'student-SubjectList' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                    <path fill-rule="evenodd" d="M10.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L12.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M4.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L6.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                </svg>
+                Current Classes
+            </a>
+        </div>
+        {% for school_year, classes in previous_classes.items %}
+            <div class="mb-6 overflow-x-auto">
+                <h4 class="text-lg font-medium text-gray-900">School Year: {{ school_year.year }}</h4>
+                <h4 class="text-lg font-medium text-gray-900 mb-2">{{ classes.0.class_obj.grade_level }} - {{ classes.0.class_obj.section }}</h4>
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Subjects</th>
+                            <th scope="col" class="px-6 py-3">Teacher</th>
+                            <th scope="col" class="px-6 py-3">Action</th>
+                            <th scope="col" class="px-6 py-3">Initial Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in classes %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                            <td class="px-6 py-4">{{ enrollment.class_obj.subject.name }}</td>
+                            <td class="px-6 py-4 font-medium text-gray-400">{{ enrollment.class_obj.teacher.Lastname }}, {{ enrollment.class_obj.teacher.Firstname }}</td>
+                            <td class="px-6 py-4">
+                                <button 
+                                    onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'ViewList', '{{ school_year.id }}')"
+                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                    >
+                                    View
+                                </button>
+                            </td>
+                            <td class="px-6 py-4">
+                                <button 
+                                    onclick="openGradingPeriodModal('{{ enrollment.class_obj.subject.id }}', '{{ enrollment.class_obj.id }}', 'InitialGrade', '{{ school_year.id }}')"
+                                    class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                    >
+                                    Inital Grade        
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% empty %}
+            <p class="text-center text-gray-500">No previous classes found.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="gradingPeriodModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Select Grading Period</h3>
+        <form id="gradingPeriodForm" method="GET">
+            <input type="hidden" id="subject_id" name="subject_id">
+            <input type="hidden" id="class_id" name="class_id">
+            <div class="mb-4">
+                <label for="grading_period" class="block text-sm font-medium text-gray-700">Grading Period</label>
+                <select id="grading_period" name="grading_period" class="form-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full">
+                    <option value="">Select a grading period</option>
+                </select>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300" data-modal-hide="gradingPeriodModal">Cancel</button>
+                <button type="submit" class="px-3 py-1.5 bg-green-700 text-white rounded-lg hover:bg-green-800">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Parse the JSON-encoded grading periods
+    const gradingPeriods = JSON.parse('{{ grading_periods|escapejs }}');
+
+    function openGradingPeriodModal(subjectId, classId, action, schoolYearId) {
+        document.getElementById('subject_id').value = subjectId;
+        document.getElementById('class_id').value = classId;
+
+        // Set the form action based on the action parameter
+        const form = document.getElementById('gradingPeriodForm');
+        if (action === 'InitialGrade') {
+            form.action = "{% url 'student-InitialGrade' %}";
+        } else if (action === 'ViewList') {
+            form.action = "{% url 'student-ScoreList' %}";
+        }
+
+ 
+
+        // Get the grading period select element
+        let gradingPeriodSelect = document.getElementById('grading_period');
+
+        // Clear previous options
+        gradingPeriodSelect.innerHTML = '<option value="">Select a grading period</option>';
+
+        // Get grading periods for the selected school year
+        const periods = gradingPeriods[schoolYearId] || [];
+        periods.forEach(period => {
+            const option = document.createElement('option');
+            option.value = period.id;
+            const schoolYearText = period.school_year__year;
+            option.text = `${schoolYearText} - ${period.period} Grading`;
+            gradingPeriodSelect.appendChild(option);
+        });
+
+        // Show modal
+        document.getElementById('gradingPeriodModal').classList.remove('hidden');
+    }
+
+    document.querySelectorAll('[data-modal-hide]').forEach(button => {
+        button.addEventListener('click', () => {
+            button.closest('.fixed').classList.add('hidden');
+        });
+    });
+</script>
+
+
+{% endblock %}

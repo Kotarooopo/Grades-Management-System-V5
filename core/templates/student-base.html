@@ -1,0 +1,347 @@
+{% load static tailwind_tags %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css"  rel="stylesheet" />
+  <title>Grades Management System</title>
+  <link rel="shortcut icon" href="{% static 'core/image/logo.png'%}" type="image/x-icon">
+  {% tailwind_css %}
+  <link href="/dist/tailwind.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
+    />
+    <style>
+        .cancel-button {
+          background-color: #D1D5DB;
+          color: #1F2937;
+          transition: background-color 0.3s;
+        }
+        .cancel-button:hover {
+          background-color: #9CA3AF;
+        }
+        .logout-button {
+          background-color: #EF4444;
+          color: white;
+          transition: background-color 0.3s;
+        }
+        .logout-button:hover {
+          background-color: #B91C1C;
+        }
+        .hover-bg-blue:hover {
+          background-color: #007bff;
+        }
+        .transition-transform {
+          transition: transform 0.3s ease;
+        }
+    
+        /* Sidebar on large screens */
+        @media (min-width: 1024px) {
+          .sidebar {
+            position: static;
+            transform: translateX(0);
+          }
+          .main-content {
+            margin-left: 1rem;
+          }
+        }
+        @media (max-width: 1024px) {
+          .main-content {
+            margin-left: 0;
+            width: 100%;
+          }
+          .sidebar {
+            transform: translateX(-100%);
+          }
+          .sidebar.sidebar-open {
+            transform: translateX(0);
+          }
+        }
+      </style>
+      
+</head>
+
+<body class="bg-gray-100">
+<script src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"></script>
+  <div class="content">
+    <div class="flex flex-col h-screen">
+      <!-- Header -->
+      <header class="bg-white shadow-md p-2 flex justify-between items-center">
+          <div class="flex items-center gap-6 w-full">
+              <button id="sidebar-toggle" class="text-green-700 hover:text-gray-700 lg:hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                  <path fill-rule="evenodd" d="M3 6.75A.75.75 0 0 1 3.75 6h16.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 6.75ZM3 12a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75A.75.75 0 0 1 3 12Zm0 5.25a.75.75 0 0 1 .75-.75h16.5a.75.75 0 0 1 0 1.5H3.75a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" />
+                </svg>
+                
+              </button>
+              <img src="{% static 'core/image/logo.png' %}" alt="Logo" class="px-1 py-1 rounded-md w-12 h-12">
+              <h1 class="font-bold text-green-700 text-[15px] ml-3">Student</h1>
+          </div>
+      
+          <div class="flex items-center">
+            <span class="mr-2 sm:inline">{{request.user.student.user}}</span>
+            {% if request.user.student.profile_picture %}
+                <div class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
+                    <img class="w-10 h-10 rounded-full cursor-pointer" src="{{ request.user.student.profile_picture.url }}" alt="Rounded avatar" id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
+                </div>
+            {% else %}
+                <div class="relative w-10 h-10 overflow-hidden flex items-center justify-center cursor-pointer" id="dropdownDefaultButton" data-dropdown-toggle="dropdown">
+                    <img class="h-full w-full object-cover" src="{% static '/core/image/logo.png' %}" alt="default avatar">
+                </div>
+            {% endif %}
+
+            <div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+                <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                  <li>
+                    <a href="{% url 'student-profile' %}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Profile</a>
+                  </li>
+                  <li>
+                    <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" onclick="showLogoutModal()">Sign out</a>
+                  </li>
+                </ul>
+            </div>
+          </div>
+      </header>
+      
+      <div class="flex h-screen overflow-hidden">
+          <!-- Sidebar -->
+           <aside id="sidebar" class="sidebar bg-green-700 text-white w-64 lg:static fixed h-full flex-shrink-0 overflow-y-auto transition-all duration-300 ease-in-out">
+              <nav>
+                  <!-- Dashboard -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                    <a href="{% url 'student-dashboard' %}" class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                            <path fill-rule="evenodd" d="M1.5 7.125c0-1.036.84-1.875 1.875-1.875h6c1.036 0 1.875.84 1.875 1.875v3.75c0 1.036-.84 1.875-1.875 1.875h-6A1.875 1.875 0 0 1 1.5 10.875v-3.75Zm12 1.5c0-1.036.84-1.875 1.875-1.875h5.25c1.035 0 1.875.84 1.875 1.875v8.25c0 1.035-.84 1.875-1.875 1.875h-5.25a1.875 1.875 0 0 1-1.875-1.875v-8.25ZM3 16.125c0-1.036.84-1.875 1.875-1.875h5.25c1.036 0 1.875.84 1.875 1.875v2.25c0 1.035-.84 1.875-1.875 1.875h-5.25A1.875 1.875 0 0 1 3 18.375v-2.25Z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-[15px] ml-4 text-gray-200 font-bold">Dashboard</span>
+                    </a>
+                </div>
+  
+                  <!-- Profile -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white">
+                    <a href="{% url 'student-profile' %}" class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-[15px] ml-4 text-gray-200 font-bold">Profile</span>
+                    </a>
+                </div>
+  
+                  <!-- Users Dropdown -->
+                  <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="toggleDropdown('submenu1')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                        <path fill-rule="evenodd" d="M4.5 2.25a.75.75 0 0 0 0 1.5v16.5h-.75a.75.75 0 0 0 0 1.5h16.5a.75.75 0 0 0 0-1.5h-.75V3.75a.75.75 0 0 0 0-1.5h-15ZM9 6a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm-.75 3.75A.75.75 0 0 1 9 9h1.5a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75ZM9 12a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H9Zm3.75-5.25A.75.75 0 0 1 13.5 6H15a.75.75 0 0 1 0 1.5h-1.5a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="flex justify-between w-full items-center">
+                        <span class="text-[15px] ml-4 text-gray-200 font-bold">My Classroom</span>
+                        <span class="text-sm rotate-0" id="dropdown-icon">
+                            <i class="bi bi-chevron-down"></i>
+                        </span>
+                    </div>
+                </div>
+                <div id="submenu1" class="text-left text-sm mt-2 w-4/5 mx-auto text-gray-200 font-bold hidden">
+                    <a href="{% url 'student-SubjectList' %}" class="flex items-center">
+                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Classes</h1>
+                    </a>
+                    <a href="{% url 'student-reportCard' %}" class="flex items-center">
+                        <h1 class="cursor-pointer p-2 hover:bg-blue-600 rounded-md mt-1">Report Card</h1>
+                    </a>
+                </div>
+        
+                <!-- Logout -->
+                <div class="p-2.5 mt-3 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-blue-600 text-white" onclick="showLogoutModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                        <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-4.28 9.22a.75.75 0 0 0 0 1.06l3 3a.75.75 0 1 0 1.06-1.06l-1.72-1.72h5.69a.75.75 0 0 0 0-1.5h-5.69l1.72-1.72a.75.75 0 0 0-1.06-1.06l-3 3Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="text-[15px] ml-4 text-gray-200 font-bold">Logout</span>
+                </div>
+              </nav>
+          </aside>
+          <main class="main-content flex-1 p-4 lg:ml-64 overflow-y-auto">
+            {% block content %}
+            {% endblock %}
+        </main>
+      </div>
+  </div>
+  
+  <!-- Logout Modal -->
+  <div id="logoutModal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg p-4">
+      <h2 class="text-lg font-bold mb-4">Confirm Logout</h2>
+      <p class="mb-4">Are you sure you want to logout?</p>
+      <div class="flex justify-end">
+        <button class="cancel-button px-4 py-2 rounded-md mr-2 cursor-pointer font-medium" onclick="hideLogoutModal()">Cancel</button>
+        <button class="logout-button px-4 py-2 rounded-md cursor-pointer font-medium" onclick="confirmLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+    
+  </div>
+  <script src="../path/to/flowbite/dist/flowbite.min.js"></script>
+</body>
+</html>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const allSidebarItems = document.querySelectorAll('#sidebar > nav > div, #submenu1 > a');
+        const currentPath = window.location.pathname;
+
+        // Toggle sidebar function
+        function toggleSidebar() {
+            sidebar.classList.toggle('sidebar-open');
+        }
+
+        // Handle sidebar toggle button click
+        sidebarToggle?.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleSidebar();
+        });
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', (event) => {
+            if (window.innerWidth < 1024) {
+                const clickedOutsideSidebar = !sidebar.contains(event.target) && 
+                                           event.target !== sidebarToggle;
+                if (clickedOutsideSidebar && sidebar.classList.contains('sidebar-open')) {
+                    sidebar.classList.remove('sidebar-open');
+                }
+            }
+        });
+
+        // Handle window resize
+        function handleResize() {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.remove('sidebar-open');
+                mainContent.classList.add('lg:ml-64');
+            } else {
+                sidebar.classList.remove('sidebar-open');
+                mainContent.classList.remove('lg:ml-64');
+            }
+        }
+
+        // Initialize active tab function
+        function setActiveTab(item) {
+            allSidebarItems.forEach(i => {
+                i.classList.remove('bg-blue-700');
+            });
+            item.classList.add('bg-blue-700');
+            item.classList.remove('hover:bg-blue-600');
+
+            const parentDropdown = item.closest('.hidden');
+            if (parentDropdown) {
+                parentDropdown.classList.remove('hidden');
+                const parentToggle = parentDropdown.previousElementSibling;
+                const arrow = parentToggle.querySelector('#dropdown-icon');
+                if (arrow) arrow.querySelector('i').classList.add('rotate-180');
+            }
+        }
+
+        // Set initial active tab
+        allSidebarItems.forEach(item => {
+            const link = item.tagName === 'A' ? item : item.querySelector('a');
+            if (link && link.getAttribute('href') === currentPath) {
+                setActiveTab(item);
+            }
+        });
+
+        // Add click listeners to sidebar items
+        allSidebarItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (this.getAttribute('onclick') && !this.closest('a')) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab(this);
+
+                const link = this.tagName === 'A' ? this : this.querySelector('a');
+                if (link) {
+                    window.location.href = link.getAttribute('href');
+                }
+            });
+        });
+
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Initial check
+    });
+  
+  function toggleDropdown(dropdownId) {
+      const dropdown = document.getElementById(dropdownId);
+      const arrow = dropdown.previousElementSibling.querySelector('.bi-chevron-down');
+  
+      if (dropdown.classList.contains('hidden')) {
+          dropdown.classList.remove('hidden');
+          arrow.classList.add('rotate-180');
+      } else {
+          dropdown.classList.add('hidden');
+          arrow.classList.remove('rotate-180');
+      }
+  }
+  
+  function showLogoutModal() {
+      document.getElementById('logoutModal').classList.remove('hidden');
+  }
+  
+  function hideLogoutModal() {
+      document.getElementById('logoutModal').classList.add('hidden');
+  }
+  
+  function confirmLogout() {
+      console.log('Logout confirmed');
+      hideLogoutModal();
+      window.location.href = "{% url 'logout' %}";
+  }
+
+  // Handle window resize
+  function handleResize() {
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('-translate-x-full');
+                mainContent.classList.add('lg:ml-64');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                mainContent.classList.remove('lg:ml-64');
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize(); // Initial check
+  </script>
+
+<script type="text/javascript">
+  let timeout = 2 * 60 * 1000;
+  let warningTime = 1 * 60 * 1000;
+
+  let timer;
+  let warningTimer;
+
+
+  document.onmousemove = document.onkeypress = function() {
+    clearTimeout(timer)
+    clearTimeout(warningTimer)
+
+    warningTimer = setTimeout(function(){
+      alert('Your session will expire in 1 minute due to inactivity!');
+    }, warningTime);
+
+    timer = setTimeout(function(){
+      window.location.href = '/logout/';
+    }, timeout);
+  };
+
+  timer = setTimeout(function(){
+    window.location.href = '/logout/';
+  }, timeout);
+
+  warningTimer = setTimeout(function(){
+      alert('Your session will expire in 1 minute due to inactivity!');
+    }, warningTime);
+
+</script>

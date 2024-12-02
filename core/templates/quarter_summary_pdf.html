@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #2d3748;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Styles */
+        .header {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #4a5568;
+            padding-bottom: 15px;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            table-layout: fixed;
+        }
+
+        .header-table td {
+            border: none;
+            vertical-align: middle;
+            padding: 5px;
+        }
+
+        .logo-cell {
+            width: 20%;
+            text-align: center;
+        }
+
+        .school-info-cell {
+            width: 60%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
+        .logo {
+            max-width: 25%;
+            height: auto;
+            display: inline-block;
+            transform: scale(0.25);
+        }
+
+        .school-name {
+            font-size: 14pt;
+            font-weight: bold;
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            color: #1a365d;
+            white-space: nowrap;
+            display: inline-block;
+            overflow: visible;
+            text-overflow: clip;
+            line-height: 1;
+        }
+
+        .department {
+            font-size: 12pt;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            margin: 0;
+            color: #1a365d;
+            line-height: 1;
+        }
+
+        .location {
+            font-size: 10pt;
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            margin: 0;
+            color: #1a365d;
+            line-height: 1;
+        }
+
+        .report-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .report-title {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #2d3748;
+            margin: 0 0 5px 0;
+        }
+
+        .class-info {
+            font-size: 10pt;
+            color: #4a5568;
+            margin: 3px 0;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 9pt;
+        }
+
+        .grades-header {
+            background-color: #2d3748;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .grades-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+
+        .grades-table tr:hover {
+            background-color: #edf2f7;
+        }
+
+        .remarks-passed {
+            color: green;
+        }
+
+        .remarks-failed {
+            color: red;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            font-size: 8pt;
+            color: #718096;
+            text-align: center;
+        }
+
+        .footer img {
+            width: 200px;
+            height: auto;
+            margin-top: 10px;
+        }
+
+        .footer p {
+            margin-top: 1px;
+            font-size: 8pt;
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <table class="header-table">
+            <tr>
+                <td class="logo-cell">
+                    <img src="{{ logo_path }}" alt="School Logo" class="logo">
+                </td>
+                <td class="school-info-cell">
+                    <h1 class="school-name">Initao National Comprehensive High School</h1>
+                    <p class="department">Junior High School Department</p>
+                    <p class="location">Initao, Misamis Oriental</p>
+                </td>
+                <td class="logo-cell">
+                    <img src="{{ logo_dep }}" alt="Department Logo" class="logo">
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Report Section -->
+    <div class="report-section">
+        <h2 class="report-title">Quarterly Grade Summary</h2>
+        <p class="class-info">School Year: {{ school_year.year }}</p>
+        <p class="class-info">{{ selected_class.grade_level }} - {{ selected_class.section }} - {{ selected_class.subject.name }}</p>
+    </div>
+
+    <!-- Grades Table -->
+    <table class="grades-table">
+        <thead>
+            <tr class="grades-header">
+                <th style="width: 40%;">Learners Names</th>
+                <th>1st Quarter</th>
+                <th>2nd Quarter</th>
+                <th>3rd Quarter</th>
+                <th>4th Quarter</th>
+                <th>Final Grade</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students_data %}
+            <tr>
+                <td>{{ student.student_name }}</td>
+                <td>{{ student.grades.1st|default:"-" }}</td>
+                <td>{{ student.grades.2nd|default:"-" }}</td>
+                <td>{{ student.grades.3rd|default:"-" }}</td>
+                <td>{{ student.grades.4th|default:"-" }}</td>
+                <td>{{ student.final_grade|default:"-" }}</td>
+                <td class="{% if student.remarks == 'PASSED' %}remarks-passed{% else %}remarks-failed{% endif %}">
+                    {{ student.remarks }}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No students enrolled in this class.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="barcode-container">
+            <img src="{{ barcode_exportpath }}" alt="Electronic Signature Barcode">
+        </div>
+        <p>Generated on {% now "F d, Y" %}</p>
+    </div>
+</body>
+</html>

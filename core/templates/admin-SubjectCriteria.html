@@ -1,0 +1,344 @@
+{% extends 'admin-base.html' %}
+
+{% block content %}
+{% load static %}
+<style>
+    .hover-red-override:hover {
+  background-color: #c53030 !important; /* Equivalent to Tailwind's bg-red-700 */
+  color: white !important;
+}
+
+</style>
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <form method="POST" enctype="multipart/form-data">
+        <div class="card">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Manage Criteria</h1>
+            </div>
+            <div class="card-body">
+                <button data-modal-target="add-subject-criteria" data-modal-toggle="add-subject-criteria" type="button" class="flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Insert
+                </button>
+        
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Subject</th>
+                            <th scope="col" class="px-6 py-3">Written Works</th>
+                            <th scope="col" class="px-6 py-3">Performance Tasks</th>
+                            <th scope="col" class="px-6 py-3">Quarterly Exam</th>
+                            <th scope="col" class="px-6 py-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subject in subjects %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" >
+                            <td class="px-6 py-4">{{ subject.name }}</td>
+                            <td class="px-6 py-4">
+                                {% for criterion in subject.subjectcriterion_set.all %}
+                                    {% if criterion.grading_criterion.criteria_type == 'WW' %}
+                                        {{ criterion.weightage }}%
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% for criterion in subject.subjectcriterion_set.all %}
+                                    {% if criterion.grading_criterion.criteria_type == 'PT' %}
+                                        {{ criterion.weightage }}%
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% for criterion in subject.subjectcriterion_set.all %}
+                                    {% if criterion.grading_criterion.criteria_type == 'QE' %}
+                                        {{ criterion.weightage }}%
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <!-- <button type="button" 
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md edit-btn"
+                                        data-modal-target="edit-modal" 
+                                        data-modal-toggle="edit-modal"
+                                        data-id="{{ subject.id }}" 
+                                        data-name="{{ subject.name }}"
+                                        data-ww="{% for criterion in subject.subjectcriterion_set.all %}{% if criterion.grading_criterion.criteria_type == 'WW' %}{{ criterion.weightage }}{% endif %}{% endfor %}"
+                                        data-pt="{% for criterion in subject.subjectcriterion_set.all %}{% if criterion.grading_criterion.criteria_type == 'PT' %}{{ criterion.weightage }}{% endif %}{% endfor %}"
+                                        data-qe="{% for criterion in subject.subjectcriterion_set.all %}{% if criterion.grading_criterion.criteria_type == 'QE' %}{{ criterion.weightage }}{% endif %}{% endfor %}">
+                                    Edit
+                                </button> -->
+                                <button type="button" class="font-medium text-red-600 border border-red-600 py-1 px-3 rounded-md hover-red-override delete-btn"
+                                    data-modal-target="delete-modal" 
+                                    data-modal-toggle="delete-modal"
+                                    data-id="{{ subject.id }}">
+                                    Clear
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+        
+            </div>
+        </div>
+    </form>
+  
+    <!-- Add modal -->
+
+    <div id="add-subject-criteria" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <!-- Modal content -->
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <!-- Modal header -->
+                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Add Subject Criteria
+                    </h3>
+                    <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="add-subject-criteria">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                </div>
+                <!-- Modal body -->
+                <div class="p-4 md:p-5">
+                    <form id="add-criteria-form" class="space-y-4" action="{% url 'subject-criteria' %}" method="post">
+                        {% csrf_token %}
+                        <div>
+                            <label for="subject_select" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject Name</label>
+                            <select name="subject_id" id="subject_select" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required>
+                                <option value="">Select a subject</option>
+                                {% for subject in subjects_without_criteria %}
+                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="grid gap-4 mb-4 grid-cols-2">
+                            <div class="col-span-2 sm:col-span-1">
+                                <label for="criterion" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Criteria</label>
+                                <input type="text" value="Written Works" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                                <input type="text" value="Performance Tasks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                                <input type="text" value="Quarterly Exam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <label for="weightage" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Weight (%)</label>
+                                <input type="number" name="ww_weightage" id="ww_weightage" class="weightage-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required min="0" max="100">
+                                <input type="number" name="pt_weightage" id="pt_weightage" class="weightage-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required min="0" max="100">
+                                <input type="number" name="qe_weightage" id="qe_weightage" class="weightage-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required min="0" max="100">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="total_weightage" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Total Weightage</label>
+                            <input type="number" id="total_weightage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                        </div>
+                        <div id="error-message" class="text-red-500 text-sm mt-2 hidden"></div>
+                        <button type="submit" id="submit-btn" class="w-full text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" disabled>Add Subject Criterion</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Edit modal -->
+    <div id="edit-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <!-- Modal content -->
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <!-- Modal header -->
+                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Edit Subject Criteria
+                    </h3>
+                    <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="edit-modal">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                </div>
+                <!-- Modal body -->
+                <div class="p-4 md:p-5">
+                    <form class="space-y-4" action="{% url 'subject-criteria' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="edit_subject_id" id="edit_subject_id">
+                        <div>
+                            <label for="edit_subject" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject Name</label>
+                            <input type="text" name="edit_subject_name" id="edit_subject_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                        </div>
+                        <div class="grid gap-4 mb-4 grid-cols-2">
+                            <div class="col-span-2 sm:col-span-1">
+                                <label for="criterion" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Criteria</label>
+                                <input type="text" value="Written Works" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                                <input type="text" value="Performance Tasks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                                <input type="text" value="Quarterly Exam" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <label for="weightage" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Weight</label>
+                                <input type="number" name="edit_ww_weightage" id="edit_ww_weightage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+                                <input type="number" name="edit_pt_weightage" id="edit_pt_weightage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+                                <input type="number" name="edit_qe_weightage" id="edit_qe_weightage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="total_weightage" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Total Weightage</label>
+                            <input type="number" id="total_weightage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" readonly />
+                        </div>
+                        <div id="error-message" class="text-red-500 text-sm mt-2 hidden"></div>
+                        <button type="submit" name="update_criteria" class="w-full text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Update Criteria</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Delete modal -->
+<div id="delete-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                    Clear Criteria
+                </h3>
+                <button type="button" class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="delete-modal">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+            </div>
+            <!-- Modal body -->
+            <div class="p-4 md:p-5">
+                <form class="space-y-4" action="{% url 'subject-criteria' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_id" id="delete_id">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">Are you sure you want to clear all criteria for this subject?</p>
+                    <button type="submit" name="clear_criteria" class="w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Clear Criteria</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const addForm = document.getElementById('add-criteria-form');
+    const editForm = document.querySelector('#edit-modal form');
+    const addWeightageInputs = addForm.querySelectorAll('.weightage-input');
+    const editWeightageInputs = editForm.querySelectorAll('input[name^="edit_"][name$="_weightage"]');
+    const addTotalWeightage = addForm.querySelector('#total_weightage');
+    const editTotalWeightage = editForm.querySelector('#total_weightage');
+    const addErrorMessage = addForm.querySelector('#error-message');
+    const editErrorMessage = editForm.querySelector('#error-message');
+    const addSubmitBtn = addForm.querySelector('#submit-btn');
+    const editSubmitBtn = editForm.querySelector('button[name="update_criteria"]');
+
+    function updateTotal(inputs, totalElement, errorElement, submitBtn) {
+        let total = 0;
+        inputs.forEach(input => {
+            total += Number(input.value) || 0;
+        });
+        totalElement.value = total;
+
+        if (total !== 100) {
+            errorElement.textContent = "Total weightage must be exactly 100%.";
+            errorElement.classList.remove('hidden');
+            submitBtn.disabled = true;
+        } else {
+            errorElement.classList.add('hidden');
+            submitBtn.disabled = false;
+        }
+    }
+
+    function setupWeightageInputs(inputs, totalElement, errorElement, submitBtn) {
+        inputs.forEach(input => {
+            input.addEventListener('input', () => updateTotal(inputs, totalElement, errorElement, submitBtn));
+        });
+    }
+
+    setupWeightageInputs(addWeightageInputs, addTotalWeightage, addErrorMessage, addSubmitBtn);
+    setupWeightageInputs(editWeightageInputs, editTotalWeightage, editErrorMessage, editSubmitBtn);
+
+    function validateForm(form, inputs, totalElement, errorElement) {
+        let filledInputs = 0;
+        inputs.forEach(input => {
+            if (input.value && input.value !== '0') filledInputs++;
+        });
+
+        if (filledInputs < 3) {
+            errorElement.textContent = "At least 3 criteria must have non-zero weightage.";
+            errorElement.classList.remove('hidden');
+            return false;
+        }
+
+        if (Number(totalElement.value) !== 100) {
+            errorElement.textContent = "Total weightage must be exactly 100%.";
+            errorElement.classList.remove('hidden');
+            return false;
+        }
+
+        return true;
+    }
+
+    addForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (validateForm(addForm, addWeightageInputs, addTotalWeightage, addErrorMessage)) {
+            addForm.submit();
+        }
+    });
+
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (validateForm(editForm, editWeightageInputs, editTotalWeightage, editErrorMessage)) {
+            editForm.submit();
+        }
+    });
+
+    // Edit Subject
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', event => {
+            const subjectId = event.currentTarget.dataset.id;
+            const subjectName = event.currentTarget.dataset.name;
+            const wwWeightage = event.currentTarget.dataset.ww;
+            const ptWeightage = event.currentTarget.dataset.pt;
+            const qeWeightage = event.currentTarget.dataset.qe;
+
+            document.getElementById('edit_subject_id').value = subjectId;
+            document.getElementById('edit_subject_name').value = subjectName;
+            document.getElementById('edit_ww_weightage').value = wwWeightage;
+            document.getElementById('edit_pt_weightage').value = ptWeightage;
+            document.getElementById('edit_qe_weightage').value = qeWeightage;
+
+            // Update total weightage
+            updateTotal(editWeightageInputs, editTotalWeightage, editErrorMessage, editSubmitBtn);
+        });
+    });
+
+    // Delete Subject (unchanged)
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', event => {
+            const subjectId = event.currentTarget.dataset.id;
+            document.getElementById('delete_id').value = subjectId;
+        });
+    });
+});
+</script>
+
+{% endblock %}

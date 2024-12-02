@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="{% static 'core/image/logo.png'%}" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    /* Keyframes for smooth horizontal movement */
+    @keyframes move-right {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes move-left {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(0);
+      }
+    }
+  </style>
+   <style>
+    @keyframes move-left {
+        0% { transform: translateX(-100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes move-right {
+        0% { transform: translateX(100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+    .animate-move-left {
+        animation: move-left 1s ease-out;
+    }
+    .animate-move-right {
+        animation: move-right 1s ease-out;
+    }
+</style>
+<style>
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        /* Navbar */
+        .md\:flex {
+            display: none;
+        }
+        
+        /* Home Section */
+        #home h2 {
+            font-size: 2.5rem;
+            line-height: 1.2;
+        }
+        #home p {
+            font-size: 1.1rem;
+        }
+        #home .flex-col {
+            padding: 1rem;
+        }
+        
+        /* Section Headings */
+        h2 {
+            font-size: 2.5rem;
+            text-align: center;
+        }
+        
+        /* Grid Layouts */
+        .grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        /* Sections Padding */
+        section {
+            padding: 2rem 1rem;
+        }
+        
+        /* Contact Section */
+        #contact .max-w-4xl {
+            padding: 1rem;
+        }
+        #contact .grid {
+            grid-template-columns: 1fr;
+        }
+        
+        /* Subjects and Sections Cards */
+        .bg-white {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+    }
+    
+    /* Responsive Typography */
+    body {
+        font-size: 16px;
+    }
+    
+    @media (max-width: 480px) {
+        body {
+            font-size: 14px;
+        }
+        
+        h2 {
+            font-size: 2rem;
+        }
+        
+        .text-xl {
+            font-size: 1rem;
+        }
+    }
+</style>
+</head>
+</head>
+
+<body class="bg-gray-100 font-sans">
+<!-- Navbar -->
+<nav class="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-md shadow-lg">
+  <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <!-- Logo Section -->
+      <div class="flex items-center">
+          <a href="#home" class="flex items-center space-x-3">
+              <img src="{% static 'core/image/logo.png' %}" alt="School Logo" class="h-12 w-auto rounded-full">
+              <span class="text-xl font-bold text-green-700 tracking-tight hidden md:block">INCHS</span>
+          </a>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <ul class="hidden md:flex items-center space-x-6 bg-green-50/50 px-6 py-2 rounded-full">
+          <li>
+              <a href="#home" class="text-green-800 hover:text-green-600 font-medium transition-colors group flex items-center space-x-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  <span>Home</span>
+              </a>
+          </li>
+          <li>
+              <a href="#about" class="text-green-800 hover:text-green-600 font-medium transition-colors group flex items-center space-x-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>About</span>
+              </a>
+          </li>
+          <li>
+              <a href="#subjects" class="text-green-800 hover:text-green-600 font-medium transition-colors group flex items-center space-x-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                  <span>Subjects</span>
+              </a>
+          </li>
+          <li>
+              <a href="#sections" class="text-green-800 hover:text-green-600 font-medium transition-colors group flex items-center space-x-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <span>Sections</span>
+              </a>
+          </li>
+          <li>
+              <a href="#contact" class="text-green-800 hover:text-green-600 font-medium transition-colors group flex items-center space-x-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span>Contact</span>
+              </a>
+          </li>
+      </ul>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-4">
+          <a href="{% url 'login' %}" class="hidden md:flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-full transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg group">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              Login
+          </a>
+
+          <!-- Mobile Menu Toggle -->
+          <button id="mobile-menu-toggle" class="md:hidden focus:outline-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+          </button>
+      </div>
+  </div>
+
+  <!-- Mobile Menu Dropdown -->
+  <div id="mobile-menu" class="md:hidden fixed inset-x-0 top-16 bg-white shadow-lg hidden">
+      <div class="px-6 pt-2 pb-4 space-y-2">
+          <a href="#home" class="block py-3 px-4 text-green-800 hover:bg-green-50 rounded-lg flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Home</span>
+          </a>
+          <a href="#about" class="block py-3 px-4 text-green-800 hover:bg-green-50 rounded-lg flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>About</span>
+          </a>
+          <a href="#subjects" class="block py-3 px-4 text-green-800 hover:bg-green-50 rounded-lg flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              <span>Subjects</span>
+          </a>
+          <a href="#sections" class="block py-3 px-4 text-green-800 hover:bg-green-50 rounded-lg flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <span>Sections</span>
+          </a>
+          <a href="#contact" class="block py-3 px-4 text-green-800 hover:bg-green-50 rounded-lg flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>Contact</span>
+          </a>
+          <a href="{% url 'login' %}" class="block py-3 px-4 bg-green-600 text-white rounded-lg text-center hover:bg-green-700 transition-colors">
+              Login
+          </a>
+      </div>
+  </div>
+</nav>
+
+<!-- JavaScript for Mobile Menu Toggle -->
+<script>
+  document.getElementById('mobile-menu-toggle').addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+  });
+</script>
+  
+  
+<!-- Home Section -->
+<section id="home" class="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat overflow-hidden animate-background-image" 
+style="background-image: url('{{ background_image }}');">
+
+<!-- Overlay with modern gradient -->
+<div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70 backdrop-blur-sm"></div>
+
+<div class="relative z-10 text-center max-w-4xl mx-auto px-6 py-12">
+<div class="space-y-6">
+   <h2 class="text-4xl sm:text-6xl font-extrabold text-white mb-4 leading-tight tracking-tight 
+              animate-fade-in transform transition duration-700 ease-out">
+       Initao National Comprehensive High School
+   </h2>
+   
+   <p class="text-lg sm:text-2xl text-gray-200 mb-8 opacity-90 max-w-2xl mx-auto 
+             animate-fade-in animation-delay-300">
+       Where passion meets education, empowering future innovators and leaders.
+   </p>
+   
+   <div class="flex justify-center space-x-4">
+       <a href="#about" class="px-8 py-4 bg-green-600 hover:bg-green-700 text-white 
+                                rounded-full text-lg font-semibold transition duration-300 
+                                transform hover:scale-105 shadow-xl hover:shadow-2xl 
+                                animate-fade-in animation-delay-500 
+                                focus:outline-none focus:ring-4 focus:ring-green-500/50">
+           Explore Our Journey
+       </a>
+       <a href="#subjects" class="px-8 py-4 border-2 border-white text-white 
+                                   rounded-full text-lg font-semibold transition duration-300 
+                                   transform hover:scale-105 hover:bg-white hover:text-black 
+                                   animate-fade-in animation-delay-500 
+                                   focus:outline-none focus:ring-4 focus:ring-white/50">
+           Our Subjects
+       </a>
+   </div>
+</div>
+</div>
+</section>
+
+<style>
+/* Custom Animations */
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(20px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+animation: fadeIn 1s ease-out forwards;
+opacity: 0;
+}
+
+.animation-delay-300 {
+animation-delay: 0.3s;
+}
+
+.animation-delay-500 {
+animation-delay: 0.5s;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+h2 { font-size: 2.5rem; }
+p { font-size: 1rem; }
+}
+</style>
+</body>
+  
+  
+  
+  
+
+<!-- About Us Section -->
+<section id="about" class="min-h-screen bg-gray-50 flex items-center py-16">
+  <div class="container mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-16 items-center">
+          <!-- Mission and Vision Column -->
+          <div class="space-y-8">
+              <div>
+                  <h2 class="text-5xl font-extrabold text-green-700 mb-6">About Us</h2>
+                  <p class="text-xl text-gray-700 mb-8 leading-relaxed">We are committed to providing high-quality education that nurtures creativity, curiosity, and lifelong learning. Our goal is to empower students to become innovative leaders of tomorrow, equipped with knowledge, skills, and values to make a meaningful impact in their communities.</p>
+              </div>
+
+              <!-- Mission Section -->
+              <div>
+                  <h3 class="text-3xl font-semibold text-gray-800 mb-6">Our Mission</h3>
+                  <ul class="space-y-4">
+                      <li class="flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span class="text-lg text-gray-700">Students learn in a child-friendly, gender-sensitive, safe, and motivating environment.</span>
+                      </li>
+                      <li class="flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span class="text-lg text-gray-700">Teachers facilitate learning and constantly nurture every learner.</span>
+                      </li>
+                      <li class="flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span class="text-lg text-gray-700">Administrators and staff ensure an enabling and supportive environment for effective learning.</span>
+                      </li>
+                      <li class="flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500 mr-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span class="text-lg text-gray-700">Family, community, and stakeholders actively engage in developing lifelong learners.</span>
+                      </li>
+                  </ul>
+              </div>
+
+              <!-- Vision Section -->
+              <div>
+                  <h3 class="text-3xl font-semibold text-gray-800 mb-6">Our Vision</h3>
+                  <p class="text-lg text-gray-700 leading-relaxed">
+                      We envision nurturing Filipinos who passionately love their country, possessing values and competencies that enable them to realize their full potential and contribute meaningfully to nation-building. As a learner-centered public institution, we continuously improve to better serve our stakeholders and create transformative educational experiences.
+                  </p>
+              </div>
+          </div>
+
+          <!-- Location Column -->
+          <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+              <div class="p-8">
+                  <h3 class="text-3xl font-semibold text-green-800 mb-6">Our Location</h3>
+                  <div class="mb-6">
+                      <h4 class="font-bold text-gray-800 text-xl mb-4">Initao National Comprehensive High School</h4>
+                      <p class="text-gray-600 text-lg mb-6">
+                          Strategically located in the vibrant community of Initao, Misamis Oriental, our school is a beacon of educational excellence and community development.
+                      </p>
+                  </div>
+
+                  <!-- Detailed Location Information -->
+                  <div class="bg-green-50 p-6 rounded-lg mb-6">
+                      <h4 class="font-bold text-green-800 mb-4 text-lg">Address Details</h4>
+                      <p class="text-gray-700 text-base leading-relaxed">
+                          Initao National Comprehensive High School<br>
+                          Initao, Misamis Oriental<br>
+                          Philippines
+                      </p>
+                  </div>
+
+                  <!-- Google Maps Iframe -->
+                  <div class="rounded-lg overflow-hidden shadow-md">
+                      <iframe 
+                          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3947.585784924279!2d124.30341211485776!3d8.502487293850309!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32556820f601f555%3A0xa167f38da6d77a74!2sInitao%20National%20Comprehensive%20High%20School!5e0!3m2!1sen!2sus!4v1701112233954!5m2!1sen!2sus" 
+                          width="100%" 
+                          height="350" 
+                          style="border:0;" 
+                          allowfullscreen="" 
+                          loading="lazy" 
+                          referrerpolicy="no-referrer-when-downgrade"
+                      ></iframe>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Call to Action -->
+      <div class="text-center mt-16">
+          <a href="#contact" class="bg-green-600 hover:bg-green-500 text-white px-10 py-4 rounded-full text-xl font-semibold transition duration-300 transform hover:scale-105 inline-block shadow-lg">
+              Join Our School Community
+          </a>
+      </div>
+  </div>
+</section>
+
+<!-- Styling for hover effects -->
+<style>
+  .hover\:scale-105:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+  }
+</style>
+
+<section id="subjects" class="py-20 bg-gradient-to-br from-gray-100 to-gray-200">
+    <div class="container mx-auto px-6 lg:px-24">
+        <h2 class="text-4xl font-extrabold text-center text-green-800 mb-12 tracking-tight">
+            Our Academic Subjects
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-move-left">
+            {% for subject in subjects %}
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="p-6 flex flex-col items-center text-center h-full">
+                    <div class="w-24 h-24 rounded-full mb-4 flex items-center justify-center 
+                        {% if forloop.first %}bg-red-100
+                        {% elif forloop.first|add:1 %}bg-blue-100
+                        {% elif forloop.first|add:2 %}bg-green-100
+                        {% elif forloop.first|add:3 %}bg-purple-100
+                        {% else %}bg-yellow-100{% endif %}">
+                        <i class="fas 
+                        {% if subject.name == 'Mathematics' %}fa-calculator text-red-600
+                        {% elif subject.name == 'Science' %}fa-flask text-blue-600
+                        {% elif subject.name == 'History' %}fa-landmark text-green-600
+                        {% else %}fa-book text-purple-600{% endif %} 
+                        text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">{{ subject.name }}</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">
+                        {% if subject.name == 'Mathematics' %}
+                        Dive deep into the world of numbers, patterns, and logical reasoning. From algebra to calculus, we nurture analytical thinking.
+                        {% elif subject.name == 'Science' %}
+                        Uncover the mysteries of the natural world through experimental learning, critical thinking, and hands-on scientific exploration.
+                        {% elif subject.name == 'History' %}
+                        Journey through time, understanding the complex tapestry of human civilization, culture, and the events that have shaped our world.
+                        {% else %}
+                        Explore the depths of {{ subject.name }} with our comprehensive and engaging curriculum.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section id="sections" class="py-20 bg-white">
+    <div class="container mx-auto px-6 lg:px-24">
+        <h2 class="text-4xl font-extrabold text-center text-green-800 mb-12 tracking-tight">
+            Our School Sections
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-move-right">
+            {% for section in sections %}
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                <div class="p-6 flex flex-col items-center text-center h-full">
+                    <div class="w-24 h-24 rounded-full mb-4 flex items-center justify-center 
+                        {% if forloop.first %}bg-indigo-100
+                        {% elif forloop.first|add:1 %}bg-pink-100
+                        {% elif forloop.first|add:2 %}bg-teal-100
+                        {% elif forloop.first|add:3 %}bg-orange-100
+                        {% else %}bg-cyan-100{% endif %}">
+                        <i class="fas fa-users 
+                            {% if forloop.first %}text-indigo-600
+                            {% elif forloop.first|add:1 %}text-pink-600
+                            {% elif forloop.first|add:2 %}text-teal-600
+                            {% elif forloop.first|add:3 %}text-orange-600
+                            {% else %}text-cyan-600{% endif %} 
+                            text-4xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Section {{ section }}</h3>
+                    <p class="text-gray-600 mb-4 flex-grow">
+                        A dynamic learning environment dedicated to academic excellence, personal growth, and holistic development of students in Section {{ section }}.
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="py-20 bg-gradient-to-br from-gray-100 to-gray-200">
+    <div class="container mx-auto px-6 lg:px-24">
+      <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-12 transform transition duration-500 hover:scale-[1.01]">
+        <div class="text-center mb-10">
+          <h2 class="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+            Contact Initao National Comprehensive High School
+          </h2>
+          <p class="text-xl text-gray-600">Connect with us for any inquiries</p>
+        </div>
+  
+        <div class="grid md:grid-cols-3 gap-8">
+          <!-- Location -->
+          <div class="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Address</h3>
+            <p class="text-gray-600">Poblacion, Initao, Misamis Oriental 9022 Initao, Philippines</p>
+          </div>
+  
+          <!-- Phone -->
+          <div class="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h3m-3-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Phone</h3>
+            <p class="text-gray-600">(088) 555 2007</p>
+          </div>
+  
+          <!-- Email -->
+          <div class="text-center p-6 bg-gray-50 rounded-xl hover:bg-gray-100 transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Email</h3>
+            <p class="text-gray-600">contact@initaohs.edu.ph</p>
+          </div>
+        </div>
+  
+        <!-- Social Media Icons -->
+        <div class="flex justify-center space-x-6 mt-12">
+          <a href="https://www.facebook.com/INCHSOfficial" class="text-gray-500 hover:text-blue-600 transition transform hover:scale-125">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm3 8h-1.35c-.538 0-.65.221-.65.778v1.222h2l-.209 2h-1.791v7h-3v-7h-2v-2h2v-2.308c0-1.769.931-2.692 3.029-2.692h1.971v3z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</style>
+  <!-- Footer -->
+  <footer class="bg-green-600 text-white text-center py-4">
+    <p>&copy; 2024 Initao National Comprehensive High School. All rights reserved.</p>
+  </footer>
+
+  <!-- Script for Navbar Toggle -->
+  <script>
+    const menuBtn = document.getElementById('menu-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+
+    menuBtn.addEventListener('click', () => {
+      dropdownMenu.classList.toggle('hidden');
+    });
+  </script>
+</body>
+
+</html>

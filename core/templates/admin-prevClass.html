@@ -1,0 +1,149 @@
+{% extends 'admin-base.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="card">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Manage Classes</h1>
+        </div>
+        <div class="flex flex-col items-start space-y-2 mb-4">
+            <a href="{% url 'admin-class' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                    <path fill-rule="evenodd" d="M10.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L12.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M4.72 11.47a.75.75 0 0 0 0 1.06l7.5 7.5a.75.75 0 1 0 1.06-1.06L6.31 12l6.97-6.97a.75.75 0 0 0-1.06-1.06l-7.5 7.5Z" clip-rule="evenodd" />
+                </svg>
+                Current Classes
+            </a>
+            <form class="flex items-center w-64 max-w-2xl" id="searchForm">
+                <label for="simple-search" class="sr-only">Search</label>
+                <div class="relative w-80">
+                    <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Search..." required />
+                    <button type="submit" class="absolute top-0 end-0 h-full p-2.5 text-sm font-medium text-white bg-green-700 rounded-e-lg border border-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                        </svg>
+                        <span class="sr-only">Search</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="card-body">
+            {% for school_year, classes in grouped_classes.items %}
+                <h4 class="text-lg font-medium text-gray-900 mt-6 mb-2">School Year: {{ school_year }}</h4>
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mb-8">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Grade Level</th>
+                            <th scope="col" class="px-6 py-3">Section</th>
+                            <th scope="col" class="px-6 py-3">Teacher</th>
+                            <th scope="col" class="px-6 py-3">Subject</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for class in classes %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                            <td class="px-6 py-4">{{ class.grade_level }}</td>
+                            <td class="px-6 py-4">{{ class.section }}</td>
+                            <th class="px-6 py-4">{{ class.teacher.Lastname|default:"No Teacher Assigned" }}, {{ class.teacher.Firstname}} {{ class.teacher.Middle_Initial}}</th>
+                            <td class="px-6 py-4">{{ class.subject.name|default:"No Subject" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center">No classes found for this school year.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% empty %}
+                <p class="text-center">No previous classes found.</p>
+            {% endfor %}
+        </div>
+    </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('togglePreviousClasses');
+        const previousClassesSection = document.getElementById('previousClassesSection');
+
+        toggleButton.addEventListener('click', function() {
+            if (previousClassesSection.classList.contains('hidden')) {
+                previousClassesSection.classList.remove('hidden');
+                toggleButton.textContent = 'Hide Previous Classes';
+            } else {
+                previousClassesSection.classList.add('hidden');
+                toggleButton.textContent = 'Show Previous Classes';
+            }
+        });
+    });
+
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const classId = this.getAttribute('data-id');
+            const schoolYear = this.getAttribute('data-school-year');
+            const gradeLevel = this.getAttribute('data-grade-level');
+            const section = this.getAttribute('data-section');
+            const teacher = this.getAttribute('data-teacher');
+            const subject = this.getAttribute('data-subject');
+            
+            document.getElementById('edit_class_id').value = classId;
+            document.getElementById('edit_school_year').value = schoolYear;
+            document.getElementById('edit_grade_level').value = gradeLevel;
+            document.getElementById('edit_section').value = section;
+            document.getElementById('edit_teacher').value = teacher;
+            document.getElementById('edit_subject').value = subject;
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const classId = this.getAttribute('data-id');
+            document.getElementById('delete_class_id').value = classId;
+        });
+    });
+
+    document.querySelectorAll('[data-modal-toggle]').forEach(button => {
+        button.addEventListener('click', function () {
+            const modalId = this.getAttribute('data-modal-toggle');
+            const modal = document.getElementById(modalId);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('simple-search');
+        const tableRows = document.querySelectorAll('table tbody tr');
+
+        searchInput.addEventListener('input', (event) => {
+            const searchTerm = event.target.value.toLowerCase();
+
+            tableRows.forEach((row) => {
+                const rowText = row.textContent.toLowerCase();
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = ''; // Show the row
+                } else {
+                    row.style.display = 'none'; // Hide the row
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

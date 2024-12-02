@@ -1,0 +1,461 @@
+{% extends 'admin-base.html' %}
+
+{% block content %}
+<!-- Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="max-w-10xl bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="p-8">
+        <h2>Welcome to School Year {{ current_school_year.year }}</h2>
+    </div>
+</div>
+
+<div class="max-w-10xl bg-white rounded-xl shadow-md overflow-hidden mt-6">
+    <div class="p-8">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-4xl font-bold text-gray-900">{{ total_users }}</h2>
+                <p class="text-lg text-gray-500">Total Users</p>
+            </div>
+        </div>
+        
+        <div class="h-96 mb-4">
+            <canvas id="user-barChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="flex justify-start space-x-4 mt-6"> 
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-md">
+        <div id="calendar" class="grid grid-cols-7 gap-2 text-center text-gray-700">
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-md p-4 w-full max-w-xs">
+        <div class="flex justify-between items-center mb-2">
+            <h5 class="text-lg font-medium text-gray-900">Total Users</h5>
+        </div>
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-2xl font-bold text-gray-900">{{ total_users }}</div>
+        </div>
+        <div class="flex justify-center mb-4">
+            <div class="chart-container" style="width: 200px; height: 200px;">
+                <canvas id="userChart"></canvas>
+            </div>
+        </div>
+        <div class="space-y-2">
+            <div class="flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: #5bba6f;"></div>
+                    <span class="font-medium text-gray-600">Admins</span>
+                </div>
+                <div class="font-medium text-gray-900">{{ total_administrators|default:"0" }}</div>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: #137547;"></div>
+                    <span class="font-medium text-gray-600">Students</span>
+                </div>
+                <div class="font-medium text-gray-900">{{ total_students|default:"0" }}</div>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: #2a9134;"></div>
+                    <span class="font-medium text-gray-600">Teachers</span>
+                </div>
+                <div class="font-medium text-gray-900">{{ total_teachers|default:"0" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container for the second stats card -->
+    <div class="bg-white rounded-lg shadow-md p-4 w-full max-w-xs">
+        <div class="flex justify-between items-center mb-2">
+            <h5 class="text-lg font-medium text-gray-900">Total Sections</h5>
+        </div>
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-2xl font-bold text-gray-900">{{ total_sections }}</div>
+        </div>
+        <div class="flex justify-center mb-4">
+            <div class="chart-container" style="width: 200px; height: 200px;">
+                <canvas id="sectionsChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="text-left font-medium text-gray-600">Grade Level</th>
+                        <th scope="col" class="text-right font-medium text-gray-600">Total Sections</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade, data in grade_sections_with_percentage.items %}
+                    <tr>
+                        <td class="text-left font-medium text-gray-600">{{ grade }}</td>
+                        <td class="text-center font-medium text-gray-900">{{ data.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <!-- Container for the third stats card -->
+    <div class="bg-white rounded-lg shadow-md p-4 w-full max-w-xs">
+        <div class="flex justify-between items-center mb-2">
+            <h5 class="text-lg font-medium text-gray-900">Total Subjects</h5>
+                <!-- Select menu -->
+                <select id="subjectSelect" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 text-center inline-flex items-center dark:hover:text-white bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-24">
+                    {% for subject in subjects %}
+                        <option value="{{ subject.name }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+        </div>
+        <div class="flex justify-between items-center mb-4">
+            <div class="text-2xl font-bold text-gray-900">{{ total_subjects }}</div>
+        </div>
+        <div class="flex justify-center mb-4">
+            <div class="chart-container" style="width: 200px; height: 200px;">
+                <canvas id="subjectChart"></canvas>
+            </div>
+        </div>
+        <div class="space-y-2">
+            <div class="flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: #5bba6f;"></div>
+                    <span class="font-medium text-gray-600">Written Works</span>
+                </div>
+                <div class="font-medium text-gray-900" id="writtenWorksValue">0</div>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: #137547;"></div>
+                    <span class="font-medium text-gray-600">Performance Tasks</span>
+                </div>
+                <div class="font-medium text-gray-900" id="performanceTasksValue">0</div>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: #2a9134;"></div>
+                    <span class="font-medium text-gray-600">Quarterly Grades</span>
+                </div>
+                <div class="font-medium text-gray-900" id="quarterlyGradesValue">0</div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<!-- Mao ni Chart.js charts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js library not loaded.');
+            return;
+        }
+
+        // Get the context of the canvas elements
+        const userCtx = document.getElementById('userChart').getContext('2d');
+        const sectionsCtx = document.getElementById('sectionsChart').getContext('2d');
+
+        if (!userCtx || !sectionsCtx) {
+            console.error('Canvas element not found.');
+            return;
+        }
+
+        // Data for the user chart
+        const totalTeachers = parseFloat('{{ total_teachers|default:"0" }}');
+        const totalStudents = parseFloat('{{ total_students|default:"0" }}');
+        const totalAdministrators = parseFloat('{{ total_administrators|default:"0" }}');
+
+        // Create the user chart
+        new Chart(userCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Teachers', 'Students', 'Admins'],
+                datasets: [{
+                    data: [totalTeachers, totalStudents, totalAdministrators],
+                    backgroundColor: ['#2a9134', '#137547', '#5bba6f'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                cutout: '70%',
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.raw !== null) {
+                                    label += context.raw;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Parse grade_sections data
+        const gradeSections = JSON.parse('{{ grade_sections|escapejs }}');
+        // Define the desired order
+        const order = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+
+        // Order the labels and counts according to the specified order
+        const sectionLabels = order;
+        const sectionCounts = sectionLabels.map(grade => gradeSections[grade] || 0);
+
+        const totalSections = sectionCounts.reduce((a, b) => a + b, 0);
+
+        // Create the sections chart
+        new Chart(sectionsCtx, {
+            type: 'pie',
+            data: {
+                labels: sectionLabels,
+                datasets: [{
+                    data: sectionCounts,
+                    backgroundColor: ['#3fa34d', '#2a9134', '#137547', '#054a29'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const label = context.label || '';
+                            const value = context.raw;
+                            const percentage = ((value / totalSections) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+        });
+    });
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('user-barChart').getContext('2d');
+        
+        // Data fetched from Django view
+        const totalTeachers = parseFloat('{{ total_teachers|default:"0" }}');
+        const totalStudents = parseFloat('{{ total_students|default:"0" }}');
+        const totalAdministrators = parseFloat('{{ total_administrators|default:"0" }}');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Students', 'Teachers', 'Admins'],
+                datasets: [{
+                    label: 'Number of Users',
+                    data: [totalStudents, totalTeachers, totalAdministrators],
+                    backgroundColor: [
+                        '#137547',
+                        '#2a9134',
+                        '#5bba6f'
+                    ],
+                    borderColor: [
+                        '#137547',
+                        '#2a9134',
+                        '#5bba6f'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'User Type'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Users'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Total Number of Users'
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const subjectSelect = document.getElementById('subjectSelect');
+        const subjectChartCtx = document.getElementById('subjectChart').getContext('2d');
+    
+        // Create the chart with initial empty data
+        let subjectChart = new Chart(subjectChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: ['#5bba6f', '#137547', '#2a9134'], // Consistent with the first chart
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                cutout: '70%', // Consistent with the first chart
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ' + context.raw;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    
+        // Add event listener to update chart on subject selection
+        subjectSelect.addEventListener('change', function() {
+            const selectedSubject = subjectSelect.value;
+    
+            fetch(`/get-subject-criteria?subject=${selectedSubject}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                    } else {
+                        // Update the chart
+                        subjectChart.data.labels = data.labels;
+                        subjectChart.data.datasets[0].data = data.values;
+                        subjectChart.update();
+    
+                        // Update the value displays
+                        document.getElementById('writtenWorksValue').textContent = data.values[0] || '0';
+                        document.getElementById('performanceTasksValue').textContent = data.values[1] || '0';
+                        document.getElementById('quarterlyGradesValue').textContent = data.values[2] || '0';
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    
+        // Trigger initial data load
+        subjectSelect.dispatchEvent(new Event('change'));
+    });
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendar = document.getElementById('calendar');
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            function createCalendar(year, month) {
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                const startingDay = firstDay.getDay();
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                
+                // Clear previous calendar
+                calendar.innerHTML = '';
+
+                // Add month and year header
+                const header = document.createElement('div');
+                header.textContent = `${monthNames[month]} ${year}`;
+                header.className = 'calendar-header font-bold text-xl mb-2';
+                calendar.appendChild(header);
+
+                // Add day labels
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                days.forEach(day => {
+                    const dayLabel = document.createElement('div');
+                    dayLabel.textContent = day;
+                    dayLabel.className = 'calendar-day font-bold text-gray-600';
+                    calendar.appendChild(dayLabel);
+                });
+
+                // Add blank spaces for days before the 1st
+                for (let i = 0; i < startingDay; i++) {
+                    calendar.appendChild(document.createElement('div'));
+                }
+
+                // Add calendar days
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.textContent = i;
+                    dayElement.className = 'calendar-day p-2 border border-gray-200 rounded';
+
+                    if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                        dayElement.className += ' bg-green-700 text-white font-bold';
+                    }
+
+                    calendar.appendChild(dayElement);
+                }
+            }
+
+            createCalendar(currentYear, currentMonth);
+        });
+    </script>
+
+<style>
+    .calendar-container {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px;
+    }
+    .calendar-header {
+        grid-column: span 7;
+        text-align: center;
+    }
+    .calendar-day {
+        text-align: center;
+    }
+</style>
+        
+    
+{% endblock %}

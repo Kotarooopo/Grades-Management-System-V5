@@ -1,0 +1,70 @@
+{% extends 'student-base.html' %}
+{% load custom_filters %}
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    <!-- Display messages if any -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            {% if selected_class %}
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    My Initial Grade for {{ selected_class.subject.name }} - {{ grading_period.period }} Grading
+                </h3>
+            {% else %}
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    No class selected
+                </h3>
+            {% endif %}
+        </div>
+
+        <div class="card-body overflow-x-auto mt-4">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Criteria</th>
+                        <th scope="col" class="px-6 py-3">Weight</th>
+                        <th scope="col" class="px-6 py-3">Total Activity Score</th>
+                        <th scope="col" class="px-6 py-3">Your Total Score</th>
+                        <th scope="col" class="px-6 py-3">Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for score in result.criteria_scores %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                            <td class="px-6 py-4">{{ score.criterion.grading_criterion.get_criteria_type_display }}</td>
+                            <td class="px-6 py-4">{{ score.criterion.weightage }}%</td>
+                            
+                            {% with total_max_score=total_max_scores|get_item:score.criterion.id %}
+                                <td class="px-6 py-4">{{ total_max_score }}</td>
+                            {% endwith %}
+                            
+                            <td class="px-6 py-4">{{ score.total_score }}</td>
+                            <td class="px-6 py-4">{{ score.percentage|floatformat:2 }}%</td>
+                        </tr>
+                    {% endfor %}
+                    
+                </tbody>
+                
+            </table>
+            
+            
+            
+        </div>
+        <div class="mt-4 text-right ">
+            <p class="text-lg font-medium">Initial Grade: {{ result.initial_grade|floatformat:2 }}</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

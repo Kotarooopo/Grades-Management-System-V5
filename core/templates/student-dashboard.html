@@ -1,0 +1,162 @@
+{% extends 'student-base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    .progress-bar {
+    width: 100%;
+    background-color: #d1d5db; /* Tailwind gray-300 */
+    border-radius: 9999px; /* Full rounded */
+    overflow: hidden;
+}
+
+.progress-fill {
+    width: var(--progress-width, 0%);
+    background-color: #15803d; /* Tailwind green-700 */
+    color: #d1fae5; /* Tailwind green-100 */
+    text-align: center;
+    padding: 2px 0; /* Adjust padding as needed */
+    font-size: 0.75rem; /* Tailwind text-xs */
+    font-weight: 500; /* Tailwind font-medium */
+    line-height: 1; /* Tailwind leading-none */
+    border-radius: 9999px; /* Full rounded */
+}
+
+</style>
+    <!-- Header Section -->
+    <div class="max-w-10xl bg-white rounded-xl shadow-md overflow-hidden mb-6">
+        <div class="p-8">
+            <h2>Welcome to School Year {{ active_school_year.year }}</h2>
+        </div>
+    </div>
+    
+    <!-- Stats Overview -->
+    
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-medium text-gray-500">Activity Completion</h3>
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+        </div>
+        
+        <p class="text-2xl font-bold mt-2">{{ overall_completion_rate }}%</p>
+        <p class="text-xs text-gray-500 mt-1">{{ completed_activities }}/{{ total_activities }} activities completed</p>
+    
+        <div class="mt-6">
+            <h4 class="text-sm font-medium text-gray-500">Subject-wise Activity Completion</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                {% for subject, data in subject_activities.items %}
+                <div class="bg-gray-100 rounded-lg p-4">
+                    <h5 class="text-sm font-medium">{{ subject }}</h5>
+                    <div class="flex items-center justify-between mt-2">
+                        <p class="text-2xl font-bold">{{ data.completion_rate }}%</p>
+                        <p class="text-xs text-gray-500">{{ data.completed_activities }}/{{ data.total_activities }} activities</p>
+                    </div>
+                    <div class="w-full bg-gray-300 rounded-full mt-2 progress-bar">
+                        <div class="progress-fill bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full"
+                             style="--progress-width: {{ data.completion_rate }}%;">
+                            {{ data.completion_rate }}%
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Grade Trends Chart Card -->
+        <div class="col-span-2 bg-white rounded-lg shadow p-6 w-full">
+            <h2 class="text-xl font-semibold mb-4">Grade Trends</h2>
+            <div class="h-40 md:h-64">
+                <canvas id="gradeTrendsChart"></canvas>
+            </div>
+        </div>
+    
+        <!-- Notification Grade Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-medium text-gray-500">Notifications</h3>
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8c0-3-2-5-5-5s-5 2-5 5v4c0 1.657-1.343 3-3 3H7c-1.657 0-3 1.343-3 3v1h14v-1c0-1.657-1.343-3-3-3h-1c-1.657 0-3-1.343-3-3V8z"></path>
+                </svg>
+            </div>
+            <p class="text-2xl font-bold mt-2" id="averageGrade">Grade Notifications</p>
+            <p class="text-xs text-gray-500 mt-1">Latest Notifications</p>
+        
+            <!-- Notification List -->
+            <div class="mt-4">
+                {% for notification in grade_notifications %}
+                    <a href="{% url 'student-reportCard' %}" class="flex justify-between items-center border-b py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                        <p class="text-sm text-gray-700">
+                            <span class="font-bold">{{ notification.teacher }}</span> has uploaded a grade for the
+                            <span class="font-semibold text-gray-900">{{ notification.grading_period }}-Grading</span> in the subject
+                            <span class="font-semibold text-gray-900">{{ notification.subject }}</span>.
+                        </p>
+                        {% if forloop.first %}
+                            <span class="text-xs text-green-400">New</span>
+                        {% endif %}
+                    </a>
+                {% empty %}
+                    <p class="text-sm text-gray-500">No notifications yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+          
+    </div>
+
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var gradeTrends = JSON.parse('{{ grade_trends|escapejs }}');  // Deserialize JSON data from Django
+    
+    var ctx = document.getElementById('gradeTrendsChart').getContext('2d');
+    var gradeTrendsData = {
+        labels: ["1st Grading", "2nd Grading", "3rd Grading", "4th Grading"],
+        datasets: []
+    };
+
+    // Function to determine color based on grade
+    function getColorBasedOnGrade(grade) {
+        if (grade < 74) return 'rgba(255, 0, 0, 1)';  // Red
+        else if (grade >= 75 && grade <= 85) return 'rgba(255, 205, 86, 1)';  // Yellow
+        else return 'rgba(21, 128, 61, 1)';  // Green
+    }
+
+    // Iterate through the grade trends and populate datasets
+    for (const [subject, data] of Object.entries(gradeTrends)) {
+        var grades = data.periods.map(function(period) {
+            return period.grade;
+        });
+
+        // Generate colors based on grade values
+        var backgroundColors = grades.map(getColorBasedOnGrade);
+
+        gradeTrendsData.datasets.push({
+            label: subject,
+            data: grades,
+            backgroundColor: backgroundColors,  // Set background color dynamically
+            borderColor: backgroundColors,      // Match border color for consistency
+            borderWidth: 1
+        });
+    }
+
+    var gradeTrendsChart = new Chart(ctx, {
+        type: 'bar',
+        data: gradeTrendsData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

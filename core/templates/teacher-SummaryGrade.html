@@ -1,0 +1,114 @@
+{% extends 'teacher-base.html' %}
+
+{% block content %}
+
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags %}{{ message.tags }}{% endif %} bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+            <p class="font-bold">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header text-center">
+                <div class="text-center mb-6">
+                    <h1 class="text-2xl font-bold text-gray-800">My Class Summary</h1>
+                    <h3 class="text-xl font-bold text-gray-800">School Year: {{ current_school_year.year }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col items-end space-y-2">
+            <a href="{% url 'teacher-prevSummaryGrade' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                Previous Classes  
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                    <path fill-rule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M19.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06L17.69 12l-6.97-6.97a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                </svg>                                
+            </a>
+        </div>
+        <div class="overflow-x-auto mt-6">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 mt-6">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">School Year</th>
+                        <th scope="col" class="px-6 py-3">Subject</th>
+                        <th scope="col" class="px-6 py-3">Grade Level</th>
+                        <th scope="col" class="px-6 py-3">Section</th> 
+                        <th scope="col" class="px-6 py-3">Total Students</th>
+                        <th scope="col" class="px-6 py-3">Status</th>
+                        <th scope="col" class="px-6 py-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if current_advisories.exists %}
+                        {% for advisory in current_advisories %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" >
+                                <td class="px-6 py-4">{{ advisory.school_year.year }}</td>
+                                <td class="px-6 py-4">{{ advisory.subject.name }}</td>
+                                <td class="px-6 py-4">{{ advisory.grade_level }}</td>
+                                <td class="px-6 py-4">{{ advisory.section }}</td>
+                                <td class="px-6 py-4">{{ advisory.student_count }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Current
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a 
+                                        href="{% url 'teacher-QuarterSummary' %}?class={{ advisory.id }}" 
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                    >
+                                        Summary
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center">No current advisory class assigned.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+                
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('gradingPeriodModal');
+    const gradingPeriodForm = document.getElementById('gradingPeriodForm');
+
+    document.querySelectorAll('[data-modal-toggle="gradingPeriodModal"]').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const advisoryId = this.getAttribute('data-id');
+            gradingPeriodForm.setAttribute('data-advisory-id', advisoryId);
+            modal.classList.remove('hidden');
+        });
+    });
+
+    document.querySelectorAll('[data-modal-hide]').forEach(button => {
+        button.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+    });
+
+    gradingPeriodForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const gradingPeriodId = document.getElementById('grading_period').value;
+        const advisoryId = this.getAttribute('data-advisory-id');
+        window.location.href = "{% url 'teacher-mygradeCalculate' %}?class=" + advisoryId + "&grading_period=" + gradingPeriodId;
+    });
+});
+
+</script>
+
+{% endblock %}

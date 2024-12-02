@@ -1,0 +1,66 @@
+{% extends 'student-base.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="card-body">
+        <div class="card-header text-center">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                {{ grade_level }} - {{ section }} - {{ subject }} - {{ grading_period }} Grading
+            </h3>
+        </div>
+        <div class="flex items-center justify-start">
+            <form class="max-w-sm w-full">
+                <select id="criteria" class="mb-4 sm:mb-1 ml-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <option selected disabled>Select Criteria</option>
+                    {% for criterion in criteria %}
+                        <option value="{{ criterion.criteria_type }}">{{ criterion.get_criteria_type_display }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+        <div class="overflow-x-auto mt-4">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Activity Name</th>
+                        <th scope="col" class="px-6 py-3">Date</th>
+                        <th scope="col" class="px-6 py-3">Max Score</th>
+                        <th scope="col" class="px-6 py-3">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in score_data %}
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer" data-criteria="{{ item.criteria }}">
+                            <td class="px-6 py-4">{{ item.activity_name }}</td>
+                            <td class="px-6 py-4">{{ item.date|date:"Y-m-d" }}</td>
+                            <td class="px-6 py-4">{{ item.max_score }}</td>
+                            <td class="px-6 py-4">{{ item.score|default_if_none:"-" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-center">No scores found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('criteria').addEventListener('change', function() {
+    var selectedCriteria = this.value;
+    var rows = document.querySelectorAll('tbody tr');
+    rows.forEach(function(row) {
+        if (selectedCriteria === 'Select Criteria' || row.dataset.criteria === selectedCriteria) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,113 @@
+<!-- student-SubjectList.html -->
+{% extends 'student-base.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="card-body">
+        <div class="card-header text-center">
+            <h3 class="text-lg font-medium text-gray-900">
+                {{ grade_level }} - {{ section }}
+            </h3>
+            <h4 class="text-gray-900 mb-4">
+                School Year: {{ current_school_year.year }}
+            </h4>
+        </div>
+        <div class="flex flex-col items-end space-y-2">
+            <a href="{% url 'student-previousClasses' %}" class="shadow-md flex items-center focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                Previous Classes  
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                    <path fill-rule="evenodd" d="M13.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L11.69 12 4.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd" d="M19.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 1 1-1.06-1.06L17.69 12l-6.97-6.97a.75.75 0 0 1 1.06-1.06l7.5 7.5Z" clip-rule="evenodd" />
+                </svg>                                 
+            </a>
+        </div>
+
+        <!-- Make the table responsive on smaller screens -->
+        <div class="overflow-x-auto mt-6">
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Subjects</th>
+                        <th scope="col" class="px-6 py-3">Teacher</th>
+                        <th scope="col" class="px-6 py-3">Action</th>
+                        <th scope="col" class="px-6 py-3">Initial Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in subjects_and_teachers %}
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                        <td class="px-6 py-4">{{ item.subject }}</td>
+                        <td class="px-6 py-4 font-medium text-gray-400">{{ item.teacher }}</td>
+                        <td class="px-6 py-4">
+                            <button 
+                                        onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'ScoreList')"
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                        >
+                                        View
+                            </button>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button 
+                                        onclick="openGradingPeriodModal('{{ item.subject_id }}', '{{ item.class_id }}', 'InitialGrade')"
+                                        class="font-medium text-blue-600 dark:text-blue-500 border border-blue-600 dark:border-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 hover:text-white py-1 px-3 rounded-md view-btn"
+                                        >
+                                        Initial Grade
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center">No subjects found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="gradingPeriodModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-4 w-2/4 max-w-md">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Select Grading Period</h3>
+        <form id="gradingPeriodForm" method="GET">
+            <input type="hidden" id="subject_id" name="subject_id">
+            <input type="hidden" id="class_id" name="class_id">
+            <div class="mb-4">
+                <label for="grading_period" class="block text-sm font-medium text-gray-700">Grading Period</label>
+                <select id="grading_period" name="grading_period" class="form-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full">
+                    {% if grading_periods %}
+                        {% for period in grading_periods %}
+                            <option value="{{ period.id }}">{{ period }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="">No grading periods available</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" class="px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300" data-modal-hide="gradingPeriodModal">Cancel</button>
+                <button type="submit" class="px-3 py-1.5 bg-green-700 text-white rounded-lg hover:bg-green-800">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openGradingPeriodModal(subjectId, classId, action) {
+        document.getElementById('subject_id').value = subjectId;
+        document.getElementById('class_id').value = classId;
+        const form = document.getElementById('gradingPeriodForm');
+        form.action = action === 'InitialGrade' ? "{% url 'student-InitialGrade' %}" : "{% url 'student-ScoreList' %}";
+        document.getElementById('gradingPeriodModal').classList.remove('hidden');
+    }
+    
+    document.querySelectorAll('[data-modal-hide]').forEach(button => {
+        button.addEventListener('click', () => {
+            button.closest('.fixed').classList.add('hidden');
+        });
+    });
+</script>
+
+{% endblock %}
