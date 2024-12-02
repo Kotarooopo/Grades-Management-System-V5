@@ -132,7 +132,13 @@
                         {% csrf_token %}
                         <div>
                             <label for="add_year" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">School Year</label>
-                            <input type="text" name="year" id="add_year" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="1990-1991" required />
+                            <input type="text" name="year" id="add_year" 
+                                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" 
+                                   placeholder="1995-1996" 
+                                   required 
+                                   pattern="^(19|20)\d{2}-(19|20)\d{2}$" 
+                                   title="Enter a valid school year in the format YYYY-YYYY with a one-year gap (e.g., 1995-1996)." 
+                                   oninput="validateYear(this)" />
                         </div>
                         <div>
                             <label for="add_is_active" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Current</label>
@@ -303,6 +309,21 @@ $(document).ready(function() {
         });
     });
 </script>
-
+<script>
+    function validateYear(input) {
+        const match = input.value.match(/^(19|20)(\d{2})-(19|20)(\d{2})$/);
+        if (match) {
+            const startYear = parseInt(match[1] + match[2], 10);
+            const endYear = parseInt(match[3] + match[4], 10);
+            if (endYear - startYear !== 1) {
+                input.setCustomValidity("The years must have a one-year gap (e.g., 1995-1996).");
+            } else {
+                input.setCustomValidity(""); // Valid input
+            }
+        } else {
+            input.setCustomValidity("Enter a valid school year in the format YYYY-YYYY.");
+        }
+    }
+</script>
 
 {% endblock %}
