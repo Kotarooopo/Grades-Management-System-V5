@@ -1684,7 +1684,30 @@ def admin_GradeReport(request):
     return render(request, 'admin-GradeReport.html', context)
 
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import GradingCriterion
+from django.contrib.auth.decorators import login_required
+from .decorators import allowed_users
 
+@login_required(login_url='login')
+@allowed_users(allowed_roles=['administrator'])
+def admin_GradingCriteria(request):
+    if request.method == 'POST' and 'add_grading_period' in request.POST:
+        criteria_type = request.POST.get('criteria_type')
+        if criteria_type in ['WW', 'PT', 'QE']:  # Only allow these predefined values
+            try:
+                # Create a new GradingCriterion instance
+                GradingCriterion.objects.create(criteria_type=criteria_type)
+                messages.success(request, "Grading Criterion added successfully.")
+            except Exception as e:
+                messages.error(request, f"Error adding grading criterion: {str(e)}")
+        else:
+            messages.error(request, "Invalid grading criterion selected.")
+
+    # Fetch all grading criteria to display in the table
+    grading_criteria = GradingCriterion.objects.all()
+    return render(request, 'admin-GradingCriteria.html', {'grading_criteria': grading_criteria})
 
 
 from django.http import JsonResponse

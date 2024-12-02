@@ -21,6 +21,7 @@ urlpatterns = [
     path('administrator/GradeReport/', views.admin_GradeReport, name='admin-GradeReport'),
     path('administrator/Class/PreviousClass', views.admin_prevClass, name ='admin-prevClass'),
     path('administrator/admin-class/', views.admin_class, name='admin-class'),
+    path('administrator/grading-criteria/', views.admin_GradingCriteria, name='admin-GradingCriteria'),
 
     path('update-score/', views.update_score, name='update_score'),
     path('teacher-dashboard/', views.teacher_dashboard, name='teacher-dashboard'),
